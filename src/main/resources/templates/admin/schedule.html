@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html class="light" lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="admin/layout :: adminHead"></head>
+<body class="font-display">
+
+<div th:replace="admin/layout :: adminShell(~{::section}, ${activeMenu})">
+
+    <section>
+        <!-- Heading -->
+        <div class="flex flex-wrap justify-between gap-3 mb-6">
+            <div>
+                <h1 class="text-[#03594D] text-3xl font-black tracking-[-0.03em]">
+                    Working schedule &amp; Slot
+                </h1>
+                <p class="text-gray-600 mt-1">
+                    Cấu hình lịch làm việc theo ngày/tuần và khung giờ nhận booking cho từng dịch vụ.
+                </p>
+            </div>
+        </div>
+
+        <!-- 2 khối placeholder -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            <div class="rounded-xl border border-[#E3E5D2] bg-white p-5">
+                <h2 class="text-[#03594D] font-semibold mb-2">Weekly working pattern</h2>
+                <p class="text-gray-600 text-sm mb-3">
+                    Sau này: chọn ca làm (morning/afternoon/evening) cho từng ngày, cho từng role (Doctor, Groomer,...).
+                </p>
+            </div>
+
+            <div class="rounded-xl border border-[#E3E5D2] bg-white p-5">
+                <h2 class="text-[#03594D] font-semibold mb-2">Time slots configuration</h2>
+                <p class="text-gray-600 text-sm mb-3">
+                    Sau này: cấu hình slot 30'/60', giới hạn số booking mỗi slot, buffer time,...
+                </p>
+            </div>
+        </div>
+    </section>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
+
+:root {
+    --brand-background: #F0F8F7;
+    --brand-text: #03594D;
+    --brand-accent: #D8E268;
+    --brand-error: #FF6B6B;
+    --brand-placeholder: #A0A0A0;
+}
+
+body {
+    font-family: "Plus Jakarta Sans", "Noto Sans", sans-serif;
+    background-color: var(--brand-background);
+}
+
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}

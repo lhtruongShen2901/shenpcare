@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html class="light" lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="admin/layout :: adminHead">
+    <!-- Fallback nếu Thymeleaf chưa chạy -->
+    <title>ShenPCare Admin Dashboard</title>
+</head>
+<body class="font-display">
+
+<!-- Gọi fragment adminShell, truyền vào:
+     - nội dung <section> bên dưới (content)
+     - giá trị activeMenu (controller set là 'dashboard') -->
+<div th:replace="admin/layout :: adminShell(~{::section}, ${activeMenu})">
+
+    <!-- Nội dung riêng của Dashboard -->
+    <section>
+        <!-- Heading -->
+        <div class="flex flex-wrap justify-between gap-3 mb-6">
+            <h1 class="text-[#03594D] text-4xl font-black leading-tight tracking-[-0.033em] min-w-72">
+                Dashboard Overview
+            </h1>
+        </div>
+
+        <!-- 4 ô thống kê -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
+            <!-- Total Customers -->
+            <div
+                class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-xl p-6 border border-[#E3E5D2] bg-white">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-[#03594D]">groups</span>
+                    <p class="text-[#03594D] text-base font-medium leading-normal">
+                        Total Customers
+                    </p>
+                </div>
+                <p class="text-[#03594D] tracking-light text-4xl font-bold leading-tight"
+                   th:text="${totalCustomers} ?: 0">0</p>
+            </div>
+
+            <!-- Total Pets -->
+            <div
+                class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-xl p-6 border border-[#E3E5D2] bg-white">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-[#03594D]">pets</span>
+                    <p class="text-[#03594D] text-base font-medium leading-normal">
+                        Total Pets
+                    </p>
+                </div>
+                <p class="text-[#03594D] tracking-light text-4xl font-bold leading-tight"
+                   th:text="${totalPets} ?: 0">0</p>
+            </div>
+
+            <!-- Pending Bookings -->
+            <div
+                class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-xl p-6 border border-[#E3E5D2] bg-white">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-[#03594D]">pending_actions</span>
+                    <p class="text-[#03594D] text-base font-medium leading-normal">
+                        Pending Bookings
+                    </p>
+                </div>
+                <p class="text-[#03594D] tracking-light text-4xl font-bold leading-tight"
+                   th:text="${pendingBookings} ?: 0">0</p>
+            </div>
+
+            <!-- Pending Orders -->
+            <div
+                class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-xl p-6 border border-[#E3E5D2] bg-white">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-[#03594D]">shopping_cart</span>
+                    <p class="text-[#03594D] text-base font-medium leading-normal">
+                        Pending Orders
+                    </p>
+                </div>
+                <p class="text-[#03594D] tracking-light text-4xl font-bold leading-tight"
+                   th:text="${pendingOrders} ?: 0">0</p>
+            </div>
+
+        </div>
+    </section>
+</div>
+
+</body>
+</html>
