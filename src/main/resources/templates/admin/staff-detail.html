@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="light" lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="admin/layout :: adminHead">
-    <title>ShenPCare - User Detail</title>
+    <title>ShenPCare - Chi tiết Nhân viên</title>
 </head>
 <body class="font-display bg-background-light">
 
@@ -9,37 +9,37 @@
     <section>
         <div class="mx-auto max-w-4xl">
 
-            <!-- Heading -->
             <div class="flex flex-wrap justify-between gap-3 mb-6">
                 <div class="flex flex-col gap-2">
                     <p class="text-[#03594D] text-4xl font-black leading-tight tracking-[-0.033em]"
-                       th:text="${isEdit} ? 'Chỉnh sửa Người dùng' : 'Thêm Người dùng mới'">
-                        Chi tiết Người dùng
+                       th:text="${isEdit} ? 'Chỉnh sửa Nhân viên' : 'Thêm Nhân viên mới'">
+                        Chi tiết Nhân viên
                     </p>
                     <p class="text-[#5b8c85] text-base font-normal leading-normal">
-                        Thêm mới hoặc chỉnh sửa thông tin người dùng trong hệ thống.
+                        Quản lý thông tin hồ sơ và tài khoản truy cập của nhân viên.
                     </p>
                 </div>
             </div>
 
-            <!-- Form -->
             <form class="mt-4"
-                  th:action="@{/admin/users/save}"
+                  th:action="@{/admin/staff/save}"
                   th:object="${userForm}"
                   method="post">
 
-                <!-- hidden userId khi edit -->
                 <input type="hidden" th:field="*{userId}"/>
 
-                <!-- Thông tin đăng nhập & Cá nhân -->
                 <div class="space-y-6 border border-[#cce2df]/80 rounded-xl p-6 bg-white">
                     <h2 class="text-[#03594d] text-lg font-bold">Thông tin đăng nhập &amp; Cá nhân</h2>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                        <!-- Username -->
                         <label class="flex flex-col">
                             <p class="text-[#03594d] text-base font-medium pb-2">Tên đăng nhập</p>
                             <input th:field="*{username}"
+                                   required
+                                   minlength="4"
+                                   maxlength="50"
+                                   pattern="[A-Za-z0-9._-]{4,50}"
+                                   title="Từ 4-50 ký tự, chỉ dùng chữ, số và . _ -"
                                    class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg
                                           text-[#03594d] focus:outline-0 focus:ring-2 focus:ring-[#d8e268]/50
                                           border border-[#cce2df] bg-white h-14 placeholder:text-[#5b8c85]
@@ -47,18 +47,21 @@
                                    placeholder="Nhập tên đăng nhập"/>
                         </label>
 
-                        <!-- Password -->
                         <label class="flex flex-col">
                             <p class="text-[#03594d] text-base font-medium pb-2">Mật khẩu</p>
                             <div class="relative">
                                 <input th:field="*{password}"
+                                       id="password"
                                        type="password"
+                                       pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&.,;:_\\-]).{6,}"
+                                       title="Ít nhất 6 ký tự, có chữ hoa, chữ thường, số và ký tự đặc biệt"
                                        class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg
                                               text-[#03594d] focus:outline-0 focus:ring-2 focus:ring-[#d8e268]/50
                                               border border-[#cce2df] bg-white h-14 placeholder:text-[#5b8c85]
                                               p-[15px] pr-12 text-base font-normal leading-normal"
                                        placeholder="••••••••"/>
-                                <button class="absolute inset-y-0 right-0 flex items-center px-4 text-[#5b8c85]"
+                                <button id="togglePassword"
+                                        class="absolute inset-y-0 right-0 flex items-center px-4 text-[#5b8c85]"
                                         type="button">
                                     <span class="material-symbols-outlined">visibility_off</span>
                                 </button>
@@ -68,10 +71,12 @@
                             </p>
                         </label>
 
-                        <!-- Full name -->
                         <label class="flex flex-col">
                             <p class="text-[#03594d] text-base font-medium pb-2">Họ và tên</p>
                             <input th:field="*{fullName}"
+                                   required
+                                   minlength="2"
+                                   maxlength="100"
                                    class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg
                                           text-[#03594d] focus:outline-0 focus:ring-2 focus:ring-[#d8e268]/50
                                           border border-[#cce2df] bg-white h-14 placeholder:text-[#5b8c85]
@@ -79,11 +84,14 @@
                                    placeholder="Nhập họ và tên người dùng"/>
                         </label>
 
-                        <!-- Email -->
                         <label class="flex flex-col">
                             <p class="text-[#03594d] text-base font-medium pb-2">Email</p>
                             <input th:field="*{email}"
                                    type="email"
+                                   required
+                                   maxlength="100"
+                                   pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"
+                                   title="Nhập email hợp lệ, ví dụ: ten@gmail.com"
                                    class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg
                                           text-[#03594d] focus:outline-0 focus:ring-2 focus:ring-[#d8e268]/50
                                           border border-[#cce2df] bg-white h-14 placeholder:text-[#5b8c85]
@@ -91,11 +99,15 @@
                                    placeholder="Nhập địa chỉ email"/>
                         </label>
 
-                        <!-- Phone -->
                         <label class="flex flex-col">
                             <p class="text-[#03594d] text-base font-medium pb-2">Số điện thoại</p>
                             <input th:field="*{phone}"
                                    type="tel"
+                                   required
+                                   minlength="10"
+                                   maxlength="10"
+                                   pattern="0[0-9]{9}"
+                                   title="Số điện thoại 10 số, bắt đầu bằng 0"
                                    class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg
                                           text-[#03594d] focus:outline-0 focus:ring-2 focus:ring-[#d8e268]/50
                                           border border-[#cce2df] bg-white h-14 placeholder:text-[#5b8c85]
@@ -103,11 +115,11 @@
                                    placeholder="Nhập số điện thoại"/>
                         </label>
 
-                        <!-- Status -->
                         <label class="flex flex-col">
                             <p class="text-[#03594d] text-base font-medium pb-2">Trạng thái</p>
                             <div class="relative">
                                 <select th:field="*{status}"
+                                        required
                                         class="form-select appearance-none w-full cursor-pointer rounded-lg
                                                text-[#03594d] focus:outline-0 focus:ring-2 focus:ring-[#d8e268]/50
                                                border border-[#cce2df] bg-white h-14 p-[15px]
@@ -123,16 +135,15 @@
                     </div>
                 </div>
 
-                <!-- Vai trò & Thông tin nhân viên -->
                 <div class="mt-8 space-y-6 border border-[#cce2df]/80 rounded-xl p-6 bg-white">
                     <div class="flex flex-col gap-6">
                         <h2 class="text-[#03594d] text-lg font-bold">Vai trò &amp; Phân quyền</h2>
 
-                        <!-- Role -->
                         <label class="flex flex-col md:max-w-xs">
                             <p class="text-[#03594d] text-base font-medium pb-2">Vai trò</p>
                             <div class="relative">
                                 <select th:field="*{role}"
+                                        required
                                         class="form-select appearance-none w-full cursor-pointer rounded-lg
                                                text-[#03594d] focus:outline-0 focus:ring-2 focus:ring-[#d8e268]/50
                                                border border-[#cce2df] bg-white h-14 p-[15px]
@@ -150,10 +161,9 @@
                     </div>
 
                     <div class="space-y-6 border-t border-[#cce2df]/80 pt-6">
-                        <h3 class="text-[#03594d] text-md font-bold">Thông tin nhân viên</h3>
+                        <h3 class="text-[#03594d] text-md font-bold">Thông tin hồ sơ nhân viên</h3>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                            <!-- Hire date -->
                             <label class="flex flex-col">
                                 <p class="text-[#03594d] text-base font-medium pb-2">Ngày tuyển dụng</p>
                                 <input th:field="*{hireDate}"
@@ -164,7 +174,6 @@
                                               p-[15px] text-base font-normal leading-normal"/>
                             </label>
 
-                            <!-- Specialization -->
                             <label class="flex flex-col">
                                 <p class="text-[#03594d] text-base font-medium pb-2">Chuyên môn</p>
                                 <input th:field="*{specialization}"
@@ -175,7 +184,6 @@
                                        placeholder="VD: Bác sĩ thú y, Groomer, CSKH"/>
                             </label>
 
-                            <!-- License number -->
                             <label class="flex flex-col md:col-span-2">
                                 <p class="text-[#03594d] text-base font-medium pb-2">Số chứng chỉ hành nghề</p>
                                 <input th:field="*{licenseNumber}"
@@ -189,9 +197,8 @@
                     </div>
                 </div>
 
-                <!-- Buttons -->
                 <div class="flex justify-end gap-4 pt-8 mt-8">
-                    <a th:href="@{/admin/users}"
+                    <a th:href="@{/admin/staff}"
                        class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-full
                               h-12 px-6 bg-[#f0f0f0] text-[#03594d] text-sm font-bold leading-normal tracking-[0.015em]
                               hover:bg-gray-200 transition-colors">
@@ -203,7 +210,7 @@
                                    hover:bg-opacity-90 transition-colors gap-2">
                         <span class="material-symbols-outlined">save</span>
                         <span class="truncate"
-                              th:text="${isEdit} ? 'Lưu thay đổi' : 'Tạo người dùng'">
+                              th:text="${isEdit} ? 'Lưu thay đổi' : 'Tạo nhân viên'">
                             Lưu thay đổi
                         </span>
                     </button>
@@ -212,6 +219,25 @@
         </div>
     </section>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const passwordInput = document.getElementById('password');
+        const toggleBtn = document.getElementById('togglePassword');
+
+        if (!passwordInput || !toggleBtn) return;
+
+        toggleBtn.addEventListener('click', function () {
+            const isHidden = passwordInput.type === 'password';
+            passwordInput.type = isHidden ? 'text' : 'password';
+
+            const icon = this.querySelector('.material-symbols-outlined');
+            if (icon) {
+                icon.textContent = isHidden ? 'visibility' : 'visibility_off';
+            }
+        });
+    });
+</script>
 
 </body>
 </html>

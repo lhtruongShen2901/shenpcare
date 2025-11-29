@@ -1,55 +1,113 @@
 <!DOCTYPE html>
 <html class="light" lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="admin/layout :: adminHead"></head>
-<body class="font-display">
+<head th:replace="admin/layout :: adminHead">
+    <title>ShenPCare - Quản lý Dịch vụ</title>
+</head>
+<body class="font-display bg-background-light">
 
 <div th:replace="admin/layout :: adminShell(~{::section}, ${activeMenu})">
-
     <section>
-        <!-- Heading -->
-        <div class="flex flex-wrap justify-between gap-3 mb-6">
-            <div>
-                <h1 class="text-[#03594D] text-3xl font-black tracking-[-0.03em]">
-                    Services &amp; Clinic
-                </h1>
-                <p class="text-gray-600 mt-1">
-                    Quản lý dịch vụ khám, grooming, spa, store item và chi nhánh/phòng khám.
-                </p>
-            </div>
+        <header class="flex flex-wrap justify-between items-center gap-4 mb-6">
+            <h1 class="text-[#03594D] text-4xl font-black leading-tight tracking-tight">
+                Quản lý Dịch vụ
+            </h1>
+            <a th:href="@{/admin/services/new}"
+               class="flex items-center justify-center gap-2 min-w-[84px] cursor-pointer rounded-full h-12 px-6
+                      bg-[#D8E268] text-[#03594D] text-sm font-bold leading-normal tracking-[0.015em]
+                      hover:brightness-95 active:scale-[0.98] transition-all">
+                <span class="material-symbols-outlined">add</span>
+                <span class="truncate">Thêm dịch vụ</span>
+            </a>
+        </header>
 
-            <button
-                    class="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium
-                           bg-[#03594D] text-white hover:opacity-90 active:scale-[0.97] transition">
-                <span class="material-symbols-outlined text-sm">add</span>
-                New Service
-            </button>
+        <div th:if="${message}" class="mb-4 rounded-xl bg-emerald-50 text-emerald-800 px-4 py-3 text-sm flex items-center gap-2">
+            <span class="material-symbols-outlined text-lg">check_circle</span>
+            <span th:text="${message}"></span>
         </div>
 
-        <!-- Placeholder nội dung: sau này thay bằng bảng thật -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="rounded-xl border border-[#E3E5D2] bg-white p-5">
-                <h2 class="text-[#03594D] font-semibold mb-2">Medical services</h2>
-                <p class="text-gray-600 text-sm">
-                    Danh sách gói khám, tiêm phòng, xét nghiệm,...
-                </p>
-            </div>
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden border border-[#E3E5D2]">
+            <table class="w-full text-sm text-left text-[#03594D]">
+                <thead class="text-xs uppercase bg-[#F0F2F5] text-gray-600 font-semibold">
+                <tr>
+                    <th class="px-6 py-4">Tên Dịch vụ</th>
+                    <th class="px-6 py-4">Danh mục</th>
+                    <th class="px-6 py-4">Giá cơ bản</th>
+                    <th class="px-6 py-4">Thời lượng</th>
+                    <th class="px-6 py-4">Trạng thái</th>
+                    <th class="px-6 py-4 text-center">Hành động</th>
+                </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                
+                <tr th:if="${#lists.isEmpty(services)}">
+                    <td colspan="6" class="px-6 py-8 text-center text-gray-500 italic">
+                        Chưa có dịch vụ nào. Hãy thêm mới ngay!
+                    </td>
+                </tr>
 
-            <div class="rounded-xl border border-[#E3E5D2] bg-white p-5">
-                <h2 class="text-[#03594D] font-semibold mb-2">Grooming &amp; spa</h2>
-                <p class="text-gray-600 text-sm">
-                    Tắm, cắt tỉa, spa theo gói / theo lần.
-                </p>
-            </div>
+                <tr th:each="s : ${services}" class="hover:bg-[#F0F2F5]/50 transition-colors">
+                    
+                    <td class="px-6 py-4">
+                        <div class="flex flex-col">
+                            <span class="text-base font-bold text-[#03594D]" th:text="${s.name}">Khám tổng quát</span>
+                            <span class="text-xs text-gray-500 line-clamp-1" 
+                                  th:text="${s.description}" 
+                                  th:title="${s.description}">Mô tả ngắn...</span>
+                        </div>
+                    </td>
 
-            <div class="rounded-xl border border-[#E3E5D2] bg-white p-5">
-                <h2 class="text-[#03594D] font-semibold mb-2">Clinic branches</h2>
-                <p class="text-gray-600 text-sm">
-                    Quản lý chi nhánh, phòng khám, khu vực phục vụ.
-                </p>
-            </div>
+                    <td class="px-6 py-4">
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                            <span class="material-symbols-outlined text-[14px]">category</span>
+                            <span th:text="${s.serviceCategory != null ? s.serviceCategory.name : 'Chưa phân loại'}">Khám bệnh</span>
+                        </span>
+                    </td>
+
+                    <td class="px-6 py-4 font-medium font-mono text-emerald-700">
+                        <span th:text="${#numbers.formatDecimal(s.basePrice, 0, 'COMMA', 0, 'POINT')}">500,000</span> đ
+                    </td>
+
+                    <td class="px-6 py-4">
+                        <span class="flex items-center gap-1 text-gray-600">
+                            <span class="material-symbols-outlined text-[16px]">schedule</span>
+                            <span th:text="${s.durationMinutes} + ' phút'">30 phút</span>
+                        </span>
+                    </td>
+
+                    <td class="px-6 py-4">
+                        <span th:if="${s.active}" 
+                              class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                            <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> Hoạt động
+                        </span>
+                        <span th:if="${!s.active}" 
+                              class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-500">
+                            <span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span> Ngừng
+                        </span>
+                    </td>
+
+                    <td class="px-6 py-4 text-center">
+                        <div class="flex justify-center items-center gap-2">
+                            <a th:href="@{'/admin/services/' + ${s.serviceId}}"
+                               class="w-8 h-8 flex items-center justify-center rounded-full text-gray-500 hover:bg-blue-50 hover:text-blue-600 transition-all"
+                               title="Chỉnh sửa">
+                                <span class="material-symbols-outlined text-[20px]">edit_square</span>
+                            </a>
+
+                            <form th:action="@{'/admin/services/' + ${s.serviceId} + '/toggle'}" method="post">
+                                <button type="submit"
+                                        class="w-8 h-8 flex items-center justify-center rounded-full text-gray-500 hover:bg-orange-50 hover:text-orange-600 transition-all"
+                                        th:title="${s.active} ? 'Tạm ngưng dịch vụ' : 'Kích hoạt dịch vụ'">
+                                    <span class="material-symbols-outlined text-[20px]" 
+                                          th:text="${s.active} ? 'block' : 'check_circle'">block</span>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
         </div>
     </section>
-
 </div>
 </body>
 </html>
