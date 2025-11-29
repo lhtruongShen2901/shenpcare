@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html class="light" lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="admin/layout :: adminHead">
+    <title>ShenPCare - Quản lý Nhóm Dịch vụ</title>
+</head>
+<body class="font-display bg-background-light">
+
+<div th:replace="admin/layout :: adminShell(~{::section}, ${activeMenu})">
+    <section>
+        
+        <div class="mb-6 flex justify-between items-center">
+            <div>
+                <a th:href="@{/admin/services}" class="text-sm text-gray-500 hover:text-[#03594D] flex items-center gap-1 mb-2">
+                    <span class="material-symbols-outlined text-sm">arrow_back</span> Quản lý Dịch vụ
+                </a>
+                <h1 class="text-[#03594D] text-3xl font-black tracking-tight">Phân loại Dịch vụ</h1>
+                <p class="text-gray-500">Quản lý các nhóm dịch vụ và điều chuyển dịch vụ khi cần thiết.</p>
+            </div>
+        </div>
+
+        <div th:if="${message}" class="mb-4 rounded-xl bg-emerald-50 text-emerald-800 px-4 py-3 text-sm flex items-center gap-2">
+            <span class="material-symbols-outlined text-lg">check_circle</span>
+            <span th:text="${message}"></span>
+        </div>
+        <div th:if="${error}" class="mb-4 rounded-xl bg-red-50 text-red-800 px-4 py-3 text-sm flex items-center gap-2">
+            <span class="material-symbols-outlined text-lg">error</span>
+            <span th:text="${error}"></span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-[#E3E5D2] overflow-hidden">
+                <table class="w-full text-sm text-left text-[#03594D]">
+                    <thead class="bg-[#F0F2F5] text-gray-600 font-semibold uppercase text-xs">
+                        <tr>
+                            <th class="px-6 py-4">Tên Nhóm</th>
+                            <th class="px-6 py-4">Số lượng DV</th>
+                            <th class="px-6 py-4 text-center">Trạng thái</th>
+                            <th class="px-6 py-4 text-center">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        <tr th:each="cat : ${categories}" class="hover:bg-gray-50 group">
+                            <td class="px-6 py-4">
+                                <div class="font-bold text-[#03594D]" th:text="${cat.name}">Khám bệnh</div>
+                                <div class="text-xs text-gray-500 line-clamp-1" th:text="${cat.description}"></div>
+                            </td>
+                            
+                            <td class="px-6 py-4 font-mono text-gray-600">
+                                <span class="bg-gray-100 px-2 py-1 rounded text-xs">Check in delete</span>
+                            </td>
+
+                            <td class="px-6 py-4 text-center">
+                                <span th:if="${cat.active}" class="px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs font-bold">Đang hiện</span>
+                                <span th:if="${!cat.active}" class="px-2 py-1 rounded-full bg-gray-100 text-gray-500 text-xs font-bold">Đã ẩn</span>
+                            </td>
+
+                            <td class="px-6 py-4 text-center">
+                                <div class="flex justify-center gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
+                                    <button type="button" 
+                                            th:onclick="fillEditForm([[${cat.serviceCategoryId}]], [[${cat.name}]], [[${cat.description}]])"
+                                            class="w-8 h-8 rounded-full hover:bg-blue-50 text-blue-600 flex items-center justify-center"
+                                            title="Sửa nhanh">
+                                        <span class="material-symbols-outlined text-lg">edit</span>
+                                    </button>
+
+                                    <th:block th:if="${cat.active}">
+                                        <button type="button"
+                                                th:onclick="openDeleteModal([[${cat.serviceCategoryId}]], [[${cat.name}]])"
+                                                class="w-8 h-8 rounded-full hover:bg-red-50 text-red-600 flex items-center justify-center"
+                                                title="Khóa nhóm">
+                                            <span class="material-symbols-outlined text-lg">lock</span>
+                                        </button>
+                                    </th:block>
+
+                                    <th:block th:if="${!cat.active}">
+                                        <form th:action="@{'/admin/services/categories/' + ${cat.serviceCategoryId} + '/activate'}" method="post">
+                                            <button type="submit" 
+                                                    class="w-8 h-8 rounded-full hover:bg-green-50 text-green-600 flex items-center justify-center"
+                                                    title="Mở khóa">
+                                                <span class="material-symbols-outlined text-lg">lock_open</span>
+                                            </button>
+                                        </form>
+                                    </th:block>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="lg:col-span-1">
+                <form id="categoryForm" th:action="@{/admin/services/categories/save}" method="post" 
+                      class="bg-white rounded-2xl shadow-sm border border-[#E3E5D2] p-6 sticky top-24">
+                    
+                    <input type="hidden" id="formId" name="serviceCategoryId" value=""/>
+
+                    <h3 class="text-lg font-bold text-[#03594D] mb-4 flex items-center gap-2" id="formTitle">
+                        <span class="material-symbols-outlined">add_circle</span> Thêm Nhóm Mới
+                    </h3>
+
+                    <div class="space-y-4">
+                        <label class="block">
+                            <span class="text-sm font-semibold text-gray-700">Tên nhóm <span class="text-red-500">*</span></span>
+                            <input type="text" id="formName" name="name" required maxlength="100"
+                                   class="mt-1 w-full h-10 px-3 rounded-lg border-gray-200 bg-[#F8F8F6] focus:ring-[#D8E268] outline-none"
+                                   placeholder="VD: Siêu âm, X-Ray...">
+                        </label>
+
+                        <label class="block">
+                            <span class="text-sm font-semibold text-gray-700">Mô tả</span>
+                            <textarea id="formDesc" name="description" rows="3" maxlength="255"
+                                      class="mt-1 w-full p-3 rounded-lg border-gray-200 bg-[#F8F8F6] focus:ring-[#D8E268] outline-none"
+                                      placeholder="Mô tả ngắn gọn..."></textarea>
+                        </label>
+
+                        <div class="flex gap-2">
+                            <button type="button" id="btnCancel" onclick="resetForm()" 
+                                    class="hidden w-1/3 h-10 rounded-full bg-gray-100 text-gray-600 font-bold hover:bg-gray-200">
+                                Hủy
+                            </button>
+                            <button type="submit" id="btnSubmit"
+                                    class="flex-1 h-10 rounded-full bg-[#D8E268] text-[#03594D] font-bold hover:brightness-95 transition-all">
+                                Lưu Ngay
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <div id="deleteModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 transform transition-all scale-100">
+            <h3 class="text-xl font-bold text-[#03594D] mb-2">Xác nhận khóa danh mục</h3>
+            <p class="text-gray-600 mb-4">
+                Bạn đang thao tác với nhóm: <span id="modalCatName" class="font-bold text-black">...</span>
+            </p>
+
+            <form th:action="@{/admin/services/categories/delete}" method="post">
+                <input type="hidden" name="id" id="modalCatId" value=""/>
+                
+                <div class="space-y-3 mb-6">
+                    <p class="text-sm font-semibold text-gray-700">Chọn phương án xử lý các dịch vụ con:</p>
+                    
+                    <label class="flex items-start gap-3 p-3 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-50">
+                        <input type="radio" name="action" value="DISABLE_SERVICES" checked class="mt-1 text-[#03594D] focus:ring-[#D8E268]">
+                        <div class="text-sm">
+                            <span class="font-bold block text-gray-800">Ngưng hoạt động tất cả</span>
+                            <span class="text-gray-500">Các dịch vụ trong nhóm này sẽ bị ẩn khỏi hệ thống đặt lịch.</span>
+                        </div>
+                    </label>
+
+                    <label class="flex items-start gap-3 p-3 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-50">
+                        <input type="radio" name="action" value="MOVE_SERVICES" id="radioMove" class="mt-1 text-[#03594D] focus:ring-[#D8E268]">
+                        <div class="text-sm w-full">
+                            <span class="font-bold block text-gray-800">Chuyển sang nhóm khác</span>
+                            <select name="targetId" id="targetSelect" onclick="document.getElementById('radioMove').checked = true"
+                                    class="mt-2 w-full text-sm rounded border-gray-300 focus:border-[#03594D] focus:ring-[#03594D]">
+                                <option value="" disabled selected>-- Chọn nhóm đích --</option>
+                                <option th:each="c : ${categories}" 
+                                        th:if="${c.active}" 
+                                        th:value="${c.serviceCategoryId}" 
+                                        th:text="${c.name}"></option>
+                            </select>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="flex justify-end gap-3">
+                    <button type="button" onclick="closeDeleteModal()" class="px-4 py-2 rounded-full text-gray-600 font-bold hover:bg-gray-100">Hủy</button>
+                    <button type="submit" class="px-6 py-2 rounded-full bg-red-100 text-red-700 font-bold hover:bg-red-200">Thực hiện</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // 1. Fill data vào form bên phải để Edit
+    function fillEditForm(id, name, desc) {
+        document.getElementById('formId').value = id;
+        document.getElementById('formName').value = name;
+        document.getElementById('formDesc').value = desc || '';
+        
+        document.getElementById('formTitle').innerHTML = '<span class="material-symbols-outlined">edit</span> Chỉnh sửa Nhóm';
+        document.getElementById('btnSubmit').innerText = 'Cập nhật';
+        document.getElementById('btnCancel').classList.remove('hidden');
+    }
+
+    // 2. Reset form về trạng thái Thêm mới
+    function resetForm() {
+        document.getElementById('categoryForm').reset();
+        document.getElementById('formId').value = '';
+        document.getElementById('formTitle').innerHTML = '<span class="material-symbols-outlined">add_circle</span> Thêm Nhóm Mới';
+        document.getElementById('btnSubmit').innerText = 'Lưu Ngay';
+        document.getElementById('btnCancel').classList.add('hidden');
+    }
+
+    // 3. Modal logic
+    function openDeleteModal(id, name) {
+        document.getElementById('modalCatId').value = id;
+        document.getElementById('modalCatName').innerText = name;
+        
+        // Ẩn option "Chuyển sang nhóm khác" của chính nó trong dropdown (để tránh chuyển vào chính mình)
+        const select = document.getElementById('targetSelect');
+        for (let i = 0; i < select.options.length; i++) {
+            select.options[i].disabled = (select.options[i].value == id);
+        }
+        
+        document.getElementById('deleteModal').classList.remove('hidden');
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.add('hidden');
+    }
+</script>
+
+</body>
+</html>

@@ -9,7 +9,10 @@ public class StaffProfile {
 
     @Id
     @Column(name = "StaffId")
-    private Long staffId;   // trùng với Users.UserId
+    private Long staffId;   // Maps with Users.UserId
+
+    @Column(name = "StaffCode", length = 50, nullable = false)
+    private String staffCode;
 
     @Column(name = "StaffType", length = 50)
     private String staffType;    // ADMIN / DOCTOR / GROOMER / ...
@@ -26,12 +29,22 @@ public class StaffProfile {
     public StaffProfile() {
     }
 
+    // --- Getter & Setter ---
+
     public Long getStaffId() {
         return staffId;
     }
 
     public void setStaffId(Long staffId) {
         this.staffId = staffId;
+    }
+
+    public String getStaffCode() {
+        return staffCode;
+    }
+
+    public void setStaffCode(String staffCode) {
+        this.staffCode = staffCode;
     }
 
     public String getStaffType() {

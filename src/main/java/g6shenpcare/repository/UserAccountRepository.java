@@ -1,29 +1,47 @@
 package g6shenpcare.repository;
 
 import g6shenpcare.entity.UserAccount;
-import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface UserAccountRepository extends JpaRepository<UserAccount, Long> {
 
-    // Tìm user theo username (dùng cho login)
     Optional<UserAccount> findByUsername(String username);
-
-    // Kiểm tra tồn tại username (không phân biệt hoa thường) – dùng cho đăng ký
     boolean existsByUsernameIgnoreCase(String username);
-
-    // Đếm số user theo role (không phân biệt hoa thường) – dùng để kiểm tra có ADMIN hay chưa
     long countByRoleIgnoreCase(String role);
-        // Lấy tất cả staff (role != CUSTOMER)
+
+    // 1. Tìm kiếm NHÂN VIÊN (Role != CUSTOMER)
+    @Query("SELECT u FROM UserAccount u WHERE " +
+           "(u.role <> 'CUSTOMER') AND " +
+           "(:role = 'ALL' OR u.role = :role) AND " +
+           "(:status = 'ALL' OR (:status = 'ACTIVE' AND u.active = true) OR (:status = 'LOCKED' AND u.active = false)) AND " +
+           "(LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           " LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           " LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    List<UserAccount> searchStaff(@Param("role") String role,
+                                  @Param("status") String status,
+                                  @Param("keyword") String keyword);
+
+    // 2. Tìm kiếm KHÁCH HÀNG (Role == CUSTOMER)
+    @Query("SELECT u FROM UserAccount u WHERE " +
+           "(u.role = 'CUSTOMER') AND " +
+           "(:status = 'ALL' OR (:status = 'ACTIVE' AND u.active = true) OR (:status = 'LOCKED' AND u.active = false)) AND " +
+           "(LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           " LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           " LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           " LOWER(u.phone) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    List<UserAccount> searchCustomers(@Param("status") String status,
+                                      @Param("keyword") String keyword);
+
+    // Các hàm cũ findByRoleNot... không cần dùng nữa vì đã có searchUsers ở trên,
+    // nhưng cứ giữ lại nếu bạn muốn dùng cho logic khác.
     List<UserAccount> findByRoleNot(String role);
-
-    // Staff đang active
     List<UserAccount> findByRoleNotAndActiveTrue(String role);
-
-    // Staff đang bị khóa
     List<UserAccount> findByRoleNotAndActiveFalse(String role);
 }
