@@ -43,8 +43,9 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                // 1. static + trang public
+                // 1. static + trang public + API FILES (QUAN TRỌNG)
                 .requestMatchers("/css/**", "/img/**", "/js/**", "/", "/index.html").permitAll()
+                .requestMatchers("/api/files/**").permitAll() // <--- Cho phép truy cập ảnh công khai
                 // 2. ĐẶT /admin/login, /admin/register TRƯỚC /admin/**
                 .requestMatchers("/admin/login", "/admin/register").permitAll()
                 // 3. Khu admin nội bộ (Admin + Staff)

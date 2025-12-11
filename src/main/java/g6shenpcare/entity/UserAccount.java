@@ -10,7 +10,7 @@ public class UserAccount {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "UserId")               // <-- KHÁC user_id
-    private Long userId;
+    private Integer userId;
 
     @Column(name = "Username", nullable = false, length = 50, unique = true)
     private String username;
@@ -18,7 +18,7 @@ public class UserAccount {
     @Column(name = "PasswordHash", nullable = false, length = 255)
     private String passwordHash;
 
-    @Column(name = "FullName", nullable = false, length = 100)
+    @Column(name = "FullName", nullable = false, length = 100, columnDefinition = "NVARCHAR(100)")
     private String fullName;
 
     @Column(name = "Email", length = 100)
@@ -40,12 +40,11 @@ public class UserAccount {
     private LocalDateTime updatedAt;
 
     // ====== GETTER / SETTER ======
-
-    public long getUserId() {
+    public Integer getUserId() {
         return userId;
     }
 
-    public void setUserId(Long userId) {
+    public void setUserId(Integer userId) {
         this.userId = userId;
     }
 

@@ -10,10 +10,10 @@ public class CustomerProfile {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "CustomerId")
-    private Long customerId;
+    private Integer customerId;
 
     @Column(name = "UserId", nullable = false)
-    private Long userId;
+    private Integer userId;
 
     @Column(name = "FullName", nullable = false, length = 100)
     private String fullName;
@@ -51,19 +51,19 @@ public class CustomerProfile {
     public CustomerProfile() {
     }
 
-    public Long getCustomerId() {
+    public Integer getCustomerId() {
         return customerId;
     }
 
-    public void setCustomerId(Long customerId) {
+    public void setCustomerId(Integer customerId) {
         this.customerId = customerId;
     }
 
-    public Long getUserId() {
+    public Integer getUserId() {
         return userId;
     }
 
-    public void setUserId(Long userId) {
+    public void setUserId(Integer userId) {
         this.userId = userId;
     }
 
