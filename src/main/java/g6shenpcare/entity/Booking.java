@@ -2,6 +2,7 @@ package g6shenpcare.entity;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -11,34 +12,37 @@ public class Booking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "BookingId")
-    private Long bookingId;
+    private Integer bookingId;
 
     @Column(name = "CustomerId", nullable = false)
-    private Long customerId;
+    private Integer customerId;
 
     @Column(name = "PetId", nullable = false)
-    private Long petId;
+    private Integer petId;
 
     @Column(name = "ServiceId", nullable = false)
-    private Long serviceId;
+    private Integer serviceId;
 
-    @Column(name = "DoctorId")
-    private Long doctorId;
+    // --- SỬA: Đổi tên khớp với SQL và Repository ---
+    @Column(name = "AssignedStaffId")
+    private Integer assignedStaffId; 
 
-    @Column(name = "SlotId", nullable = false)
-    private Long slotId;
-
+    // --- SỬA: SQL là DATE -> Java là LocalDate ---
     @Column(name = "BookingDate", nullable = false)
-    private LocalDateTime bookingDate;
+    private LocalDate bookingDate;
+
+    // --- THÊM: Các trường có trong SQL nhưng code cũ thiếu ---
+    @Column(name = "StartTime", nullable = false)
+    private LocalDateTime startTime;
+
+    @Column(name = "EndTime")
+    private LocalDateTime endTime;
 
     @Column(name = "Status", nullable = false, length = 20)
-    private String status;           // PENDING, CONFIRMED, ...
+    private String status; // PENDING, CONFIRMED, ...
 
     @Column(name = "TotalAmount", nullable = false, precision = 18, scale = 2)
     private BigDecimal totalAmount;
-
-    @Column(name = "PaymentStatus", nullable = false, length = 20)
-    private String paymentStatus;    // UNPAID, PAID...
 
     @Column(name = "Notes", length = 500)
     private String notes;
@@ -46,66 +50,79 @@ public class Booking {
     @Column(name = "CreatedAt", nullable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "UpdatedAt", nullable = false)
+    @Column(name = "UpdatedAt") // SQL cho phép NULL
     private LocalDateTime updatedAt;
 
+    // --- LƯU Ý: Đã xóa SlotId và PaymentStatus vì trong SQL-ver2 bảng Bookings KHÔNG CÓ 2 cột này ---
+
     public Booking() {
+        // Constructor mặc định
     }
 
-    public Long getBookingId() {
+    // --- Getter & Setter ---
+
+    public Integer getBookingId() {
         return bookingId;
     }
 
-    public void setBookingId(Long bookingId) {
+    public void setBookingId(Integer bookingId) {
         this.bookingId = bookingId;
     }
 
-    public Long getCustomerId() {
+    public Integer getCustomerId() {
         return customerId;
     }
 
-    public void setCustomerId(Long customerId) {
+    public void setCustomerId(Integer customerId) {
         this.customerId = customerId;
     }
 
-    public Long getPetId() {
+    public Integer getPetId() {
         return petId;
     }
 
-    public void setPetId(Long petId) {
+    public void setPetId(Integer petId) {
         this.petId = petId;
     }
 
-    public Long getServiceId() {
+    public Integer getServiceId() {
         return serviceId;
     }
 
-    public void setServiceId(Long serviceId) {
+    public void setServiceId(Integer serviceId) {
         this.serviceId = serviceId;
     }
 
-    public Long getDoctorId() {
-        return doctorId;
+    public Integer getAssignedStaffId() {
+        return assignedStaffId;
     }
 
-    public void setDoctorId(Long doctorId) {
-        this.doctorId = doctorId;
+    public void setAssignedStaffId(Integer assignedStaffId) {
+        this.assignedStaffId = assignedStaffId;
     }
 
-    public Long getSlotId() {
-        return slotId;
-    }
-
-    public void setSlotId(Long slotId) {
-        this.slotId = slotId;
-    }
-
-    public LocalDateTime getBookingDate() {
+    public LocalDate getBookingDate() {
         return bookingDate;
     }
 
-    public void setBookingDate(LocalDateTime bookingDate) {
+    public void setBookingDate(LocalDate bookingDate) {
         this.bookingDate = bookingDate;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
     }
 
     public String getStatus() {
@@ -122,14 +139,6 @@ public class Booking {
 
     public void setTotalAmount(BigDecimal totalAmount) {
         this.totalAmount = totalAmount;
-    }
-
-    public String getPaymentStatus() {
-        return paymentStatus;
-    }
-
-    public void setPaymentStatus(String paymentStatus) {
-        this.paymentStatus = paymentStatus;
     }
 
     public String getNotes() {

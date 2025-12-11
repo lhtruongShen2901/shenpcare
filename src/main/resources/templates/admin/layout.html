@@ -94,7 +94,7 @@
                                class="flex items-center gap-3 px-3 py-2 rounded-full hover:bg-primary/20 transition-colors"
                                th:classappend="${activeMenu} == 'services' ? ' bg-primary' : ''">
                                 <span class="material-symbols-outlined text-[#03594D]">store</span>
-                                <p class="text-[#03594D]">Services &amp; Clinic</p>
+                                <p class="text-[#03594D]">Services</p>
                             </a>
 
                             <a th:href="@{/admin/staff}"
@@ -111,7 +111,7 @@
                                 <p class="text-[#03594D]">Quản lý Khách hàng</p>
                             </a>
 
-                            <a th:href="@{/admin/schedule}"
+                            <a th:href="@{/admin/schedule/assignment}"
                                class="flex items-center gap-3 px-3 py-2 rounded-full hover:bg-primary/20 transition-colors"
                                th:classappend="${activeMenu} == 'schedule' ? ' bg-primary' : ''">
                                 <span class="material-symbols-outlined text-[#03594D]">event_available</span>

@@ -6,23 +6,22 @@
 <body class="font-display bg-background-light">
 
 <div th:replace="admin/layout :: adminShell(~{::section}, ${activeMenu})">
+    
     <section>
         <header class="flex flex-wrap justify-between items-center gap-4 mb-6">
-            <h1 class="text-[#03594D] text-4xl font-black leading-tight tracking-tight">
-                Quản lý Nhân sự
-            </h1>
+            <h1 class="text-[#03594D] text-4xl font-black leading-tight tracking-tight">Quản lý Nhân sự</h1>
             <a th:href="@{/admin/staff/new}"
-               class="flex items-center justify-center gap-2 min-w-[84px] cursor-pointer rounded-full h-12 px-6
-                      bg-[#D8E268] text-[#03594D] text-sm font-bold leading-normal tracking-[0.015em]
-                      hover:brightness-95 active:scale-[0.98] transition-all">
-                <span class="material-symbols-outlined">add</span>
-                <span class="truncate">Thêm nhân viên</span>
+               class="flex items-center justify-center gap-2 rounded-full h-12 px-6 bg-[#D8E268] text-[#03594D] text-sm font-bold hover:brightness-95 shadow-md transition-all">
+                <span class="material-symbols-outlined text-[20px]">add</span>
+                <span>Thêm nhân viên</span>
             </a>
         </header>
 
-        <div th:if="${message}" class="mb-4 rounded-xl bg-emerald-50 text-emerald-800 px-4 py-3 text-sm">
-            <span class="font-semibold">Thông báo:</span>
-            <span th:text="${message}"></span>
+        <div th:if="${message}" class="mb-4 rounded-xl bg-emerald-50 text-emerald-800 px-4 py-3 text-sm flex items-center gap-2 animate-fade-in-down">
+            <span class="material-symbols-outlined text-lg">check_circle</span> <span th:text="${message}"></span>
+        </div>
+        <div th:if="${error}" class="mb-4 rounded-xl bg-red-50 text-red-800 px-4 py-3 text-sm flex items-center gap-2 animate-fade-in-down">
+            <span class="material-symbols-outlined text-lg">error</span> <span th:text="${error}"></span>
         </div>
 
         <form class="flex flex-col md:flex-row gap-4 mb-4" method="get" th:action="@{/admin/staff}">
@@ -32,80 +31,285 @@
                         <div class="text-gray-500 flex bg-[#F0F2F5] items-center justify-center pl-4 rounded-l-full border-r-0">
                             <span class="material-symbols-outlined">search</span>
                         </div>
-                        <input class="form-input flex w-full min-w-0 flex-1 rounded-full text-[#03594D] 
-                                      bg-[#F0F2F5] h-full px-4 border-none focus:ring-0"
-                               type="text" name="keyword" placeholder="Tìm theo tên, email, username..."
-                               th:value="${keyword} ?: ''"/>
+                        <input class="form-input flex w-full min-w-0 flex-1 rounded-full text-[#03594D] bg-[#F0F2F5] h-full px-4 border-none focus:ring-0"
+                               type="text" name="keyword" placeholder="Tìm theo tên, email..." th:value="${keyword} ?: ''"/>
                     </div>
                 </label>
             </div>
             <div class="flex gap-3 items-center">
-                <select name="role" class="flex h-12 rounded-full bg-[#F0F2F5] px-4 text-[#03594D] text-sm font-medium border-none">
-                    <option value="ALL" th:selected="${selectedRole} == 'ALL'">Tất cả vai trò</option>
-                    <option th:each="r : ${roles}" th:if="${r} != 'ALL'" th:value="${r}" th:text="${r}" th:selected="${selectedRole} == ${r}"></option>
-                </select>
-                <select name="status" class="flex h-12 rounded-full bg-[#F0F2F5] px-4 text-[#03594D] text-sm font-medium border-none">
-                    <option value="ALL" th:selected="${selectedStatus} == 'ALL'">Tất cả trạng thái</option>
-                    <option value="ACTIVE" th:selected="${selectedStatus} == 'ACTIVE'">Hoạt động</option>
-                    <option value="LOCKED" th:selected="${selectedStatus} == 'LOCKED'">Bị khóa</option>
-                </select>
                 <button type="submit" class="flex h-12 items-center justify-center gap-x-2 rounded-full bg-[#03594D] px-5 text-white text-sm font-semibold">
-                    <span class="material-symbols-outlined text-[18px]">tune</span>
                     <span>Lọc</span>
                 </button>
             </div>
         </form>
 
-        <div class="bg-white rounded-lg shadow-sm overflow-x-auto">
+        <div class="bg-white rounded-lg shadow-sm overflow-x-auto border border-[#E3E5D2]">
             <table class="w-full text-sm text-left text-[#03594D]">
-                <thead class="text-xs uppercase bg-[#F0F2F5]">
+                <thead class="text-xs uppercase bg-[#F0F2F5] font-bold text-gray-600">
                 <tr>
                     <th class="px-6 py-3">Nhân viên</th>
                     <th class="px-6 py-3">Vai trò</th>
                     <th class="px-6 py-3">Trạng thái</th>
-                    <th class="px-6 py-3">Ngày tạo</th>
                     <th class="px-6 py-3 text-center">Hành động</th>
                 </tr>
                 </thead>
-                <tbody>
-                <tr th:if="${#lists.isEmpty(users)}">
-                    <td colspan="5" class="px-6 py-6 text-center text-gray-500">Không tìm thấy nhân viên nào.</td>
-                </tr>
-                <tr th:each="user : ${users}" class="bg-white border-b hover:bg-[#F0F2F5]/60">
-                    <th scope="row" class="flex items-center px-6 py-4 whitespace-nowrap">
-                        <div class="w-10 h-10 rounded-full bg-[#D8E268] flex items-center justify-center text-[#03594D] font-bold">
-                            <span th:text="${(user.fullName != null && user.fullName != '') ? #strings.substring(user.fullName,0,1) : 'U'}">U</span>
-                        </div>
-                        <div class="pl-3">
-                            <div class="text-base font-semibold" th:text="${user.fullName}"></div>
-                            <div class="font-normal text-gray-500" th:text="${user.username}"></div>
-                        </div>
-                    </th>
+                <tbody class="divide-y divide-gray-100">
+                <tr th:each="user : ${users}" class="hover:bg-[#F0F2F5]/60 transition-colors">
                     <td class="px-6 py-4">
-                        <span class="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800" th:text="${user.role}"></span>
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-[#D8E268] flex items-center justify-center text-[#03594D] font-bold shrink-0 overflow-hidden border border-gray-200">
+                                <span th:text="${(user.fullName != null && user.fullName != '') ? #strings.substring(user.fullName,0,1) : 'U'}">U</span>
+                            </div>
+                            <div>
+                                <div class="font-bold text-base" th:text="${user.fullName}">Name</div>
+                                <div class="text-xs text-gray-500" th:text="${user.email}">Email</div>
+                            </div>
+                        </div>
                     </td>
                     <td class="px-6 py-4">
-                        <span th:if="${user.active}" class="px-3 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full">Hoạt động</span>
-                        <span th:if="${!user.active}" class="px-3 py-1 text-xs font-medium text-red-800 bg-red-100 rounded-full">Bị khóa</span>
+                        <span class="px-3 py-1 text-[11px] font-bold uppercase rounded-full border bg-gray-50 border-gray-200"
+                              th:text="${user.role}">ROLE</span>
                     </td>
-                    <td class="px-6 py-4" th:text="${#temporals.format(user.createdAt, 'dd-MM-yyyy')}"></td>
+                    <td class="px-6 py-4">
+                        <span th:if="${user.active}" class="text-green-600 font-bold text-xs flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-green-500"></span> Active</span>
+                        <span th:if="${!user.active}" class="text-gray-400 font-bold text-xs flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-gray-400"></span> Locked</span>
+                    </td>
                     <td class="px-6 py-4 text-center">
                         <div class="flex justify-center gap-2">
-                            <a th:href="@{'/admin/staff/' + ${user.userId}}" class="p-2 hover:bg-gray-100 rounded-full">
-                                <span class="material-symbols-outlined">edit</span>
+                            
+                            <button type="button" 
+                                    th:data-fullname="${user.fullName}"
+                                    th:data-role="${user.role}"
+                                    th:data-username="${user.username}"
+                                    th:data-email="${user.email}"
+                                    th:data-phone="${user.phone}"
+                                    th:data-active="${user.active}"
+                                    th:data-code="${profileMap.containsKey(user.userId) ? profileMap.get(user.userId).staffCode : 'N/A'}"
+                                    th:data-spec="${profileMap.containsKey(user.userId) ? profileMap.get(user.userId).specialization : '---'}"
+                                    th:data-license="${profileMap.containsKey(user.userId) ? profileMap.get(user.userId).licenseNumber : 'N/A'}"
+                                    th:data-hiredate="${profileMap.containsKey(user.userId) ? profileMap.get(user.userId).hireDate : ''}"
+                                    
+                                    onclick="openDetailModal(this)"
+                                    class="w-8 h-8 rounded-full bg-white border border-gray-200 text-gray-500 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 flex items-center justify-center shadow-sm transition-all"
+                                    title="Xem chi tiết">
+                                <span class="material-symbols-outlined text-[18px]">visibility</span>
+                            </button>
+
+                            <a th:href="@{'/admin/staff/' + ${user.userId}}" class="w-8 h-8 rounded-full bg-white border border-gray-200 text-gray-500 hover:text-orange-600 hover:border-orange-300 hover:bg-orange-50 flex items-center justify-center shadow-sm transition-all">
+                                <span class="material-symbols-outlined text-[18px]">edit</span>
                             </a>
-                            <form th:action="@{'/admin/staff/' + ${user.userId} + '/toggle-status'}" method="post">
-                                <button type="submit" class="p-2 hover:bg-gray-100 rounded-full">
-                                    <span class="material-symbols-outlined" th:text="${user.active} ? 'lock_open' : 'lock'"></span>
+
+                            <th:block th:if="${user.username != currentUser}">
+                                
+                                <button type="button"
+                                        th:data-id="${user.userId}"
+                                        th:data-role="${user.role}"
+                                        th:data-active="${user.active}"
+                                        onclick="openLockModal(this)"
+                                        class="w-8 h-8 rounded-full bg-white border border-gray-200 text-gray-500 hover:text-yellow-600 hover:border-yellow-300 hover:bg-yellow-50 flex items-center justify-center shadow-sm transition-all"
+                                        th:title="${user.active} ? 'Khóa tài khoản' : 'Mở khóa'">
+                                    <span class="material-symbols-outlined text-[18px]" th:text="${user.active} ? 'lock_open' : 'lock'"></span>
                                 </button>
-                            </form>
+
+                                <form th:action="@{/admin/staff/delete}" method="post" onsubmit="return confirm('CẢNH BÁO NGUY HIỂM:\n\nHành động này sẽ XÓA VĨNH VIỄN nhân viên khỏi hệ thống.\nNếu nhân viên đã có lịch sử làm việc (Booking/Order), hệ thống sẽ chặn xóa.\n\nBạn có chắc chắn muốn tiếp tục?');">
+                                    <input type="hidden" name="id" th:value="${user.userId}"/>
+                                    <button type="submit" class="w-8 h-8 rounded-full bg-white border border-gray-200 text-gray-500 hover:text-red-600 hover:border-red-300 hover:bg-red-50 flex items-center justify-center shadow-sm transition-all"
+                                            title="Xóa vĩnh viễn">
+                                        <span class="material-symbols-outlined text-[18px]">delete</span>
+                                    </button>
+                                </form>
+
+                            </th:block>
                         </div>
                     </td>
                 </tr>
                 </tbody>
             </table>
         </div>
+
+        <div id="detailModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity" onclick="closeDetailModal()"></div>
+            <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-fade-in-up">
+                <div id="modalHeader" class="px-6 py-6 bg-gradient-to-r from-gray-50 to-white flex flex-col items-center border-b border-gray-100">
+                    <div class="w-20 h-20 rounded-full bg-[#03594D] text-[#D8E268] border-4 border-white shadow-md flex items-center justify-center text-3xl font-black mb-3" id="dAvatar">A</div>
+                    <h3 class="text-xl font-bold text-[#03594D]" id="dName">Loading...</h3>
+                    <span class="px-3 py-1 rounded-full text-xs font-bold uppercase bg-gray-100 mt-1" id="dRole">...</span>
+                </div>
+                <div class="p-6 space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><p class="text-xs text-gray-400 font-bold uppercase">Mã NV</p><p class="text-sm font-mono font-bold text-[#03594D]" id="dCode">...</p></div>
+                        <div><p class="text-xs text-gray-400 font-bold uppercase">Trạng thái</p><p class="text-sm font-bold" id="dStatus">...</p></div>
+                    </div>
+                    <hr class="border-dashed border-gray-200"/>
+                    <div>
+                        <p class="text-xs text-gray-400 font-bold uppercase">Liên hệ</p>
+                        <div class="text-sm text-gray-700 mt-1 space-y-1">
+                            <div class="flex items-center gap-2"><span class="material-symbols-outlined text-[16px]">person</span> <span id="dUser">...</span></div>
+                            <div class="flex items-center gap-2"><span class="material-symbols-outlined text-[16px]">mail</span> <span id="dEmail">...</span></div>
+                            <div class="flex items-center gap-2"><span class="material-symbols-outlined text-[16px]">call</span> <span id="dPhone">...</span></div>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-400 font-bold uppercase">Chuyên môn</p>
+                        <p class="text-sm text-gray-700 mt-1" id="dSpec">...</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><p class="text-xs text-gray-400 font-bold uppercase">Chứng chỉ</p><p class="text-sm text-gray-700 mt-1" id="dLicense">...</p></div>
+                        <div><p class="text-xs text-gray-400 font-bold uppercase">Ngày tuyển</p><p class="text-sm text-gray-700 mt-1" id="dHireDate">...</p></div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-6 py-3 flex justify-end">
+                    <button onclick="closeDetailModal()" class="px-4 py-2 rounded-lg text-sm font-bold text-gray-600 hover:bg-gray-200">Đóng</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="lockModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeLockModal()"></div>
+            <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in-up">
+                <form th:action="@{/admin/staff/deactivate}" method="post">
+                    <div class="bg-red-50 p-6 border-b border-red-100 flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-red-600">
+                            <span class="material-symbols-outlined text-2xl">warning</span>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-red-800" id="lockTitle">Khóa tài khoản?</h3>
+                            <p class="text-sm text-red-600" id="lockMsg">Hành động này sẽ ngăn nhân viên truy cập.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="p-6 space-y-4">
+                        <input type="hidden" name="id" id="lockId">
+                        
+                        <div id="handoverSection" class="hidden animate-fade-in-down">
+                            <div class="p-4 bg-orange-50 border border-orange-200 rounded-xl">
+                                <p class="text-sm text-orange-800 font-bold mb-2 flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-sm">assignment_ind</span>
+                                    Cần bàn giao công việc!
+                                </p>
+                                <p class="text-xs text-orange-700 mb-3">
+                                    Nhân viên này đang có lịch hẹn chưa hoàn thành. Bạn bắt buộc phải chọn người tiếp quản:
+                                </p>
+                                <select name="replacementId" id="replacementSelect" class="w-full rounded-lg border-orange-300 text-sm focus:ring-orange-500 py-2.5">
+                                    </select>
+                            </div>
+                        </div>
+                        
+                        <p class="text-sm text-gray-500">Bạn có chắc chắn muốn thực hiện không?</p>
+                    </div>
+
+                    <div class="bg-gray-50 px-6 py-4 flex justify-end gap-3">
+                        <button type="button" onclick="closeLockModal()" class="px-4 py-2 rounded-lg text-sm font-bold text-gray-600 hover:bg-gray-200">Hủy</button>
+                        <button type="submit" class="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-bold hover:bg-red-700 shadow-lg">Xác nhận</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            // --- XEM CHI TIẾT ---
+            function openDetailModal(btn) {
+                const fullName = btn.getAttribute('data-fullname');
+                const role = btn.getAttribute('data-role');
+                const username = btn.getAttribute('data-username');
+                const email = btn.getAttribute('data-email');
+                const phone = btn.getAttribute('data-phone');
+                const active = btn.getAttribute('data-active') === 'true';
+                const code = btn.getAttribute('data-code');
+                const spec = btn.getAttribute('data-spec');
+                const license = btn.getAttribute('data-license');
+                const hireDate = btn.getAttribute('data-hiredate');
+
+                document.getElementById('dName').innerText = fullName || 'Không có tên';
+                document.getElementById('dAvatar').innerText = fullName ? fullName.charAt(0).toUpperCase() : 'U';
+                document.getElementById('dRole').innerText = role;
+                document.getElementById('dCode').innerText = code;
+                document.getElementById('dUser').innerText = '@' + username;
+                document.getElementById('dEmail').innerText = email || 'Chưa cập nhật';
+                document.getElementById('dPhone').innerText = phone || 'Chưa cập nhật';
+                
+                const statusElem = document.getElementById('dStatus');
+                statusElem.innerText = active ? 'Hoạt động' : 'Đã khóa';
+                statusElem.className = active ? 'text-sm font-bold text-green-600' : 'text-sm font-bold text-red-600';
+                
+                document.getElementById('dSpec').innerText = spec;
+                document.getElementById('dLicense').innerText = license;
+                document.getElementById('dHireDate').innerText = hireDate || '---';
+
+                const header = document.getElementById('modalHeader');
+                header.className = "px-6 py-6 flex flex-col items-center border-b border-gray-100";
+                if (role === 'DOCTOR') header.classList.add('bg-blue-50');
+                else if (role === 'GROOMER') header.classList.add('bg-pink-50');
+                else if (role === 'STORE') header.classList.add('bg-orange-50');
+                else if (role === 'SUPPORT') header.classList.add('bg-purple-50');
+                else header.classList.add('bg-gray-50');
+
+                document.getElementById('detailModal').classList.remove('hidden');
+            }
+
+            function closeDetailModal() {
+                document.getElementById('detailModal').classList.add('hidden');
+            }
+
+            // --- KHÓA & BÀN GIAO ---
+            async function openLockModal(btn) {
+                const id = btn.getAttribute('data-id');
+                const role = btn.getAttribute('data-role');
+                const isActive = btn.getAttribute('data-active') === 'true';
+                
+                document.getElementById('lockId').value = id;
+                const handoverSection = document.getElementById('handoverSection');
+                const select = document.getElementById('replacementSelect');
+                const title = document.getElementById('lockTitle');
+                const msg = document.getElementById('lockMsg');
+
+                if (!isActive) {
+                    title.innerText = "Mở khóa tài khoản?";
+                    msg.innerText = "Nhân viên sẽ có thể truy cập lại hệ thống.";
+                    handoverSection.classList.add('hidden');
+                    document.getElementById('lockModal').classList.remove('hidden');
+                    return;
+                }
+
+                title.innerText = "Khóa tài khoản?";
+                msg.innerText = "Hành động này sẽ ngăn nhân viên truy cập.";
+
+                // Gọi API lấy danh sách thay thế
+                try {
+                    const response = await fetch(`/admin/staff/${id}/replacements`);
+                    const replacements = await response.json();
+                    
+                    select.innerHTML = "";
+                    // Logic: Chỉ DOCTOR/GROOMER mới có concept bàn giao công việc
+                    if (replacements.length > 0 && (role === 'DOCTOR' || role === 'GROOMER')) {
+                        replacements.forEach(r => {
+                            let opt = document.createElement('option');
+                            opt.value = r.userId;
+                            opt.innerText = r.fullName;
+                            select.appendChild(opt);
+                        });
+                        // Hiện bảng chọn
+                        handoverSection.classList.remove('hidden');
+                        select.required = true;
+                    } else {
+                        // Không cần bàn giao
+                        handoverSection.classList.add('hidden');
+                        select.required = false;
+                    }
+                } catch (e) {
+                    console.error("Lỗi kết nối:", e);
+                    handoverSection.classList.add('hidden');
+                }
+
+                document.getElementById('lockModal').classList.remove('hidden');
+            }
+
+            function closeLockModal() {
+                document.getElementById('lockModal').classList.add('hidden');
+            }
+        </script>
     </section>
 </div>
+
 </body>
 </html>

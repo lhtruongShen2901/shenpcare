@@ -1,113 +1,224 @@
 <!DOCTYPE html>
 <html class="light" lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="admin/layout :: adminHead">
-    <title>ShenPCare - Quản lý Dịch vụ</title>
+    <title>ShenPCare - Danh sách Dịch vụ</title>
 </head>
 <body class="font-display bg-background-light">
 
 <div th:replace="admin/layout :: adminShell(~{::section}, ${activeMenu})">
     <section>
         <header class="flex flex-wrap justify-between items-center gap-4 mb-6">
-            <h1 class="text-[#03594D] text-4xl font-black leading-tight tracking-tight">
-                Quản lý Dịch vụ
-            </h1>
-            <a th:href="@{/admin/services/new}"
-               class="flex items-center justify-center gap-2 min-w-[84px] cursor-pointer rounded-full h-12 px-6
-                      bg-[#D8E268] text-[#03594D] text-sm font-bold leading-normal tracking-[0.015em]
-                      hover:brightness-95 active:scale-[0.98] transition-all">
-                <span class="material-symbols-outlined">add</span>
-                <span class="truncate">Thêm dịch vụ</span>
-            </a>
+            <div>
+                <h1 class="text-[#03594D] text-3xl font-black leading-tight tracking-tight">Quản lý Dịch vụ & Combo</h1>
+                <p class="text-sm text-gray-500 mt-1">Quản lý danh mục, định giá động và các gói combo.</p>
+            </div>
+            <div class="flex gap-2">
+                 <a th:href="@{/admin/services/categories}" class="flex items-center gap-2 h-10 px-4 bg-white border border-[#E3E5D2] rounded-lg font-bold text-[#03594D] hover:bg-gray-50 text-sm">
+                    <span class="material-symbols-outlined text-[18px]">category</span> Nhóm
+                </a>
+                
+                <a th:href="@{/admin/services/new?type=ADDON}" class="flex items-center gap-2 h-10 px-4 bg-blue-100 text-blue-700 rounded-lg font-bold hover:bg-blue-200 text-sm">
+                    <span class="material-symbols-outlined text-[18px]">extension</span> Thêm Add-on
+                </a>
+                <a th:href="@{/admin/services/new?type=SINGLE}" class="flex items-center gap-2 h-10 px-4 bg-[#D8E268] text-[#03594D] rounded-lg font-bold shadow-md hover:-translate-y-0.5 transition-all text-sm">
+                    <span class="material-symbols-outlined text-[18px]">pets</span> Thêm Dịch vụ lẻ
+                </a>
+                <a th:href="@{/admin/services/new-combo}" class="flex items-center gap-2 h-10 px-4 bg-purple-600 text-white rounded-lg font-bold shadow-md hover:bg-purple-700 text-sm">
+                    <span class="material-symbols-outlined text-[18px]">layers</span> Tạo Combo
+                </a>
+            </div>
         </header>
 
-        <div th:if="${message}" class="mb-4 rounded-xl bg-emerald-50 text-emerald-800 px-4 py-3 text-sm flex items-center gap-2">
-            <span class="material-symbols-outlined text-lg">check_circle</span>
-            <span th:text="${message}"></span>
+        <div class="flex border-b border-gray-200 mb-6 overflow-x-auto">
+            <button onclick="switchTab('ALL')" id="tab-ALL" class="whitespace-nowrap px-6 py-3 text-sm font-bold border-b-2 border-transparent hover:text-[#03594D] text-gray-500 transition-all">
+                Tất cả
+            </button>
+            <button onclick="switchTab('SINGLE')" id="tab-SINGLE" class="whitespace-nowrap px-6 py-3 text-sm font-bold border-b-2 border-transparent hover:text-[#03594D] text-gray-500 transition-all">
+                Dịch vụ lẻ (Single)
+            </button>
+            <button onclick="switchTab('ADDON')" id="tab-ADDON" class="whitespace-nowrap px-6 py-3 text-sm font-bold border-b-2 border-transparent hover:text-blue-600 text-gray-500 transition-all">
+                Dịch vụ đi kèm (Add-on)
+            </button>
+            <button onclick="switchTab('COMBO')" id="tab-COMBO" class="whitespace-nowrap px-6 py-3 text-sm font-bold border-b-2 border-transparent hover:text-purple-600 text-gray-500 transition-all flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm">layers</span> Combo / Liệu trình
+            </button>
         </div>
 
-        <div class="bg-white rounded-lg shadow-sm overflow-hidden border border-[#E3E5D2]">
+        <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-[#E3E5D2] min-h-[400px]">
             <table class="w-full text-sm text-left text-[#03594D]">
-                <thead class="text-xs uppercase bg-[#F0F2F5] text-gray-600 font-semibold">
+                <thead class="text-xs uppercase bg-[#F8F9FA] text-gray-500 font-bold border-b border-gray-100">
                 <tr>
-                    <th class="px-6 py-4">Tên Dịch vụ</th>
-                    <th class="px-6 py-4">Danh mục</th>
-                    <th class="px-6 py-4">Giá cơ bản</th>
+                    <th class="px-6 py-4 w-[35%]">Tên Dịch vụ</th>
+                    <th class="px-6 py-4">Phân loại</th>
+                    <th class="px-6 py-4">Đối tượng</th>
+                    <th class="px-6 py-4">Cấu hình giá</th>
                     <th class="px-6 py-4">Thời lượng</th>
                     <th class="px-6 py-4">Trạng thái</th>
-                    <th class="px-6 py-4 text-center">Hành động</th>
+                    <th class="px-6 py-4 text-center">Tác vụ</th>
                 </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100">
-                
-                <tr th:if="${#lists.isEmpty(services)}">
-                    <td colspan="6" class="px-6 py-8 text-center text-gray-500 italic">
-                        Chưa có dịch vụ nào. Hãy thêm mới ngay!
-                    </td>
-                </tr>
-
-                <tr th:each="s : ${services}" class="hover:bg-[#F0F2F5]/50 transition-colors">
-                    
-                    <td class="px-6 py-4">
-                        <div class="flex flex-col">
-                            <span class="text-base font-bold text-[#03594D]" th:text="${s.name}">Khám tổng quát</span>
-                            <span class="text-xs text-gray-500 line-clamp-1" 
-                                  th:text="${s.description}" 
-                                  th:title="${s.description}">Mô tả ngắn...</span>
-                        </div>
-                    </td>
-
-                    <td class="px-6 py-4">
-                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                            <span class="material-symbols-outlined text-[14px]">category</span>
-                            <span th:text="${s.serviceCategory != null ? s.serviceCategory.name : 'Chưa phân loại'}">Khám bệnh</span>
-                        </span>
-                    </td>
-
-                    <td class="px-6 py-4 font-medium font-mono text-emerald-700">
-                        <span th:text="${#numbers.formatDecimal(s.basePrice, 0, 'COMMA', 0, 'POINT')}">500,000</span> đ
-                    </td>
-
-                    <td class="px-6 py-4">
-                        <span class="flex items-center gap-1 text-gray-600">
-                            <span class="material-symbols-outlined text-[16px]">schedule</span>
-                            <span th:text="${s.durationMinutes} + ' phút'">30 phút</span>
-                        </span>
-                    </td>
-
-                    <td class="px-6 py-4">
-                        <span th:if="${s.active}" 
-                              class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                            <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> Hoạt động
-                        </span>
-                        <span th:if="${!s.active}" 
-                              class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-500">
-                            <span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span> Ngừng
-                        </span>
-                    </td>
-
-                    <td class="px-6 py-4 text-center">
-                        <div class="flex justify-center items-center gap-2">
-                            <a th:href="@{'/admin/services/' + ${s.serviceId}}"
-                               class="w-8 h-8 flex items-center justify-center rounded-full text-gray-500 hover:bg-blue-50 hover:text-blue-600 transition-all"
-                               title="Chỉnh sửa">
-                                <span class="material-symbols-outlined text-[20px]">edit_square</span>
-                            </a>
-
-                            <form th:action="@{'/admin/services/' + ${s.serviceId} + '/toggle'}" method="post">
-                                <button type="submit"
-                                        class="w-8 h-8 flex items-center justify-center rounded-full text-gray-500 hover:bg-orange-50 hover:text-orange-600 transition-all"
-                                        th:title="${s.active} ? 'Tạm ngưng dịch vụ' : 'Kích hoạt dịch vụ'">
-                                    <span class="material-symbols-outlined text-[20px]" 
-                                          th:text="${s.active} ? 'block' : 'check_circle'">block</span>
-                                </button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-                </tbody>
+                <tbody id="tableBody" class="divide-y divide-gray-100"></tbody>
             </table>
+        </div>
+
+        <div class="mt-6 flex justify-between items-center" id="paginationControls">
+            <button onclick="changePage(-1)" id="btnPrev" class="px-4 py-2 bg-white border rounded hover:bg-gray-50 disabled:opacity-50">Trước</button>
+            <span id="pageInfo" class="text-sm font-bold">Trang 1</span>
+            <button onclick="changePage(1)" id="btnNext" class="px-4 py-2 bg-white border rounded hover:bg-gray-50 disabled:opacity-50">Sau</button>
         </div>
     </section>
 </div>
+
+<script>
+    // --- KHAI BÁO BIẾN TOÀN CỤC ---
+    let currentTab = 'ALL';
+    let currentPage = 1;
+
+    // Lấy tab từ URL nếu có
+    const urlParams = new URLSearchParams(window.location.search);
+    if(urlParams.get('tab')) currentTab = urlParams.get('tab');
+
+    // --- ĐỊNH NGHĨA HÀM TRƯỚC KHI DÙNG ---
+
+    function switchTab(type) {
+        currentTab = type;
+        currentPage = 1;
+        setActiveTabUI();
+        loadData(1);
+    }
+
+    function setActiveTabUI() {
+        ['ALL', 'SINGLE', 'ADDON', 'COMBO'].forEach(t => {
+            const btn = document.getElementById(`tab-${t}`);
+            if(!btn) return; // Bỏ qua nếu không tìm thấy nút
+
+            btn.className = "whitespace-nowrap px-6 py-3 text-sm font-bold border-b-2 transition-all ";
+            
+            if(t === currentTab) {
+                if(t === 'COMBO') btn.classList.add('border-purple-600', 'text-purple-600');
+                else if(t === 'ADDON') btn.classList.add('border-blue-600', 'text-blue-600');
+                else btn.classList.add('border-[#03594D]', 'text-[#03594D]');
+            } else {
+                btn.classList.add('border-transparent', 'text-gray-500', 'hover:text-[#03594D]');
+            }
+        });
+    }
+
+    function loadData(page) {
+        const tbody = document.getElementById('tableBody');
+        if(!tbody) return;
+
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-10">Đang tải dữ liệu...</td></tr>';
+        
+        // Gọi API Backend
+        fetch(`/admin/services/api/list?page=${page}&size=10&type=${currentTab}`)
+            .then(res => {
+                if (!res.ok) throw new Error("Lỗi kết nối server");
+                return res.json();
+            })
+            .then(data => {
+                renderTable(data.content);
+                const pageInfo = document.getElementById('pageInfo');
+                const btnPrev = document.getElementById('btnPrev');
+                const btnNext = document.getElementById('btnNext');
+
+                if(pageInfo) pageInfo.innerText = `Trang ${page} / ${data.totalPages}`;
+                if(btnPrev) btnPrev.disabled = (page === 1);
+                if(btnNext) btnNext.disabled = (page === data.totalPages || data.totalPages === 0);
+            })
+            .catch(err => {
+                console.error(err);
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center py-10 text-red-500">Lỗi tải dữ liệu. Vui lòng thử lại.</td></tr>';
+            });
+    }
+
+    function renderTable(items) {
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+        if(!items || items.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-10 text-gray-400">Không tìm thấy dịch vụ nào.</td></tr>';
+            return;
+        }
+
+        items.forEach(s => {
+            // 1. Badge Loại
+            let typeBadge = '';
+            if(s.serviceType === 'COMBO' || s.combo) typeBadge = `<span class="bg-purple-100 text-purple-700 text-[10px] font-bold px-2 py-0.5 rounded border border-purple-200">COMBO</span>`;
+            else if(s.serviceType === 'ADDON') typeBadge = `<span class="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded border border-blue-200">ADD-ON</span>`;
+            else typeBadge = `<span class="bg-gray-100 text-gray-600 text-[10px] font-bold px-2 py-0.5 rounded border border-gray-200">SINGLE</span>`;
+
+            // 2. Icon Loài
+            let speciesIcon = '';
+            if(s.targetSpecies === 'DOG') speciesIcon = '<span class="material-symbols-outlined text-sm text-orange-500" title="Chó">pet_supplies</span>';
+            else if(s.targetSpecies === 'CAT') speciesIcon = '<span class="material-symbols-outlined text-sm text-blue-500" title="Mèo">cruelty_free</span>';
+            else speciesIcon = '<span class="flex gap-1"><span class="material-symbols-outlined text-sm text-orange-500">pet_supplies</span><span class="material-symbols-outlined text-sm text-blue-500">cruelty_free</span></span>';
+
+            // 3. Giá
+            let priceDisplay = '';
+            if (s.priceModel === 'FIXED') {
+                const p = new Intl.NumberFormat('vi-VN').format(s.fixedPrice);
+                priceDisplay = `<span class="text-xs font-bold text-blue-600">${p} ₫</span>`;
+            } else if (s.priceModel === 'PER_UNIT') {
+                const p = new Intl.NumberFormat('vi-VN').format(s.fixedPrice);
+                priceDisplay = `<span class="text-xs font-bold text-orange-600">${p} ₫ / ${s.priceUnit}</span>`;
+            } else {
+                priceDisplay = `<span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded">Theo cân nặng</span>`;
+            }
+
+            // 4. Trạng thái
+            const active = s.active 
+                ? `<span class="text-emerald-600 text-[11px] font-bold flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Active</span>` 
+                : `<span class="text-gray-400 text-[11px] font-bold flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span>Inactive</span>`;
+
+            const categoryName = s.serviceCategory ? s.serviceCategory.name : 'Chưa phân loại';
+
+            // 5. Render Row
+            const row = `
+                <tr class="hover:bg-gray-50 transition-colors border-b border-gray-50 group">
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                            <div class="font-bold text-[#03594D] text-[15px]">${s.name}</div>
+                        </div>
+                        <div class="text-[11px] text-gray-400 font-mono mt-0.5">ID: ${s.serviceId}</div>
+                    </td>
+                    <td class="px-6 py-4 text-xs font-semibold text-gray-600">
+                        ${categoryName} <br/> ${typeBadge}
+                    </td>
+                    <td class="px-6 py-4">${speciesIcon}</td>
+                    <td class="px-6 py-4">${priceDisplay}</td>
+                    <td class="px-6 py-4 text-gray-500 text-sm font-mono">${s.durationMinutes}p</td>
+                    <td class="px-6 py-4">${active}</td>
+                    <td class="px-6 py-4 text-center flex justify-center gap-2 items-center">
+                        <a href="/admin/services/${s.serviceId}" class="w-8 h-8 inline-flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-all" title="Sửa">
+                            <span class="material-symbols-outlined text-[18px]">edit</span>
+                        </a>
+                        <form action="/admin/services/duplicate" method="post" onsubmit="return confirm('Nhân bản dịch vụ này?');" style="display:inline;">
+                            <input type="hidden" name="id" value="${s.serviceId}">
+                            <button type="submit" class="w-8 h-8 inline-flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:text-orange-600 hover:bg-orange-50 transition-all" title="Nhân bản">
+                                <span class="material-symbols-outlined text-[18px]">content_copy</span>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            `;
+            tbody.insertAdjacentHTML('beforeend', row);
+        });
+    }
+    
+    function changePage(delta) {
+        if(currentPage + delta > 0) {
+            currentPage += delta;
+            loadData(currentPage);
+        }
+    }
+
+    // --- MAIN EXECUTION ---
+    // Đảm bảo chạy sau khi DOM đã sẵn sàng
+    document.addEventListener("DOMContentLoaded", () => {
+        setActiveTabUI();
+        loadData(1);
+    });
+</script>
+
 </body>
 </html>

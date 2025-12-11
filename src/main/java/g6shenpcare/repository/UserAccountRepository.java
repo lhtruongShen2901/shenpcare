@@ -10,13 +10,13 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface UserAccountRepository extends JpaRepository<UserAccount, Long> {
+public interface UserAccountRepository extends JpaRepository<UserAccount, Integer> { // Sửa Long -> Integer
 
     Optional<UserAccount> findByUsername(String username);
     boolean existsByUsernameIgnoreCase(String username);
     long countByRoleIgnoreCase(String role);
 
-    // 1. Tìm kiếm NHÂN VIÊN (Role != CUSTOMER)
+    // 1. Tìm kiếm NHÂN VIÊN
     @Query("SELECT u FROM UserAccount u WHERE " +
            "(u.role <> 'CUSTOMER') AND " +
            "(:role = 'ALL' OR u.role = :role) AND " +
@@ -28,7 +28,7 @@ public interface UserAccountRepository extends JpaRepository<UserAccount, Long> 
                                   @Param("status") String status,
                                   @Param("keyword") String keyword);
 
-    // 2. Tìm kiếm KHÁCH HÀNG (Role == CUSTOMER)
+    // 2. Tìm kiếm KHÁCH HÀNG
     @Query("SELECT u FROM UserAccount u WHERE " +
            "(u.role = 'CUSTOMER') AND " +
            "(:status = 'ALL' OR (:status = 'ACTIVE' AND u.active = true) OR (:status = 'LOCKED' AND u.active = false)) AND " +
@@ -39,9 +39,11 @@ public interface UserAccountRepository extends JpaRepository<UserAccount, Long> 
     List<UserAccount> searchCustomers(@Param("status") String status,
                                       @Param("keyword") String keyword);
 
-    // Các hàm cũ findByRoleNot... không cần dùng nữa vì đã có searchUsers ở trên,
-    // nhưng cứ giữ lại nếu bạn muốn dùng cho logic khác.
-    List<UserAccount> findByRoleNot(String role);
-    List<UserAccount> findByRoleNotAndActiveTrue(String role);
-    List<UserAccount> findByRoleNotAndActiveFalse(String role);
+    // Check trùng lặp
+    boolean existsByEmailIgnoreCase(String email);
+    boolean existsByPhone(String phone);
+
+    // Sửa Long -> Integer cho userId
+    boolean existsByEmailIgnoreCaseAndUserIdNot(String email, Integer userId);
+    boolean existsByPhoneAndUserIdNot(String phone, Integer userId);
 }

@@ -9,7 +9,7 @@ public class StaffProfile {
 
     @Id
     @Column(name = "StaffId")
-    private Long staffId;   // Maps with Users.UserId
+    private Integer staffId;   // Maps with Users.UserId
 
     @Column(name = "StaffCode", length = 50, nullable = false)
     private String staffCode;
@@ -26,56 +26,33 @@ public class StaffProfile {
     @Column(name = "HireDate")
     private LocalDate hireDate;
 
+    // [MỚI] Hạn mức phép năm (Mặc định 12 ngày)
+    @Column(name = "AnnualLeaveQuota")
+    private Integer annualLeaveQuota = 12;
+
     public StaffProfile() {
     }
 
     // --- Getter & Setter ---
 
-    public Long getStaffId() {
-        return staffId;
-    }
+    public Integer getStaffId() { return staffId; }
+    public void setStaffId(Integer staffId) { this.staffId = staffId; }
 
-    public void setStaffId(Long staffId) {
-        this.staffId = staffId;
-    }
+    public String getStaffCode() { return staffCode; }
+    public void setStaffCode(String staffCode) { this.staffCode = staffCode; }
 
-    public String getStaffCode() {
-        return staffCode;
-    }
+    public String getStaffType() { return staffType; }
+    public void setStaffType(String staffType) { this.staffType = staffType; }
 
-    public void setStaffCode(String staffCode) {
-        this.staffCode = staffCode;
-    }
+    public String getLicenseNumber() { return licenseNumber; }
+    public void setLicenseNumber(String licenseNumber) { this.licenseNumber = licenseNumber; }
 
-    public String getStaffType() {
-        return staffType;
-    }
+    public String getSpecialization() { return specialization; }
+    public void setSpecialization(String specialization) { this.specialization = specialization; }
 
-    public void setStaffType(String staffType) {
-        this.staffType = staffType;
-    }
+    public LocalDate getHireDate() { return hireDate; }
+    public void setHireDate(LocalDate hireDate) { this.hireDate = hireDate; }
 
-    public String getLicenseNumber() {
-        return licenseNumber;
-    }
-
-    public void setLicenseNumber(String licenseNumber) {
-        this.licenseNumber = licenseNumber;
-    }
-
-    public String getSpecialization() {
-        return specialization;
-    }
-
-    public void setSpecialization(String specialization) {
-        this.specialization = specialization;
-    }
-
-    public LocalDate getHireDate() {
-        return hireDate;
-    }
-
-    public void setHireDate(LocalDate hireDate) {
-        this.hireDate = hireDate;
-    }
+    public Integer getAnnualLeaveQuota() { return annualLeaveQuota; }
+    public void setAnnualLeaveQuota(Integer annualLeaveQuota) { this.annualLeaveQuota = annualLeaveQuota; }
 }

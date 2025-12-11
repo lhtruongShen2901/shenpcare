@@ -34,7 +34,7 @@ public class AdminDashboardController {
     public String dashboard(Model model, Principal principal) {
 
         long totalCustomers  = customerRepo.countByIsActiveTrue();
-        long totalPets       = petRepo.countByIsActiveTrue();
+        long totalPets = petRepo.count();
         long pendingBookings = bookingRepo.countByStatusIgnoreCase("PENDING");
         long pendingOrders   = orderRepo.countByStatusIgnoreCase("PENDING");
 

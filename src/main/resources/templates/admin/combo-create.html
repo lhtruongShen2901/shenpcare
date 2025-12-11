@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html class="light" lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="admin/layout :: adminHead"><title>Tạo Combo</title></head>
+<body class="font-display bg-background-light">
+<div th:replace="admin/layout :: adminShell(~{::section}, ${activeMenu})">
+<section>
+    <div class="mx-auto max-w-5xl">
+        <div class="mb-6 flex items-center justify-between">
+            <div>
+                <a th:href="@{/admin/services}" class="text-sm text-gray-500 hover:text-[#03594D] flex items-center gap-1 mb-2 transition-colors">
+                    <span class="material-symbols-outlined text-sm">arrow_back</span> Quay lại
+                </a>
+                <h1 class="text-[#03594D] text-3xl font-black" th:text="${service.serviceId == null} ? 'Tạo Gói Combo Mới' : 'Sửa Gói Combo'"></h1>
+            </div>
+            
+            <div th:if="${service.serviceId != null}">
+                <form th:action="@{/admin/services/delete}" method="post" onsubmit="return confirm('CẢNH BÁO: Bạn có chắc muốn xóa gói Combo này?');">
+                    <input type="hidden" name="id" th:value="${service.serviceId}">
+                    <button type="submit" class="text-red-600 text-sm font-bold bg-red-50 px-4 py-2 rounded-lg hover:bg-red-100 transition-colors flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">delete</span> Xóa Combo
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div th:if="${error}" class="mb-6 p-4 rounded-xl bg-red-50 border border-red-100 text-red-800 flex items-start gap-3">
+            <span class="material-symbols-outlined">error</span><span th:text="${error}"></span>
+        </div>
+
+        <form th:action="@{/admin/services/save-combo}" th:object="${service}" method="post" enctype="multipart/form-data" class="grid grid-cols-3 gap-8">
+            <input type="hidden" th:field="*{serviceId}"/>
+            <input type="hidden" th:field="*{version}"/>
+            <input type="hidden" name="serviceType" value="COMBO"/>
+            <input type="hidden" name="priceModel" value="FIXED"/>
+
+            <div class="col-span-1 bg-white p-6 rounded-2xl shadow-sm border border-[#E3E5D2]">
+                <label class="block text-sm font-bold text-[#03594D] mb-3">Ảnh đại diện Combo</label>
+                <div class="relative w-full aspect-square bg-gray-50 rounded-xl border-2 border-dashed hover:border-[#D8E268] group overflow-hidden cursor-pointer">
+                    <input type="file" name="imageFile" accept="image/*" onchange="previewImage(this)" 
+                           class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-50"/>
+                    
+                    <img id="imagePreview" th:if="*{imageFileId != null}" th:src="@{'/api/files/' + *{imageFileId}}" 
+                         class="absolute inset-0 w-full h-full object-cover z-20 bg-white"/>
+                    <img id="imagePreview" th:if="*{imageFileId == null}" 
+                         class="hidden absolute inset-0 w-full h-full object-cover z-20 bg-white"/>
+
+                    <div id="uploadPlaceholder" th:classappend="*{imageFileId != null} ? 'hidden' : ''"
+                         class="absolute inset-0 flex flex-col items-center justify-center text-gray-400 z-10">
+                        <span class="material-symbols-outlined text-4xl mb-2">layers</span>
+                        <span class="text-xs">Upload ảnh</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-span-2 bg-white p-8 rounded-2xl shadow-sm border border-[#E3E5D2] space-y-6">
+                <div class="grid grid-cols-2 gap-4">
+                    <label>
+                        <span class="block text-xs font-bold text-gray-500 uppercase mb-1">Tên Combo *</span>
+                        <input type="text" th:field="*{name}" required class="w-full h-11 px-4 rounded-xl border bg-[#F8F9FA] focus:bg-white outline-none" placeholder="VD: Combo Spa Toàn Diện">
+                    </label>
+                    <label>
+                        <span class="block text-xs font-bold text-gray-500 uppercase mb-1">Danh mục *</span>
+                        <select th:field="*{serviceCategoryId}" required class="w-full h-11 px-4 rounded-xl border bg-[#F8F9FA] focus:bg-white outline-none">
+                            <option th:each="cat : ${categories}" th:value="${cat.serviceCategoryId}" th:text="${cat.name}"></option>
+                        </select>
+                    </label>
+                </div>
+
+                <div class="grid grid-cols-3 gap-4">
+                    <label>
+                        <span class="block text-xs font-bold text-gray-500 uppercase mb-1">Giá trọn gói (VNĐ)</span>
+                        <input type="number" th:field="*{fixedPrice}" required class="w-full h-11 px-4 rounded-xl border bg-[#F8F9FA] font-bold text-[#03594D] focus:bg-white outline-none">
+                    </label>
+                    <label>
+                        <span class="block text-xs font-bold text-gray-500 uppercase mb-1">Tổng thời gian (Phút)</span>
+                        <input type="number" th:field="*{durationMinutes}" required class="w-full h-11 px-4 rounded-xl border bg-[#F8F9FA] focus:bg-white outline-none">
+                    </label>
+                    <label>
+                        <span class="block text-xs font-bold text-gray-500 uppercase mb-1">Loài áp dụng</span>
+                        <select th:field="*{targetSpecies}" class="w-full h-11 px-4 rounded-xl border bg-[#F8F9FA] focus:bg-white outline-none">
+                            <option value="BOTH">Cả hai</option>
+                            <option value="DOG">Chó</option>
+                            <option value="CAT">Mèo</option>
+                        </select>
+                    </label>
+                </div>
+
+                <div>
+                    <span class="block text-xs font-bold text-gray-500 uppercase mb-2">Chọn dịch vụ trong gói</span>
+                    <div class="h-48 overflow-y-auto border border-gray-200 rounded-xl p-2 bg-[#F8F9FA]">
+                        <div th:each="s : ${singleServices}" class="flex items-center gap-3 p-2 hover:bg-white rounded cursor-pointer transition-colors border-b border-gray-100 last:border-0">
+                            <input type="checkbox" name="childIds" th:value="${s.serviceId}" class="w-5 h-5 accent-[#03594D]">
+                            <div>
+                                <div class="font-bold text-sm text-[#03594D]" th:text="${s.name}"></div>
+                                <div class="text-xs text-gray-500" th:text="${s.serviceCategory.name} + ' (' + ${s.durationMinutes} + 'p)'"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4 border-t">
+                    <button type="submit" class="px-8 py-3 rounded-xl bg-purple-600 text-white font-bold shadow-md hover:bg-purple-700 hover:shadow-lg transition-all">Lưu Combo</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+</div>
+
+<script>
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var img = document.getElementById('imagePreview');
+                var placeholder = document.getElementById('uploadPlaceholder');
+                
+                if(img) {
+                    img.src = e.target.result;
+                    img.classList.remove('hidden');
+                }
+                if(placeholder) {
+                    placeholder.classList.add('hidden');
+                }
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
+</body>
+</html>

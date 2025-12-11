@@ -1,243 +1,255 @@
 <!DOCTYPE html>
 <html class="light" lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="admin/layout :: adminHead">
-    <title>ShenPCare - Chi tiết Nhân viên</title>
-</head>
-<body class="font-display bg-background-light">
+    <head th:replace="admin/layout :: adminHead">
+        <title>ShenPCare - Chi tiết Nhân viên</title>
+    </head>
+    <body class="font-display bg-background-light">
 
-<div th:replace="admin/layout :: adminShell(~{::section}, ${activeMenu})">
-    <section>
-        <div class="mx-auto max-w-4xl">
-
-            <div class="flex flex-wrap justify-between gap-3 mb-6">
-                <div class="flex flex-col gap-2">
-                    <p class="text-[#03594D] text-4xl font-black leading-tight tracking-[-0.033em]"
-                       th:text="${isEdit} ? 'Chỉnh sửa Nhân viên' : 'Thêm Nhân viên mới'">
-                        Chi tiết Nhân viên
-                    </p>
-                    <p class="text-[#5b8c85] text-base font-normal leading-normal">
-                        Quản lý thông tin hồ sơ và tài khoản truy cập của nhân viên.
-                    </p>
-                </div>
-            </div>
-
-            <form class="mt-4"
-                  th:action="@{/admin/staff/save}"
-                  th:object="${userForm}"
-                  method="post">
-
-                <input type="hidden" th:field="*{userId}"/>
-
-                <div class="space-y-6 border border-[#cce2df]/80 rounded-xl p-6 bg-white">
-                    <h2 class="text-[#03594d] text-lg font-bold">Thông tin đăng nhập &amp; Cá nhân</h2>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                        <label class="flex flex-col">
-                            <p class="text-[#03594d] text-base font-medium pb-2">Tên đăng nhập</p>
-                            <input th:field="*{username}"
-                                   required
-                                   minlength="4"
-                                   maxlength="50"
-                                   pattern="[A-Za-z0-9._-]{4,50}"
-                                   title="Từ 4-50 ký tự, chỉ dùng chữ, số và . _ -"
-                                   class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg
-                                          text-[#03594d] focus:outline-0 focus:ring-2 focus:ring-[#d8e268]/50
-                                          border border-[#cce2df] bg-white h-14 placeholder:text-[#5b8c85]
-                                          p-[15px] text-base font-normal leading-normal"
-                                   placeholder="Nhập tên đăng nhập"/>
-                        </label>
-
-                        <label class="flex flex-col">
-                            <p class="text-[#03594d] text-base font-medium pb-2">Mật khẩu</p>
-                            <div class="relative">
-                                <input th:field="*{password}"
-                                       id="password"
-                                       type="password"
-                                       pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&.,;:_\\-]).{6,}"
-                                       title="Ít nhất 6 ký tự, có chữ hoa, chữ thường, số và ký tự đặc biệt"
-                                       class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg
-                                              text-[#03594d] focus:outline-0 focus:ring-2 focus:ring-[#d8e268]/50
-                                              border border-[#cce2df] bg-white h-14 placeholder:text-[#5b8c85]
-                                              p-[15px] pr-12 text-base font-normal leading-normal"
-                                       placeholder="••••••••"/>
-                                <button id="togglePassword"
-                                        class="absolute inset-y-0 right-0 flex items-center px-4 text-[#5b8c85]"
-                                        type="button">
-                                    <span class="material-symbols-outlined">visibility_off</span>
-                                </button>
-                            </div>
-                            <p class="text-[#5b8c85] text-xs mt-1.5">
-                                Bỏ trống nếu không muốn thay đổi mật khẩu
-                            </p>
-                        </label>
-
-                        <label class="flex flex-col">
-                            <p class="text-[#03594d] text-base font-medium pb-2">Họ và tên</p>
-                            <input th:field="*{fullName}"
-                                   required
-                                   minlength="2"
-                                   maxlength="100"
-                                   class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg
-                                          text-[#03594d] focus:outline-0 focus:ring-2 focus:ring-[#d8e268]/50
-                                          border border-[#cce2df] bg-white h-14 placeholder:text-[#5b8c85]
-                                          p-[15px] text-base font-normal leading-normal"
-                                   placeholder="Nhập họ và tên người dùng"/>
-                        </label>
-
-                        <label class="flex flex-col">
-                            <p class="text-[#03594d] text-base font-medium pb-2">Email</p>
-                            <input th:field="*{email}"
-                                   type="email"
-                                   required
-                                   maxlength="100"
-                                   pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"
-                                   title="Nhập email hợp lệ, ví dụ: ten@gmail.com"
-                                   class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg
-                                          text-[#03594d] focus:outline-0 focus:ring-2 focus:ring-[#d8e268]/50
-                                          border border-[#cce2df] bg-white h-14 placeholder:text-[#5b8c85]
-                                          p-[15px] text-base font-normal leading-normal"
-                                   placeholder="Nhập địa chỉ email"/>
-                        </label>
-
-                        <label class="flex flex-col">
-                            <p class="text-[#03594d] text-base font-medium pb-2">Số điện thoại</p>
-                            <input th:field="*{phone}"
-                                   type="tel"
-                                   required
-                                   minlength="10"
-                                   maxlength="10"
-                                   pattern="0[0-9]{9}"
-                                   title="Số điện thoại 10 số, bắt đầu bằng 0"
-                                   class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg
-                                          text-[#03594d] focus:outline-0 focus:ring-2 focus:ring-[#d8e268]/50
-                                          border border-[#cce2df] bg-white h-14 placeholder:text-[#5b8c85]
-                                          p-[15px] text-base font-normal leading-normal"
-                                   placeholder="Nhập số điện thoại"/>
-                        </label>
-
-                        <label class="flex flex-col">
-                            <p class="text-[#03594d] text-base font-medium pb-2">Trạng thái</p>
-                            <div class="relative">
-                                <select th:field="*{status}"
-                                        required
-                                        class="form-select appearance-none w-full cursor-pointer rounded-lg
-                                               text-[#03594d] focus:outline-0 focus:ring-2 focus:ring-[#d8e268]/50
-                                               border border-[#cce2df] bg-white h-14 p-[15px]
-                                               text-base font-normal leading-normal">
-                                    <option value="ACTIVE">Hoạt động</option>
-                                    <option value="LOCKED">Bị khóa</option>
-                                </select>
-                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-[#03594d]">
-                                    <span class="material-symbols-outlined">expand_more</span>
-                                </div>
-                            </div>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="mt-8 space-y-6 border border-[#cce2df]/80 rounded-xl p-6 bg-white">
-                    <div class="flex flex-col gap-6">
-                        <h2 class="text-[#03594d] text-lg font-bold">Vai trò &amp; Phân quyền</h2>
-
-                        <label class="flex flex-col md:max-w-xs">
-                            <p class="text-[#03594d] text-base font-medium pb-2">Vai trò</p>
-                            <div class="relative">
-                                <select th:field="*{role}"
-                                        required
-                                        class="form-select appearance-none w-full cursor-pointer rounded-lg
-                                               text-[#03594d] focus:outline-0 focus:ring-2 focus:ring-[#d8e268]/50
-                                               border border-[#cce2df] bg-white h-14 p-[15px]
-                                               text-base font-normal leading-normal">
-                                    <option th:each="r : ${roles}"
-                                            th:value="${r}"
-                                            th:text="${r}">
-                                    </option>
-                                </select>
-                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-[#03594d]">
-                                    <span class="material-symbols-outlined">expand_more</span>
-                                </div>
-                            </div>
-                        </label>
-                    </div>
-
-                    <div class="space-y-6 border-t border-[#cce2df]/80 pt-6">
-                        <h3 class="text-[#03594d] text-md font-bold">Thông tin hồ sơ nhân viên</h3>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                            <label class="flex flex-col">
-                                <p class="text-[#03594d] text-base font-medium pb-2">Ngày tuyển dụng</p>
-                                <input th:field="*{hireDate}"
-                                       type="date"
-                                       class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg
-                                              text-[#03594d] focus:outline-0 focus:ring-2 focus:ring-[#d8e268]/50
-                                              border border-[#cce2df] bg-white h-14 placeholder:text-[#5b8c85]
-                                              p-[15px] text-base font-normal leading-normal"/>
-                            </label>
-
-                            <label class="flex flex-col">
-                                <p class="text-[#03594d] text-base font-medium pb-2">Chuyên môn</p>
-                                <input th:field="*{specialization}"
-                                       class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg
-                                              text-[#03594d] focus:outline-0 focus:ring-2 focus:ring-[#d8e268]/50
-                                              border border-[#cce2df] bg-white h-14 placeholder:text-[#5b8c85]
-                                              p-[15px] text-base font-normal leading-normal"
-                                       placeholder="VD: Bác sĩ thú y, Groomer, CSKH"/>
-                            </label>
-
-                            <label class="flex flex-col md:col-span-2">
-                                <p class="text-[#03594d] text-base font-medium pb-2">Số chứng chỉ hành nghề</p>
-                                <input th:field="*{licenseNumber}"
-                                       class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg
-                                              text-[#03594d] focus:outline-0 focus:ring-2 focus:ring-[#d8e268]/50
-                                              border border-[#cce2df] bg-white h-14 placeholder:text-[#5b8c85]
-                                              p-[15px] text-base font-normal leading-normal"
-                                       placeholder="Nhập số chứng chỉ nếu có"/>
-                            </label>
+        <div th:replace="admin/layout :: adminShell(~{::section}, ${activeMenu})">
+            <section>
+                <div class="mx-auto max-w-4xl">
+                    <div th:if="${errorMessage}" class="mb-6 p-4 rounded-xl bg-red-50 border border-red-100 text-red-700 flex items-center gap-3 shadow-sm animate-fade-in-down">
+                        <span class="material-symbols-outlined text-xl">error</span>
+                        <div>
+                            <span class="font-bold">Lỗi:</span> <span th:text="${errorMessage}">Nội dung lỗi</span>
                         </div>
                     </div>
-                </div>
+                    <div class="flex flex-wrap justify-between gap-3 mb-6">
+                        <div class="flex flex-col gap-2">
+                            <p class="text-[#03594D] text-4xl font-black leading-tight tracking-[-0.033em]"
+                               th:text="${isEdit} ? 'Chỉnh sửa Nhân viên' : 'Thêm Nhân viên mới'">
+                                Chi tiết Nhân viên
+                            </p>
+                            <p class="text-[#5b8c85] text-base font-normal leading-normal">
+                                Quản lý thông tin hồ sơ và tài khoản truy cập của nhân viên.
+                            </p>
+                        </div>
+                    </div>
 
-                <div class="flex justify-end gap-4 pt-8 mt-8">
-                    <a th:href="@{/admin/staff}"
-                       class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-full
-                              h-12 px-6 bg-[#f0f0f0] text-[#03594d] text-sm font-bold leading-normal tracking-[0.015em]
-                              hover:bg-gray-200 transition-colors">
-                        <span class="truncate">Hủy bỏ</span>
-                    </a>
-                    <button type="submit"
-                            class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-full
-                                   h-12 px-6 bg-[#d8e268] text-[#03594d] text-sm font-bold leading-normal tracking-[0.015em]
-                                   hover:bg-opacity-90 transition-colors gap-2">
-                        <span class="material-symbols-outlined">save</span>
-                        <span class="truncate"
-                              th:text="${isEdit} ? 'Lưu thay đổi' : 'Tạo nhân viên'">
-                            Lưu thay đổi
-                        </span>
-                    </button>
+                    <form class="mt-4"
+                          th:action="@{/admin/staff/save}"
+                          th:object="${userForm}"
+                          method="post">
+
+                        <input type="hidden" th:field="*{userId}"/>
+
+                        <div class="space-y-6 border border-[#cce2df]/80 rounded-xl p-6 bg-white">
+                            <h2 class="text-[#03594d] text-lg font-bold">Thông tin đăng nhập &amp; Cá nhân</h2>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                                <label class="flex flex-col">
+                                    <p class="text-[#03594d] text-base font-medium pb-2">
+                                        Tên đăng nhập 
+                                        <span th:unless="${isEdit}" class="text-red-500">*</span>
+                                        <span th:if="${isEdit}" class="text-xs text-gray-400 font-normal">(Không thể thay đổi)</span>
+                                    </p>
+                                    <input th:field="*{username}"
+                                           required
+                                           minlength="4"
+                                           maxlength="50"
+                                           pattern="[A-Za-z0-9._-]{4,50}"
+
+                                           th:readonly="${isEdit}"
+                                           th:classappend="${isEdit} ? 'bg-gray-100 text-gray-500 cursor-not-allowed border-gray-200' : 'bg-white border-[#cce2df] focus:ring-[#d8e268]/50'"
+
+                                           class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg
+                                           text-[#03594d] focus:outline-0 focus:ring-2
+                                           border h-14 placeholder:text-[#5b8c85]
+                                           p-[15px] text-base font-normal leading-normal"
+                                           placeholder="Nhập tên đăng nhập"/>
+                                </label>
+                                <label class="flex flex-col">
+                                    <p class="text-[#03594d] text-base font-medium pb-2">Mật khẩu</p>
+                                    <div class="relative">
+                                        <input th:field="*{password}"
+                                               id="password"
+                                               type="password"
+                                               pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&.,;:_\\-]).{6,}"
+                                               title="Ít nhất 6 ký tự, có chữ hoa, chữ thường, số và ký tự đặc biệt"
+                                               class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg
+                                               text-[#03594d] focus:outline-0 focus:ring-2 focus:ring-[#d8e268]/50
+                                               border border-[#cce2df] bg-white h-14 placeholder:text-[#5b8c85]
+                                               p-[15px] pr-12 text-base font-normal leading-normal"
+                                               placeholder="••••••••"/>
+                                        <button id="togglePassword"
+                                                class="absolute inset-y-0 right-0 flex items-center px-4 text-[#5b8c85]"
+                                                type="button">
+                                            <span class="material-symbols-outlined">visibility_off</span>
+                                        </button>
+                                    </div>
+                                    <p class="text-[#5b8c85] text-xs mt-1.5">
+                                        Bỏ trống nếu không muốn thay đổi mật khẩu
+                                    </p>
+                                </label>
+
+                                <label class="flex flex-col">
+                                    <p class="text-[#03594d] text-base font-medium pb-2">Họ và tên</p>
+                                    <input th:field="*{fullName}"
+                                           required
+                                           minlength="2"
+                                           maxlength="100"
+                                           class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg
+                                           text-[#03594d] focus:outline-0 focus:ring-2 focus:ring-[#d8e268]/50
+                                           border border-[#cce2df] bg-white h-14 placeholder:text-[#5b8c85]
+                                           p-[15px] text-base font-normal leading-normal"
+                                           placeholder="Nhập họ và tên người dùng"/>
+                                </label>
+
+                                <label class="flex flex-col">
+                                    <p class="text-[#03594d] text-base font-medium pb-2">Email</p>
+                                    <input th:field="*{email}"
+                                           type="email"
+                                           required
+                                           maxlength="100"
+                                           pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"
+                                           title="Nhập email hợp lệ, ví dụ: ten@gmail.com"
+                                           class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg
+                                           text-[#03594d] focus:outline-0 focus:ring-2 focus:ring-[#d8e268]/50
+                                           border border-[#cce2df] bg-white h-14 placeholder:text-[#5b8c85]
+                                           p-[15px] text-base font-normal leading-normal"
+                                           placeholder="Nhập địa chỉ email"/>
+                                </label>
+
+                                <label class="flex flex-col">
+                                    <p class="text-[#03594d] text-base font-medium pb-2">Số điện thoại</p>
+                                    <input th:field="*{phone}"
+                                           type="tel"
+                                           required
+                                           minlength="10"
+                                           maxlength="10"
+                                           pattern="0[0-9]{9}"
+                                           title="Số điện thoại 10 số, bắt đầu bằng 0"
+                                           class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg
+                                           text-[#03594d] focus:outline-0 focus:ring-2 focus:ring-[#d8e268]/50
+                                           border border-[#cce2df] bg-white h-14 placeholder:text-[#5b8c85]
+                                           p-[15px] text-base font-normal leading-normal"
+                                           placeholder="Nhập số điện thoại"/>
+                                </label>
+
+                                <label class="flex flex-col">
+                                    <p class="text-[#03594d] text-base font-medium pb-2">Trạng thái</p>
+                                    <div class="relative">
+                                        <select th:field="*{status}"
+                                                required
+                                                class="form-select appearance-none w-full cursor-pointer rounded-lg
+                                                text-[#03594d] focus:outline-0 focus:ring-2 focus:ring-[#d8e268]/50
+                                                border border-[#cce2df] bg-white h-14 p-[15px]
+                                                text-base font-normal leading-normal">
+                                            <option value="ACTIVE">Hoạt động</option>
+                                            <option value="LOCKED">Bị khóa</option>
+                                        </select>
+                                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-[#03594d]">
+                                            <span class="material-symbols-outlined">expand_more</span>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="mt-8 space-y-6 border border-[#cce2df]/80 rounded-xl p-6 bg-white">
+                            <div class="flex flex-col gap-6">
+                                <h2 class="text-[#03594d] text-lg font-bold">Vai trò &amp; Phân quyền</h2>
+
+                                <label class="flex flex-col md:max-w-xs">
+                                    <p class="text-[#03594d] text-base font-medium pb-2">Vai trò</p>
+                                    <div class="relative">
+                                        <select th:field="*{role}"
+                                                required
+                                                class="form-select appearance-none w-full cursor-pointer rounded-lg
+                                                text-[#03594d] focus:outline-0 focus:ring-2 focus:ring-[#d8e268]/50
+                                                border border-[#cce2df] bg-white h-14 p-[15px]
+                                                text-base font-normal leading-normal">
+                                            <option th:each="r : ${roles}"
+                                                    th:value="${r}"
+                                                    th:text="${r}">
+                                            </option>
+                                        </select>
+                                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-[#03594d]">
+                                            <span class="material-symbols-outlined">expand_more</span>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div class="space-y-6 border-t border-[#cce2df]/80 pt-6">
+                                <h3 class="text-[#03594d] text-md font-bold">Thông tin hồ sơ nhân viên</h3>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                                    <label class="flex flex-col">
+                                        <p class="text-[#03594d] text-base font-medium pb-2">Ngày tuyển dụng</p>
+                                        <input th:field="*{hireDate}"
+                                               type="date"
+                                               class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg
+                                               text-[#03594d] focus:outline-0 focus:ring-2 focus:ring-[#d8e268]/50
+                                               border border-[#cce2df] bg-white h-14 placeholder:text-[#5b8c85]
+                                               p-[15px] text-base font-normal leading-normal"/>
+                                    </label>
+
+                                    <label class="flex flex-col">
+                                        <p class="text-[#03594d] text-base font-medium pb-2">Chuyên môn</p>
+                                        <input th:field="*{specialization}"
+                                               class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg
+                                               text-[#03594d] focus:outline-0 focus:ring-2 focus:ring-[#d8e268]/50
+                                               border border-[#cce2df] bg-white h-14 placeholder:text-[#5b8c85]
+                                               p-[15px] text-base font-normal leading-normal"
+                                               placeholder="VD: Bác sĩ thú y, Groomer, CSKH"/>
+                                    </label>
+
+                                    <label class="flex flex-col md:col-span-2">
+                                        <p class="text-[#03594d] text-base font-medium pb-2">Số chứng chỉ hành nghề</p>
+                                        <input th:field="*{licenseNumber}"
+                                               class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg
+                                               text-[#03594d] focus:outline-0 focus:ring-2 focus:ring-[#d8e268]/50
+                                               border border-[#cce2df] bg-white h-14 placeholder:text-[#5b8c85]
+                                               p-[15px] text-base font-normal leading-normal"
+                                               placeholder="Nhập số chứng chỉ nếu có"/>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end gap-4 pt-8 mt-8">
+                            <a th:href="@{/admin/staff}"
+                               class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-full
+                               h-12 px-6 bg-[#f0f0f0] text-[#03594d] text-sm font-bold leading-normal tracking-[0.015em]
+                               hover:bg-gray-200 transition-colors">
+                                <span class="truncate">Hủy bỏ</span>
+                            </a>
+                            <button type="submit"
+                                    class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-full
+                                    h-12 px-6 bg-[#d8e268] text-[#03594d] text-sm font-bold leading-normal tracking-[0.015em]
+                                    hover:bg-opacity-90 transition-colors gap-2">
+                                <span class="material-symbols-outlined">save</span>
+                                <span class="truncate"
+                                      th:text="${isEdit} ? 'Lưu thay đổi' : 'Tạo nhân viên'">
+                                    Lưu thay đổi
+                                </span>
+                            </button>
+                        </div>
+                    </form>
                 </div>
-            </form>
+            </section>
         </div>
-    </section>
-</div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const passwordInput = document.getElementById('password');
-        const toggleBtn = document.getElementById('togglePassword');
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const passwordInput = document.getElementById('password');
+                const toggleBtn = document.getElementById('togglePassword');
 
-        if (!passwordInput || !toggleBtn) return;
+                if (!passwordInput || !toggleBtn)
+                    return;
 
-        toggleBtn.addEventListener('click', function () {
-            const isHidden = passwordInput.type === 'password';
-            passwordInput.type = isHidden ? 'text' : 'password';
+                toggleBtn.addEventListener('click', function () {
+                    const isHidden = passwordInput.type === 'password';
+                    passwordInput.type = isHidden ? 'text' : 'password';
 
-            const icon = this.querySelector('.material-symbols-outlined');
-            if (icon) {
-                icon.textContent = isHidden ? 'visibility' : 'visibility_off';
-            }
-        });
-    });
-</script>
+                    const icon = this.querySelector('.material-symbols-outlined');
+                    if (icon) {
+                        icon.textContent = isHidden ? 'visibility' : 'visibility_off';
+                    }
+                });
+            });
+        </script>
 
-</body>
+    </body>
 </html>
