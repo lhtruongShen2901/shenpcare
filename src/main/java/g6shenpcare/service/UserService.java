@@ -1,6 +1,7 @@
 package g6shenpcare.service;
 
 import g6shenpcare.dto.UserForm;
+import java.util.Optional;
 import g6shenpcare.entity.StaffProfile;
 import g6shenpcare.entity.UserAccount;
 import g6shenpcare.repository.BookingRepository;
@@ -192,5 +193,9 @@ public class UserService {
 
         staffProfileRepository.deleteById(id);
         userAccountRepository.delete(user);
+    }
+   public UserAccount getUserByUsername(String username) {
+        return userAccountRepository.findByUsername(username) 
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy user: " + username));
     }
 }

@@ -78,6 +78,12 @@
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+	 <dependency>
+	  <groupId>org.projectlombok</groupId>
+	  <artifactId>lombok</artifactId>
+	  <version>1.18.38</version>
+	  <type>jar</type>
+	 </dependency>
 	</dependencies>
 
 	<build>

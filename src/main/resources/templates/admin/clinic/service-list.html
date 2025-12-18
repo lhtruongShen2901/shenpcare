@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html class="light" lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="admin/layout :: adminHead">
+    <title>Danh sách Dịch vụ Y tế</title>
+</head>
+<body class="font-display bg-background-light">
+
+<div th:replace="admin/layout :: adminShell(~{::section}, ${activeMenu})">
+    <section>
+        <header class="flex flex-wrap justify-between items-center gap-4 mb-6">
+            <div>
+                <h1 class="text-[#03594D] text-3xl font-black leading-tight tracking-tight">Dịch vụ Khám & Điều trị</h1>
+                <p class="text-sm text-gray-500 mt-1">Quản lý danh mục kỹ thuật, giá niêm yết cho bác sĩ.</p>
+            </div>
+            <div class="flex gap-2">
+                 <a th:href="@{/admin/clinic/specialties}" class="flex items-center gap-2 h-10 px-4 bg-white border border-[#E3E5D2] rounded-lg font-bold text-[#03594D] hover:bg-gray-50 text-sm">
+                    <span class="material-symbols-outlined text-[18px]">local_hospital</span> Chuyên khoa
+                </a>
+                <a th:href="@{/admin/clinic/services/new}" class="flex items-center gap-2 h-10 px-4 bg-[#D8E268] text-[#03594D] rounded-lg font-bold shadow-md hover:-translate-y-0.5 transition-all text-sm">
+                    <span class="material-symbols-outlined text-[18px]">medical_services</span> Thêm Dịch vụ Y tế
+                </a>
+            </div>
+        </header>
+
+        <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-[#E3E5D2] min-h-[400px]">
+            <table class="w-full text-sm text-left text-[#03594D]">
+                <thead class="text-xs uppercase bg-[#F8F9FA] text-gray-500 font-bold border-b border-gray-100">
+                <tr>
+                    <th class="px-6 py-4 w-[40%]">Tên Dịch vụ / Kỹ thuật</th>
+                    <th class="px-6 py-4">Chuyên khoa</th>
+                    <th class="px-6 py-4">Đối tượng</th>
+                    <th class="px-6 py-4">Giá niêm yết</th>
+                    <th class="px-6 py-4">Trạng thái</th>
+                    <th class="px-6 py-4 text-center">Tác vụ</th>
+                </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    <tr th:each="s : ${services.content}" class="hover:bg-gray-50 transition-colors group" th:classappend="${!s.active} ? 'bg-gray-50 opacity-75' : ''">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
+                                    <span class="material-symbols-outlined text-[20px]">stethoscope</span>
+                                </div>
+                                <div>
+                                    <div class="font-bold text-[#03594D] text-[15px]" th:text="${s.name}"></div>
+                                    <div class="text-[11px] text-gray-400 font-mono mt-0.5">ID: <span th:text="${s.serviceId}"></span></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="bg-gray-100 text-gray-600 text-[11px] font-bold px-2 py-1 rounded border border-gray-200" 
+                                  th:text="${s.serviceCategory.name}"></span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span th:if="${s.targetSpecies == 'DOG'}" class="material-symbols-outlined text-sm text-orange-500" title="Chó">pet_supplies</span>
+                            <span th:if="${s.targetSpecies == 'CAT'}" class="material-symbols-outlined text-sm text-blue-500" title="Mèo">cruelty_free</span>
+                            <span th:if="${s.targetSpecies == 'BOTH'}" class="flex gap-1">
+                                <span class="material-symbols-outlined text-sm text-orange-500">pet_supplies</span>
+                                <span class="material-symbols-outlined text-sm text-blue-500">cruelty_free</span>
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="text-sm font-bold text-blue-600" th:text="${#numbers.formatDecimal(s.fixedPrice, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></span>
+                            <span class="text-xs text-gray-400 block" th:text="'/ ' + ${s.priceUnit}"></span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span th:if="${s.active}" class="text-emerald-600 text-[11px] font-bold flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Active</span>
+                            <span th:if="${!s.active}" class="text-gray-400 text-[11px] font-bold flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span>Hidden</span>
+                        </td>
+                        <td class="px-6 py-4 text-center flex justify-center gap-2 items-center">
+                            <a th:href="@{'/admin/clinic/services/' + ${s.serviceId}}" class="w-8 h-8 inline-flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-all" title="Sửa">
+                                <span class="material-symbols-outlined text-[18px]">edit</span>
+                            </a>
+                            
+                            <form th:action="@{'/admin/clinic/services/' + ${s.serviceId} + '/toggle'}" method="post" style="display:inline;">
+                                <button type="submit" class="w-8 h-8 inline-flex items-center justify-center rounded-lg border border-gray-200 transition-all"
+                                        th:classappend="${s.active} ? 'text-orange-500 hover:bg-orange-50' : 'text-emerald-600 hover:bg-emerald-50'"
+                                        th:title="${s.active} ? 'Tạm ẩn' : 'Kích hoạt'">
+                                    <span class="material-symbols-outlined text-[18px]" th:text="${s.active} ? 'visibility_off' : 'visibility'"></span>
+                                </button>
+                            </form>
+
+                            <form th:action="@{/admin/clinic/services/duplicate}" method="post" onsubmit="return confirm('Nhân bản dịch vụ này?');" style="display:inline;">
+                                <input type="hidden" name="id" th:value="${s.serviceId}">
+                                <button type="submit" class="w-8 h-8 inline-flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:text-purple-600 hover:bg-purple-50 transition-all" title="Nhân bản">
+                                    <span class="material-symbols-outlined text-[18px]">content_copy</span>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mt-6 flex justify-between items-center" th:if="${totalPages > 1}">
+            <div class="text-sm text-gray-500">Hiển thị trang <span th:text="${currentPage}"></span> trên <span th:text="${totalPages}"></span></div>
+            <div class="flex gap-2">
+                <a th:if="${currentPage > 1}" th:href="@{/admin/clinic/services(page=${currentPage - 1})}" class="px-4 py-2 bg-white border rounded hover:bg-gray-50">Trước</a>
+                <a th:if="${currentPage < totalPages}" th:href="@{/admin/clinic/services(page=${currentPage + 1})}" class="px-4 py-2 bg-white border rounded hover:bg-gray-50">Sau</a>
+            </div>
+        </div>
+    </section>
+</div>
+</body>
+</html>

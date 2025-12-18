@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html class="light" lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="admin/layout :: adminHead"><title>Tạo Combo</title></head>
+<head th:replace="admin/layout :: adminHead"><title>Tạo Combo Spa</title></head>
 <body class="font-display bg-background-light">
 <div th:replace="admin/layout :: adminShell(~{::section}, ${activeMenu})">
 <section>
@@ -10,7 +10,7 @@
                 <a th:href="@{/admin/services}" class="text-sm text-gray-500 hover:text-[#03594D] flex items-center gap-1 mb-2 transition-colors">
                     <span class="material-symbols-outlined text-sm">arrow_back</span> Quay lại
                 </a>
-                <h1 class="text-[#03594D] text-3xl font-black" th:text="${service.serviceId == null} ? 'Tạo Gói Combo Mới' : 'Sửa Gói Combo'"></h1>
+                <h1 class="text-[#03594D] text-3xl font-black" th:text="${service.serviceId == null} ? 'Tạo Gói Combo Spa Mới' : 'Sửa Gói Combo Spa'"></h1>
             </div>
             
             <div th:if="${service.serviceId != null}">

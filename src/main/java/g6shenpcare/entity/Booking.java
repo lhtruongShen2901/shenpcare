@@ -14,24 +14,41 @@ public class Booking {
     @Column(name = "BookingId")
     private Integer bookingId;
 
-    @Column(name = "CustomerId", nullable = false)
+    // --- CÁC CỘT ID (Giữ nguyên để map dữ liệu thô) ---
+    @Column(name = "CustomerId", insertable = false, updatable = false)
     private Integer customerId;
 
-    @Column(name = "PetId", nullable = false)
+    @Column(name = "PetId", insertable = false, updatable = false)
     private Integer petId;
 
-    @Column(name = "ServiceId", nullable = false)
+    @Column(name = "ServiceId", insertable = false, updatable = false)
     private Integer serviceId;
 
-    // --- SỬA: Đổi tên khớp với SQL và Repository ---
-    @Column(name = "AssignedStaffId")
-    private Integer assignedStaffId; 
+    @Column(name = "AssignedStaffId", insertable = false, updatable = false)
+    private Integer assignedStaffId;
 
-    // --- SỬA: SQL là DATE -> Java là LocalDate ---
+    // --- [QUAN TRỌNG] THÊM MỐI QUAN HỆ (RELATIONSHIPS) ---
+    // Để BookingService có thể gọi b.getCustomer().getFullName()
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "CustomerId")
+    private CustomerProfile customer; // Hoặc UserAccount tùy DB bạn, ở đây dùng CustomerProfile
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "PetId")
+    private Pets pet;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ServiceId")
+    private Services service;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "AssignedStaffId")
+    private UserAccount staff; // Nhân viên là UserAccount
+
+    // --- CÁC TRƯỜNG THÔNG TIN KHÁC ---
     @Column(name = "BookingDate", nullable = false)
     private LocalDate bookingDate;
 
-    // --- THÊM: Các trường có trong SQL nhưng code cũ thiếu ---
     @Column(name = "StartTime", nullable = false)
     private LocalDateTime startTime;
 
@@ -39,7 +56,10 @@ public class Booking {
     private LocalDateTime endTime;
 
     @Column(name = "Status", nullable = false, length = 20)
-    private String status; // PENDING, CONFIRMED, ...
+    private String status;
+
+    @Column(name = "PaymentStatus", nullable = false, length = 20)
+    private String paymentStatus;
 
     @Column(name = "TotalAmount", nullable = false, precision = 18, scale = 2)
     private BigDecimal totalAmount;
@@ -50,17 +70,31 @@ public class Booking {
     @Column(name = "CreatedAt", nullable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "UpdatedAt") // SQL cho phép NULL
+    @Column(name = "UpdatedAt")
     private LocalDateTime updatedAt;
 
-    // --- LƯU Ý: Đã xóa SlotId và PaymentStatus vì trong SQL-ver2 bảng Bookings KHÔNG CÓ 2 cột này ---
-
     public Booking() {
-        // Constructor mặc định
     }
 
-    // --- Getter & Setter ---
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+        if (this.status == null) {
+            this.status = "PENDING_CONFIRMATION";
+        }
+        if (this.paymentStatus == null) {
+            this.paymentStatus = "UNPAID";
+        }
+    }
 
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    // --- GETTERS & SETTERS ---
+    // (Bạn generate đầy đủ, lưu ý thêm Get/Set cho các object quan hệ mới)
     public Integer getBookingId() {
         return bookingId;
     }
@@ -133,6 +167,14 @@ public class Booking {
         this.status = status;
     }
 
+    public String getPaymentStatus() {
+        return paymentStatus;
+    }
+
+    public void setPaymentStatus(String paymentStatus) {
+        this.paymentStatus = paymentStatus;
+    }
+
     public BigDecimal getTotalAmount() {
         return totalAmount;
     }
@@ -149,19 +191,36 @@ public class Booking {
         this.notes = notes;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
+    // Getters cho Relationships
+    public CustomerProfile getCustomer() {
+        return customer;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
+    public void setCustomer(CustomerProfile customer) {
+        this.customer = customer;
     }
 
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
+    public Pets getPet() {
+        return pet;
     }
 
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
+    public void setPet(Pets pet) {
+        this.pet = pet;
+    }
+
+    public Services getService() {
+        return service;
+    }
+
+    public void setService(Services service) {
+        this.service = service;
+    }
+
+    public UserAccount getStaff() {
+        return staff;
+    }
+
+    public void setStaff(UserAccount staff) {
+        this.staff = staff;
     }
 }

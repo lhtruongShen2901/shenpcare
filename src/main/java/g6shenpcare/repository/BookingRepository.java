@@ -7,28 +7,61 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
+import java.util.List;
+
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Integer> {
 
-    // Đếm số lượng booking theo trạng thái (Dùng cho Dashboard)
+    // =========================================================
+    // 1. CÁC HÀM CŨ (GIỮ NGUYÊN TUYỆT ĐỐI 100%)
+    // =========================================================
     long countByStatusIgnoreCase(String status);
-    
-    // Kiểm tra Pet có booking nào không (Dùng khi xóa Pet)
+
     boolean existsByPetId(Integer petId);
 
-    // --- CÁC HÀM MỚI CHO LOGIC KHÓA NHÂN VIÊN ---
+    // Tìm theo ngày (Logic cũ, không sắp xếp) - Giữ lại để tránh lỗi code cũ
+    List<Booking> findByBookingDate(LocalDate bookingDate);
 
-    // 1. Đếm số lịch hẹn chưa hoàn thành của nhân viên
-    // Lưu ý: Trường b.assignedStaffId phải khớp với tên biến trong Entity Booking
-    @Query("SELECT COUNT(b) FROM Booking b WHERE b.assignedStaffId = :staffId " +
-           "AND b.status IN ('PENDING', 'CONFIRMED', 'IN_PROGRESS')")
+    @Query("SELECT COUNT(b) FROM Booking b WHERE b.assignedStaffId = :staffId "
+            + "AND b.status IN ('PENDING', 'CONFIRMED', 'IN_PROGRESS')")
     long countActiveBookingsByStaff(@Param("staffId") Integer staffId);
 
-    // 2. Chuyển lịch sang nhân viên mới
     @Modifying
-    @Query("UPDATE Booking b SET b.assignedStaffId = :newStaffId " +
-           "WHERE b.assignedStaffId = :oldStaffId " +
-           "AND b.status IN ('PENDING', 'CONFIRMED')") // Chỉ chuyển lịch chưa diễn ra
-    void reassignBookings(@Param("oldStaffId") Integer oldStaffId, 
-                          @Param("newStaffId") Integer newStaffId);
+    @Query("UPDATE Booking b SET b.assignedStaffId = :newStaffId "
+            + "WHERE b.assignedStaffId = :oldStaffId "
+            + "AND b.status IN ('PENDING', 'CONFIRMED')")
+    void reassignBookings(@Param("oldStaffId") Integer oldStaffId,
+            @Param("newStaffId") Integer newStaffId);
+
+    @Query("SELECT b FROM Booking b "
+            + "LEFT JOIN b.customer c "
+            + "LEFT JOIN b.pet p "
+            + "WHERE b.bookingDate = :date "
+            + "AND (:keyword IS NULL OR :keyword = '' OR "
+            + "LOWER(c.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR "
+            + "c.phone LIKE CONCAT('%', :keyword, '%') OR "
+            + "LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    List<Booking> searchBookings(@Param("date") LocalDate date, @Param("keyword") String keyword);
+    // =========================================================
+    // 2. CÁC HÀM BỔ SUNG MỚI (CHO MONITOR, QUOTA, DOCTOR)
+    // =========================================================
+
+    // [MỚI] Lấy danh sách theo ngày và SẮP XẾP THEO GIỜ (Sáng -> Chiều)
+    // Hàm này dùng cho Dashboard để hiển thị timeline chuẩn xác
+    List<Booking> findByBookingDateOrderByStartTimeAsc(LocalDate bookingDate);
+
+    // [CẬP NHẬT] Đếm số lượng Booking theo ngày và loại dịch vụ (Để tính % Quota)
+    // Lưu ý: Đã cập nhật cú pháp JOIN "b.service" để tương thích với Entity mới có @ManyToOne
+    @Query("SELECT COUNT(b) FROM Booking b "
+            + "JOIN b.service s "
+            + // Dùng relationship b.service thay vì join thủ công ID
+            "WHERE b.bookingDate = :date "
+            + "AND s.serviceType = :serviceType "
+            + "AND b.status <> 'CANCELLED'")
+    long countByDateAndServiceType(@Param("date") LocalDate date,
+            @Param("serviceType") String serviceType);
+
+    // [MỚI] Tìm booking theo nhân viên trong ngày (Dùng cho Doctor Dashboard sau này)
+    List<Booking> findByAssignedStaffIdAndBookingDate(Integer staffId, LocalDate bookingDate);
 }

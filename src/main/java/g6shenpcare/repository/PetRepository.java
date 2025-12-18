@@ -9,7 +9,8 @@ import java.util.Optional;
 @Repository
 public interface PetRepository extends JpaRepository<Pets, Integer> { // Integer ID
     List<Pets> findByCustomerId(Integer customerId);
-    
+    List<Pets> findByOwnerId(Integer ownerId);
+        
     // Tìm Pet theo Code để Claim
     Optional<Pets> findByPetCode(String petCode);
     
