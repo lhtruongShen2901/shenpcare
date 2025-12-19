@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html class="light" lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/layout :: adminHead}">
+    <title>Kho Dược & Vật Tư</title>
+</head>
+<body class="font-display bg-background-light">
+
+<div th:replace="~{admin/layout :: adminShell(~{::section}, ${activeMenu})}">
+    <section>
+        <div class="mb-6 flex flex-wrap justify-between items-end gap-4">
+            <div>
+                <h1 class="text-[#03594D] text-3xl font-black">Kho Dược & Vật Tư</h1>
+                <p class="text-gray-500 mt-1">Quản lý thuốc, vaccine và vật tư tiêu hao theo chuẩn y tế.</p>
+            </div>
+            <div class="flex gap-3">
+                <form action="/admin/clinic/pharmacy" method="get" class="relative">
+                    <input type="text" name="keyword" th:value="${keyword}" placeholder="Tên thuốc, hoạt chất..." 
+                           class="h-11 pl-10 pr-4 rounded-xl border border-gray-200 focus:border-[#03594D] outline-none text-sm w-64 bg-white shadow-sm">
+                    <span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400">search</span>
+                </form>
+                <button onclick="openModalCreate()" class="h-11 px-6 rounded-xl bg-[#D8E268] text-[#03594D] font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center gap-2">
+                    <span class="material-symbols-outlined">add_circle</span> Nhập Kho
+                </button>
+            </div>
+        </div>
+
+        <div th:if="${message}" class="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-800 flex gap-2"><span class="material-symbols-outlined">check_circle</span> <span th:text="${message}"></span></div>
+        <div th:if="${error}" class="mb-6 p-4 rounded-xl bg-red-50 border border-red-100 text-red-800 flex gap-2"><span class="material-symbols-outlined">error</span> <span th:text="${error}"></span></div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-[#E3E5D2] overflow-hidden">
+            <table class="w-full text-sm text-left text-[#03594D]">
+                <thead class="text-xs uppercase bg-[#F8F9FA] text-gray-500 font-bold border-b border-gray-100">
+                    <tr>
+                        <th class="px-6 py-4 w-[35%]">Tên Thuốc / Thông tin</th>
+                        <th class="px-6 py-4">Phân Loại</th>
+                        <th class="px-6 py-4">Đối tượng</th>
+                        <th class="px-6 py-4 text-right">Giá Bán</th>
+                        <th class="px-6 py-4 text-center">Tồn Kho</th>
+                        <th class="px-6 py-4 text-center">Tác vụ</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    <tr th:each="p : ${products}" class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4">
+                            <div class="flex items-start gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-gray-100 border border-gray-200 flex-shrink-0 overflow-hidden">
+                                    <img th:if="${p.imageFileId != null}" th:src="@{'/api/files/' + ${p.imageFileId}}" class="w-full h-full object-cover">
+                                    <img th:if="${p.imageFileId == null}" src="https://cdn-icons-png.flaticon.com/512/883/883407.png" class="w-full h-full object-contain p-1 opacity-50">
+                                </div>
+                                <div>
+                                    <div class="font-bold text-[#03594D] text-[15px]" th:text="${p.name}"></div>
+                                    <div class="text-[11px] text-gray-500 font-mono mt-0.5 flex gap-2">
+                                        <span th:if="${p.ingredient}" th:text="'HC: ' + ${p.ingredient}" class="bg-blue-50 text-blue-700 px-1 rounded"></span>
+                                        <span th:text="'SKU: ' + ${p.sku}"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex flex-col gap-1 items-start">
+                                <span th:if="${p.category == 'MEDICINE'}" class="px-2 py-0.5 bg-blue-50 text-blue-700 text-[10px] font-bold rounded border border-blue-100">THUỐC</span>
+                                <span th:if="${p.category == 'VACCINE'}" class="px-2 py-0.5 bg-purple-50 text-purple-700 text-[10px] font-bold rounded border border-purple-100">VACCINE</span>
+                                <span th:if="${p.category == 'CONSUMABLE'}" class="px-2 py-0.5 bg-gray-50 text-gray-600 text-[10px] font-bold rounded border border-gray-200">VẬT TƯ</span>
+                                
+                                <span th:if="${p.isPrescription}" class="px-2 py-0.5 bg-red-50 text-red-600 text-[10px] font-bold rounded border border-red-100">KÊ ĐƠN</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                             <div class="flex items-center gap-1">
+                                <span th:if="${p.targetSpecies == 'DOG' || p.targetSpecies == 'BOTH'}" class="material-symbols-outlined text-sm text-orange-500" title="Chó">pet_supplies</span>
+                                <span th:if="${p.targetSpecies == 'CAT' || p.targetSpecies == 'BOTH'}" class="material-symbols-outlined text-sm text-blue-500" title="Mèo">cruelty_free</span>
+                            </div>
+                            <div class="text-[10px] text-gray-400 mt-1" th:text="${p.productForm}"></div>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <div class="font-bold text-blue-600" th:text="${#numbers.formatDecimal(p.retailPrice, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></div>
+                            <div class="text-[10px] text-gray-400" th:text="'/' + ${p.unit}"></div>
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <span th:if="${p.stockQuantity > p.alertThreshold}" class="text-emerald-600 font-bold bg-emerald-50 px-2 py-1 rounded" th:text="${p.stockQuantity}"></span>
+                            <span th:if="${p.stockQuantity <= p.alertThreshold}" class="text-red-500 font-bold bg-red-50 px-2 py-1 rounded flex items-center justify-center gap-1" title="Sắp hết hàng">
+                                <span class="material-symbols-outlined text-[14px]">warning</span> <span th:text="${p.stockQuantity}"></span>
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-center flex justify-center gap-2">
+                            <button type="button" th:onclick="'openModalEdit(' + ${p.productId} + ')'" class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-blue-600 hover:bg-blue-50">
+                                <span class="material-symbols-outlined text-[18px]">edit</span>
+                            </button>
+                            <a th:href="@{'/admin/clinic/pharmacy/delete/' + ${p.productId}}" onclick="return confirm('Xóa thuốc này?')" class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-red-600 hover:bg-red-50">
+                                <span class="material-symbols-outlined text-[18px]">delete</span>
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div th:if="${#lists.isEmpty(products)}" class="p-12 text-center text-gray-400">
+                <span class="material-symbols-outlined text-5xl mb-2">medication</span>
+                <p>Chưa có dữ liệu thuốc.</p>
+            </div>
+        </div>
+
+        <div id="productModal" class="hidden fixed inset-0 z-[999] flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-[#03594D]/60 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
+            <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden animate-fade-in-up max-h-[90vh] overflow-y-auto">
+                
+                <form action="/admin/clinic/pharmacy/save" method="post" id="productForm" enctype="multipart/form-data">
+                    <input type="hidden" name="productId" id="pId">
+                    
+                    <div class="border-b border-gray-100 px-6 py-4 bg-[#F8F9FA] flex justify-between items-center sticky top-0 bg-white z-10">
+                        <h5 class="text-[#03594D] font-black text-xl" id="modalTitle">Nhập Thuốc Mới</h5>
+                        <button type="button" onclick="closeModal()" class="text-gray-400 hover:text-red-500"><span class="material-symbols-outlined">close</span></button>
+                    </div>
+
+                    <div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                        
+                        <div class="col-span-1">
+                             <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Hình ảnh</label>
+                             <div class="relative w-full aspect-square bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 hover:border-[#03594D] cursor-pointer group overflow-hidden transition-all">
+                                <input type="file" name="imageFile" accept="image/*" onchange="previewUpload(this)" 
+                                       class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20">
+                                <img id="pPreview" class="hidden absolute inset-0 w-full h-full object-cover z-10 bg-white">
+                                <div id="pPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center text-gray-400 z-0 group-hover:text-[#03594D]">
+                                    <span class="material-symbols-outlined text-3xl">add_photo_alternate</span>
+                                    <span class="text-xs font-bold mt-1">Chọn ảnh</span>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4 p-3 bg-red-50 rounded-lg border border-red-100">
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" name="isPrescription" id="pIsPrescription" class="w-4 h-4 text-red-600 rounded focus:ring-red-500">
+                                    <span class="text-sm font-bold text-red-700">Thuốc Kê Đơn (RX)</span>
+                                </label>
+                                <p class="text-[10px] text-red-500 mt-1 pl-6">Chỉ bán khi có toa bác sĩ.</p>
+                            </div>
+                        </div>
+
+                        <div class="col-span-2 grid grid-cols-2 gap-4">
+                            <div class="col-span-2">
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Tên Thuốc / Vật tư *</label>
+                                <input type="text" name="name" id="pName" required class="w-full h-10 px-3 rounded-lg border border-gray-200 focus:border-[#03594D] outline-none font-bold text-[#03594D]">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Mã SKU / Barcode</label>
+                                <input type="text" name="sku" id="pSku" class="w-full h-10 px-3 rounded-lg border border-gray-200 focus:border-[#03594D] outline-none text-sm">
+                            </div>
+                             <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Phân Loại</label>
+                                <select name="category" id="pCategory" class="w-full h-10 px-3 rounded-lg border border-gray-200 focus:border-[#03594D] outline-none text-sm">
+                                    <option value="MEDICINE">Thuốc (Medicine)</option>
+                                    <option value="VACCINE">Vaccine</option>
+                                    <option value="CONSUMABLE">Vật tư tiêu hao</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Loài Áp Dụng</label>
+                                <select name="targetSpecies" id="pSpecies" class="w-full h-10 px-3 rounded-lg border border-gray-200 focus:border-[#03594D] outline-none text-sm">
+                                    <option value="BOTH">Cả Chó & Mèo</option>
+                                    <option value="DOG">Chỉ Chó</option>
+                                    <option value="CAT">Chỉ Mèo</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Dạng Bào Chế</label>
+                                <select name="productForm" id="pForm" class="w-full h-10 px-3 rounded-lg border border-gray-200 focus:border-[#03594D] outline-none text-sm">
+                                    <option value="TABLET">Viên (Tablet)</option>
+                                    <option value="LIQUID">Dung dịch / Siro</option>
+                                    <option value="INJECTION">Thuốc Tiêm</option>
+                                    <option value="POWDER">Bột</option>
+                                    <option value="CREAM">Kem bôi / Mỡ</option>
+                                    <option value="OTHER">Khác</option>
+                                </select>
+                            </div>
+
+                            <div class="col-span-2">
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Hoạt chất chính</label>
+                                <input type="text" name="ingredient" id="pIngredient" placeholder="VD: Paracetamol 500mg..." class="w-full h-10 px-3 rounded-lg border border-gray-200 focus:border-[#03594D] outline-none text-sm">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Đơn vị tính</label>
+                                <input type="text" name="unit" id="pUnit" placeholder="Viên, Hộp..." required class="w-full h-10 px-3 rounded-lg border border-gray-200 focus:border-[#03594D] outline-none text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Tồn kho hiện tại</label>
+                                <input type="number" name="stockQuantity" id="pStock" value="0" class="w-full h-10 px-3 rounded-lg border border-gray-200 focus:border-[#03594D] outline-none text-sm font-bold">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Giá Nhập (VNĐ)</label>
+                                <input type="number" name="importPrice" id="pImportPrice" class="w-full h-10 px-3 rounded-lg border border-gray-200 focus:border-[#03594D] outline-none text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Giá Bán Lẻ (VNĐ)</label>
+                                <input type="number" name="retailPrice" id="pRetailPrice" required class="w-full h-10 px-3 rounded-lg border border-gray-200 focus:border-[#03594D] outline-none text-sm font-bold text-blue-600">
+                            </div>
+                        </div>
+
+                        <div class="col-span-3">
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Công dụng / Cách dùng</label>
+                            <textarea name="usage" id="pUsage" rows="2" class="w-full p-3 rounded-lg border border-gray-200 focus:border-[#03594D] outline-none text-sm"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-gray-100 px-6 py-4 bg-gray-50 flex justify-end gap-3 sticky bottom-0 bg-gray-50 z-10">
+                        <button type="button" onclick="closeModal()" class="px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-600 font-bold text-sm">Hủy</button>
+                        <button type="submit" class="px-6 py-2 rounded-lg bg-[#03594D] text-white font-bold text-sm hover:shadow-lg">Lưu Thuốc</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    
+        <script>
+            const modal = document.getElementById('productModal');
+            
+            function openModalCreate() {
+                document.getElementById('productForm').reset();
+                document.getElementById('pId').value = '';
+                document.getElementById('pIsPrescription').checked = false;
+                
+                // Reset ảnh
+                document.getElementById('pPreview').classList.add('hidden');
+                document.getElementById('pPlaceholder').classList.remove('hidden');
+
+                document.getElementById('modalTitle').innerText = 'Nhập Thuốc Mới';
+                modal.classList.remove('hidden');
+            }
+
+            function openModalEdit(id) {
+                fetch(`/admin/clinic/api/product/${id}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        document.getElementById('pId').value = data.productId;
+                        document.getElementById('pName').value = data.name;
+                        document.getElementById('pSku').value = data.sku;
+                        document.getElementById('pCategory').value = data.category;
+                        document.getElementById('pIngredient').value = data.ingredient;
+                        document.getElementById('pUnit').value = data.unit;
+                        document.getElementById('pStock').value = data.stockQuantity;
+                        document.getElementById('pImportPrice').value = data.importPrice;
+                        document.getElementById('pRetailPrice').value = data.retailPrice;
+                        document.getElementById('pUsage').value = data.usage;
+                        
+                        // Các trường mới
+                        document.getElementById('pSpecies').value = data.targetSpecies || 'BOTH';
+                        document.getElementById('pForm').value = data.productForm || 'TABLET';
+                        document.getElementById('pIsPrescription').checked = data.isPrescription;
+
+                        // Xử lý ảnh
+                        const img = document.getElementById('pPreview');
+                        const ph = document.getElementById('pPlaceholder');
+                        if(data.imageFileId) {
+                            img.src = '/api/files/' + data.imageFileId;
+                            img.classList.remove('hidden');
+                            ph.classList.add('hidden');
+                        } else {
+                            img.classList.add('hidden');
+                            ph.classList.remove('hidden');
+                        }
+                        
+                        document.getElementById('modalTitle').innerText = 'Cập Nhật Thuốc';
+                        modal.classList.remove('hidden');
+                    })
+                    .catch(err => alert('Lỗi tải dữ liệu: ' + err));
+            }
+
+            function closeModal() {
+                modal.classList.add('hidden');
+            }
+
+            function previewUpload(input) {
+                if (input.files && input.files[0]) {
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        var img = document.getElementById('pPreview');
+                        var ph = document.getElementById('pPlaceholder');
+                        img.src = e.target.result;
+                        img.classList.remove('hidden');
+                        ph.classList.add('hidden');
+                    }
+                    reader.readAsDataURL(input.files[0]);
+                }
+            }
+        </script>
+    </section>
+</div>
+</body>
+</html>

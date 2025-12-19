@@ -1,6 +1,5 @@
 package g6shenpcare.controller.admin;
 
-import g6shenpcare.entity.MasterWeightRange;
 import g6shenpcare.entity.ServiceCategory;
 import g6shenpcare.entity.ServicePricingMatrix;
 import g6shenpcare.entity.Services;
@@ -15,17 +14,17 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.security.Principal;
 import java.math.BigDecimal;
+import java.security.Principal;
 import java.util.List;
 
 @Controller
 @RequestMapping("/admin/services")
-public class AdminServiceController {
+public class AdminSpaController {
 
     private final CatalogService catalogService;
 
-    public AdminServiceController(CatalogService catalogService) {
+    public AdminSpaController(CatalogService catalogService) {
         this.catalogService = catalogService;
     }
 
@@ -33,80 +32,83 @@ public class AdminServiceController {
         String username = (principal != null) ? principal.getName() : "admin";
         model.addAttribute("currentUser", username);
         model.addAttribute("clinicName", "ShenPCare Spa");
-        model.addAttribute("activeMenu", "services");
+        model.addAttribute("activeMenu", "spa-services");
     }
 
     // =========================================================
-    // 1. DASHBOARD & LIST
+    // 1. QUẢN LÝ DỊCH VỤ (SPA & GROOMING ONLY)
     // =========================================================
     @GetMapping
-    public String listServices(Model model, Principal principal,
+    public String listSpaServices(Model model, Principal principal,
             @RequestParam(name = "page", defaultValue = "1") Integer page) {
         addCommonHeader(model, principal);
-        model.addAttribute("pageTitle", "Quản lý Dịch vụ");
-        
-        Page<Services> pageContent = catalogService.getServices("ALL", page, 10);
+        model.addAttribute("pageTitle", "Dịch vụ Spa & Grooming");
+
+        // [LOGIC MỚI] Chỉ lấy dịch vụ thuộc nhóm SPA
+        Page<Services> pageContent = catalogService.getServicesBySystem("SPA", page, 10);
+
         model.addAttribute("services", pageContent);
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", pageContent.getTotalPages());
-        model.addAttribute("categories", catalogService.getAllCategories()); // Cho dropdown filter
-        return "admin/services";
+
+        // View riêng cho Spa
+        return "admin/spa/services-list";
     }
 
-    // =========================================================
-    // 2. CÁC TRANG TẠO MỚI (URL TĨNH - QUAN TRỌNG ĐẶT TRƯỚC ID)
-    // =========================================================
-
-    // Trang tạo Dịch vụ Lẻ / Addon
+    // Trang tạo Dịch vụ Spa Mới
     @GetMapping("/new")
-    public String newService(@RequestParam(name = "type", defaultValue = "SINGLE") String type, 
-                             Model model, Principal principal) {
+    public String newSpaService(Model model, Principal principal) {
         addCommonHeader(model, principal);
+
         Services s = new Services();
-        
-        // Khởi tạo giá trị mặc định tránh lỗi View
-        s.setServiceType(type);
-        s.setPriceModel("FIXED"); 
+        s.setServiceType("SINGLE");
+        s.setPriceModel("FIXED"); // Mặc định Fixed, có thể đổi sang Matrix
         s.setPriceUnit("LẦN");
         s.setFixedPrice(BigDecimal.ZERO);
         s.setActive(true);
         s.setShowOnWeb(true);
         s.setSortOrder(0);
-        
+
         model.addAttribute("service", s);
-        model.addAttribute("categories", catalogService.getActiveCategories());
+        // [LOGIC MỚI] Chỉ load danh mục thuộc SPA
+        model.addAttribute("categories", catalogService.getCategoriesByType("SPA"));
         model.addAttribute("isEdit", false);
-        return "admin/service-detail";
+
+        return "admin/spa/service-detail";
     }
 
-    // Trang tạo Combo (Phải có hàm này để tránh lỗi 400)
-    @GetMapping("/new-combo") 
+    // Trang tạo Combo (Chức năng đặc thù của Spa)
+    @GetMapping("/new-combo")
     public String createCombo(Model model, Principal principal) {
         addCommonHeader(model, principal);
-        
+
         Services s = new Services();
-        s.setServiceType("COMBO"); 
+        s.setServiceType("COMBO");
         s.setPriceModel("FIXED");
         s.setTargetSpecies("BOTH");
         s.setActive(true);
         s.setFixedPrice(BigDecimal.ZERO);
-        
+
         model.addAttribute("service", s);
-        model.addAttribute("categories", catalogService.getActiveCategories());
+        // [LOGIC MỚI] Chỉ load danh mục SPA
+        model.addAttribute("categories", catalogService.getCategoriesByType("SPA"));
+
+        // Load danh sách dịch vụ con (Cũng nên lọc chỉ lấy SPA Single)
+        // Tạm thời lấy hết Single, logic lọc kỹ hơn nằm ở Service
         model.addAttribute("singleServices", catalogService.getServices("SINGLE", 1, 100).getContent());
-        
-        return "admin/combo-create";
+
+        return "admin/spa/combo-create";
     }
 
     // Xử lý lưu Combo
     @PostMapping("/save-combo")
     public String saveCombo(@ModelAttribute("service") Services combo,
-                            @RequestParam("imageFile") MultipartFile imageFile,
-                            @RequestParam(value = "childIds", required = false) List<Integer> childIds,
-                            RedirectAttributes ra) {
+            @RequestParam("imageFile") MultipartFile imageFile,
+            @RequestParam(value = "childIds", required = false) List<Integer> childIds,
+            RedirectAttributes ra) {
         try {
             catalogService.createCombo(combo, imageFile, childIds);
-            ra.addFlashAttribute("message", "Đã tạo Combo thành công.");
+            ra.addFlashAttribute("message", "Đã tạo Combo Spa thành công.");
             return "redirect:/admin/services?tab=COMBO";
         } catch (Exception e) {
             e.printStackTrace();
@@ -116,44 +118,46 @@ public class AdminServiceController {
     }
 
     // =========================================================
-    // 3. TRANG CHI TIẾT / SỬA (URL ĐỘNG)
+    // 2. CHỈNH SỬA & LƯU
     // =========================================================
-
-    // Regex chỉ nhận số để an toàn tuyệt đối
     @GetMapping("/{id:\\d+}")
     public String editService(@PathVariable("id") Integer id, Model model, Principal principal) {
         addCommonHeader(model, principal);
         try {
             Services s = catalogService.getServiceById(id);
+
+            // [AN TOÀN] Kiểm tra nếu đây là dịch vụ CLINIC thì đá sang Controller kia
+            if (s.getServiceCategory() != null && "CLINIC".equals(s.getServiceCategory().getCategoryType())) {
+                return "redirect:/admin/clinic/services/" + id;
+            }
+
             model.addAttribute("service", s);
-            model.addAttribute("categories", catalogService.getActiveCategories());
+            model.addAttribute("categories", catalogService.getCategoriesByType("SPA"));
             model.addAttribute("isEdit", true);
-            
-            // Điều hướng sang trang sửa tương ứng
+
             if ("COMBO".equals(s.getServiceType()) || s.isCombo()) {
                 model.addAttribute("singleServices", catalogService.getServices("SINGLE", 1, 100).getContent());
-                // TODO: Load checked items (logic view xử lý)
-                return "admin/combo-create";
+                return "admin/spa/combo-create";
             }
-            return "admin/service-detail";
+            return "admin/spa/service-detail";
         } catch (Exception e) {
-            return "redirect:/admin/services"; 
+            return "redirect:/admin/services";
         }
     }
 
     @PostMapping("/save")
     public String saveService(@Valid @ModelAttribute("service") Services service,
-                              BindingResult bindingResult,
-                              @RequestParam("imageFile") MultipartFile imageFile,
-                              Model model, RedirectAttributes ra) {
+            BindingResult bindingResult,
+            @RequestParam("imageFile") MultipartFile imageFile,
+            Model model, RedirectAttributes ra) {
         if (bindingResult.hasErrors()) {
-            model.addAttribute("categories", catalogService.getActiveCategories());
+            model.addAttribute("categories", catalogService.getCategoriesByType("SPA"));
             model.addAttribute("isEdit", service.getServiceId() != null);
-            return "admin/service-detail";
+            return "admin/spa/service-detail";
         }
         try {
             catalogService.saveService(service, imageFile);
-            ra.addFlashAttribute("message", "Đã lưu thành công.");
+            ra.addFlashAttribute("message", "Đã lưu dịch vụ Spa.");
         } catch (Exception e) {
             ra.addFlashAttribute("error", "Lỗi: " + e.getMessage());
         }
@@ -161,16 +165,15 @@ public class AdminServiceController {
     }
 
     // =========================================================
-    // 4. ACTIONS (DELETE, DUPLICATE...)
+    // 3. ACTIONS (DELETE, DUPLICATE, TOGGLE)
     // =========================================================
-    
     @PostMapping("/delete")
     public String delete(@RequestParam("id") Integer id, RedirectAttributes ra) {
-        try { 
-            catalogService.deleteService(id); 
-            ra.addFlashAttribute("message", "Đã xóa."); 
-        } catch (Exception e) { 
-            ra.addFlashAttribute("error", "Không thể xóa (Dịch vụ đang được sử dụng)."); 
+        try {
+            catalogService.deleteService(id);
+            ra.addFlashAttribute("message", "Đã xóa dịch vụ.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "Không thể xóa (Dịch vụ đang có đơn hàng).");
         }
         return "redirect:/admin/services";
     }
@@ -181,7 +184,7 @@ public class AdminServiceController {
         ra.addFlashAttribute("message", "Đã cập nhật trạng thái.");
         return "redirect:/admin/services";
     }
-    
+
     @PostMapping("/duplicate")
     public String duplicate(@RequestParam("id") Integer id, RedirectAttributes ra) {
         catalogService.duplicateService(id);
@@ -190,22 +193,17 @@ public class AdminServiceController {
     }
 
     // =========================================================
-    // 5. AJAX APIS (MATRIX & DATA)
+    // 4. API CHO MATRIX PRICING (Đặc thù Spa)
     // =========================================================
-
+    // API lấy list (giữ nguyên cho Ajax call nếu cần)
     @GetMapping("/api/list")
     @ResponseBody
     public ResponseEntity<Page<Services>> getServicesApi(
             @RequestParam(name = "page", defaultValue = "1") Integer page,
             @RequestParam(name = "size", defaultValue = "10") Integer size,
             @RequestParam(name = "type", defaultValue = "ALL") String type) {
+        // Vẫn cho phép lấy ALL qua API nếu cần, hoặc có thể giới hạn lại SPA
         return ResponseEntity.ok(catalogService.getServices(type, page, size));
-    }
-
-    @GetMapping("/api/services-by-category")
-    @ResponseBody
-    public ResponseEntity<List<Services>> getServicesByCat(@RequestParam("id") Integer catId) {
-        return ResponseEntity.ok(catalogService.getServicesByCategory(catId));
     }
 
     @GetMapping("/{id}/matrix")
@@ -231,28 +229,82 @@ public class AdminServiceController {
         catalogService.deleteMatrix(id);
         return ResponseEntity.ok().build();
     }
-    
+
     // =========================================================
-    // 6. QUẢN LÝ DANH MỤC (CATEGORY)
+    // 5. QUẢN LÝ DANH MỤC (CHỈ SPA CATEGORIES)
     // =========================================================
-    
     @GetMapping("/categories")
-    public String categories(@RequestParam(name = "keyword", required = false) String keyword, 
-                             Model model, Principal principal) {
+    public String categories(@RequestParam(name = "keyword", required = false) String keyword,
+            Model model, Principal principal) {
         addCommonHeader(model, principal);
-        model.addAttribute("categories", catalogService.getCategories(keyword));
+
+        if (keyword != null && !keyword.isEmpty()) {
+            // Tìm kiếm (Lưu ý: Bạn có thể cần update hàm search để chỉ tìm trong SPA nếu muốn kỹ hơn)
+            model.addAttribute("categories", catalogService.getCategories(keyword));
+        } else {
+            // [SỬA LẠI ĐOẠN NÀY] 
+            // Thay vì dùng getCategoriesByType (chỉ lấy Active), ta dùng hàm lấy tất cả
+            model.addAttribute("categories", catalogService.getAllCategoriesBySystem("SPA"));
+        }
+
         model.addAttribute("serviceCounts", catalogService.getCategoryCounts());
         model.addAttribute("keyword", keyword);
-        return "admin/categories";
+        model.addAttribute("pageTitle", "Danh mục Spa & Grooming");
+
+        return "admin/spa/categories";
     }
-    
+
+    @GetMapping("/categories/new")
+    public String newCategory(Model model, Principal principal) {
+        addCommonHeader(model, principal);
+
+        ServiceCategory cat = new ServiceCategory();
+        cat.setActive(true);
+        cat.setCategoryType("SPA"); // [QUAN TRỌNG] Mặc định là SPA
+
+        model.addAttribute("category", cat);
+        model.addAttribute("pageTitle", "Thêm Danh mục Spa Mới");
+        model.addAttribute("isEdit", false);
+
+        return "admin/spa/category-detail";
+    }
+
+    @GetMapping("/categories/{id}")
+    public String editCategory(@PathVariable("id") Integer id, Model model, Principal principal) {
+        addCommonHeader(model, principal);
+
+        ServiceCategory cat = catalogService.getAllCategories().stream()
+                .filter(c -> c.getServiceCategoryId().equals(id))
+                .findFirst()
+                .orElse(new ServiceCategory());
+
+        // Validate chéo
+        if ("CLINIC".equals(cat.getCategoryType())) {
+            return "redirect:/admin/clinic/specialties";
+        }
+
+        model.addAttribute("category", cat);
+        model.addAttribute("pageTitle", "Chỉnh sửa Danh mục");
+        model.addAttribute("isEdit", true);
+
+        return "admin/spa/category-detail";
+    }
+
     @PostMapping("/categories/save")
-    public String saveCategory(ServiceCategory cat, RedirectAttributes ra) {
+    public String saveCategory(@ModelAttribute ServiceCategory cat,
+            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
+            RedirectAttributes ra) {
         try {
-            catalogService.saveCategory(cat);
+            // Force Type luôn là SPA để tránh nhầm lẫn
+            if (cat.getCategoryType() == null || cat.getCategoryType().isEmpty()) {
+                cat.setCategoryType("SPA");
+            }
+
+            catalogService.saveCategory(cat, imageFile);
             ra.addFlashAttribute("message", "Đã lưu danh mục thành công.");
         } catch (Exception e) {
             ra.addFlashAttribute("error", "Lỗi: " + e.getMessage());
+            return "redirect:/admin/services/categories/new";
         }
         return "redirect:/admin/services/categories";
     }
@@ -294,5 +346,12 @@ public class AdminServiceController {
             ra.addFlashAttribute("error", "Lỗi: " + e.getMessage());
         }
         return "redirect:/admin/services/categories";
+    }
+
+    // [BỔ SUNG] API lấy danh sách dịch vụ theo danh mục (Dùng cho Modal xem nhanh & Move)
+    @GetMapping("/api/services-by-category")
+    @ResponseBody
+    public ResponseEntity<List<Services>> getServicesByCat(@RequestParam("id") Integer catId) {
+        return ResponseEntity.ok(catalogService.getServicesByCategory(catId));
     }
 }

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html class="light" lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="admin/layout :: adminHead"><title>Chi tiết Dịch vụ Y tế</title></head>
+<body class="font-display bg-background-light">
+<div th:replace="admin/layout :: adminShell(~{::section}, ${activeMenu})">
+<section>
+    <div class="mx-auto max-w-4xl"> <div class="mb-6 flex items-center justify-between">
+            <div>
+                <a th:href="@{/admin/clinic/services}" class="text-sm text-gray-500 hover:text-[#03594D] flex items-center gap-1 mb-2">
+                    <span class="material-symbols-outlined text-sm">arrow_back</span> Quay lại danh sách
+                </a>
+                <h1 class="text-[#03594D] text-3xl font-black" th:text="${isEdit} ? 'Chỉnh sửa Dịch vụ Y tế' : 'Thêm Dịch vụ Y tế Mới'"></h1>
+            </div>
+            <div th:if="${isEdit}">
+                <form th:action="@{/admin/clinic/services/delete}" method="post" onsubmit="return confirm('Bạn có chắc muốn xóa dịch vụ này không?');">
+                    <input type="hidden" name="id" th:value="${service.serviceId}">
+                    <button type="submit" class="text-red-600 text-sm font-bold bg-red-50 px-4 py-2 rounded-lg hover:bg-red-100 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">delete</span> Xóa
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <form th:action="@{/admin/clinic/services/save}" th:object="${service}" method="post" enctype="multipart/form-data" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <input type="hidden" th:field="*{serviceId}"/>
+            <input type="hidden" th:field="*{version}"/>
+            <input type="hidden" th:field="*{combo}" value="false"/>
+            <input type="hidden" th:field="*{priceModel}" value="FIXED"/>
+            <input type="hidden" th:field="*{serviceType}" value="SINGLE"/>
+
+            <div class="lg:col-span-1 space-y-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-[#E3E5D2]">
+                    <label class="block text-sm font-bold text-[#03594D] mb-3">Hình ảnh minh họa</label>
+                    <div class="relative w-full aspect-square bg-gray-50 rounded-xl border-2 border-dashed hover:border-[#D8E268] cursor-pointer group overflow-hidden">
+                        <input type="file" name="imageFile" accept="image/*" onchange="previewImage(this)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"/>
+                        <img id="imagePreview" th:if="*{imageFileId != null}" th:src="@{'/api/files/' + *{imageFileId}}" class="absolute inset-0 w-full h-full object-cover z-10"/>
+                        <img id="imagePreview" th:if="*{imageFileId == null}" class="hidden absolute inset-0 w-full h-full object-cover z-10"/>
+                        <div id="uploadPlaceholder" th:classappend="*{imageFileId != null} ? 'hidden' : ''" class="absolute inset-0 flex flex-col items-center justify-center text-gray-400 z-0">
+                            <span class="material-symbols-outlined text-4xl mb-2">add_photo_alternate</span>
+                            <span class="text-xs font-medium">Tải ảnh lên</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-[#E3E5D2]">
+                     <div class="flex justify-between items-center">
+                        <span class="text-sm font-bold text-gray-700">Trạng thái hoạt động</span>
+                        <input type="checkbox" th:field="*{active}" class="w-5 h-5 accent-[#03594D]">
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2 space-y-6">
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-[#E3E5D2]">
+                    <h3 class="text-xl font-bold text-[#03594D] mb-6 flex items-center gap-2"><span class="material-symbols-outlined">edit_note</span> Thông tin chi tiết</h3>
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block"><span class="label">Tên Dịch vụ / Kỹ thuật *</span><input type="text" th:field="*{name}" required class="input-field" placeholder="VD: Khám nội tổng quát..."/></label>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-6">
+                            <label class="block"><span class="label">Chuyên khoa *</span>
+                                <select th:field="*{serviceCategoryId}" required class="input-field">
+                                    <option th:each="cat : ${categories}" th:value="${cat.serviceCategoryId}" th:text="${cat.name}"></option>
+                                </select>
+                            </label>
+                            <label class="block"><span class="label">Loài áp dụng</span>
+                                <select th:field="*{targetSpecies}" class="input-field">
+                                    <option value="BOTH">Cả hai</option>
+                                    <option value="DOG">Chó</option>
+                                    <option value="CAT">Mèo</option>
+                                </select>
+                            </label>
+                        </div>
+
+                        <div class="p-5 bg-blue-50 rounded-xl border border-blue-100 grid grid-cols-2 gap-6">
+                            <label><span class="label text-blue-800">Giá niêm yết (VNĐ)</span>
+                                <input type="number" th:field="*{fixedPrice}" class="input-field font-mono font-bold text-blue-700" placeholder="0">
+                            </label>
+                            <label><span class="label text-blue-800">Đơn vị tính</span>
+                                <select th:field="*{priceUnit}" class="input-field text-blue-700">
+                                    <option value="LẦN">Lần</option>
+                                    <option value="MŨI">Mũi (Tiêm)</option>
+                                    <option value="CA">Ca (Phẫu thuật)</option>
+                                    <option value="NGÀY">Ngày (Lưu chuồng)</option>
+                                </select>
+                            </label>
+                        </div>
+
+                        <label class="block"><span class="label">Mô tả / Ghi chú kỹ thuật</span><textarea th:field="*{description}" rows="4" class="input-field h-auto py-3"></textarea></label>
+                    </div>
+                    <div class="flex justify-end gap-3 mt-6">
+                        <button type="submit" class="px-8 py-3 rounded-xl bg-[#D8E268] text-[#03594D] font-bold shadow-md hover:shadow-lg transition-all">Lưu Dịch vụ</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var img = document.getElementById('imagePreview');
+                    var ph = document.getElementById('uploadPlaceholder');
+                    if(img) { img.src = e.target.result; img.classList.remove('hidden'); }
+                    if(ph) ph.classList.add('hidden');
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+    <style>
+        .label { @apply block text-xs font-bold text-gray-500 uppercase mb-1; }
+        .input-field { @apply w-full h-11 px-4 rounded-xl border border-gray-200 bg-[#F8F9FA] focus:bg-white focus:ring-2 focus:ring-[#D8E268] outline-none transition-all; }
+    </style>
+</section>
+</div>
+</body>
+</html>

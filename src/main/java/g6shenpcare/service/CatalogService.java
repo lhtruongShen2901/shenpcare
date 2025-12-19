@@ -14,9 +14,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
 @Service
 public class CatalogService {
@@ -45,6 +45,7 @@ public class CatalogService {
     // =========================================================
     // 1. QUẢN LÝ DỊCH VỤ (SERVICE CRUD)
     // =========================================================
+    // Lấy danh sách chung (Cũ)
     public Page<Services> getServices(String type, int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("sortOrder").ascending().and(Sort.by("serviceId").descending()));
         if ("ALL".equals(type)) {
@@ -53,21 +54,28 @@ public class CatalogService {
         return servicesRepo.findByServiceType(type, pageable);
     }
 
+    // [MỚI] Lấy dịch vụ theo hệ thống (SPA hoặc CLINIC)
+    public Page<Services> getServicesBySystem(String systemType, int page, int size) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("sortOrder").ascending().and(Sort.by("serviceId").descending()));
+        return servicesRepo.findByCategoryType(systemType, pageable);
+    }
+
     public Services getServiceById(Integer id) {
         return servicesRepo.findById(id).orElseThrow(() -> new IllegalArgumentException("Service not found"));
     }
 
     @Transactional
     public Services saveService(Services service, MultipartFile imageFile) throws IOException {
-        // Xử lý ảnh
+        // 1. Xử lý upload ảnh
         if (imageFile != null && !imageFile.isEmpty()) {
-            // Copy lại logic xử lý ảnh cũ vào đây
+            // Xóa ảnh cũ nếu có
             if (service.getServiceId() != null) {
                 Services old = servicesRepo.findById(service.getServiceId()).orElse(null);
                 if (old != null && old.getImageFileId() != null) {
                     fileStorageRepo.deleteById(old.getImageFileId());
                 }
             }
+            // Lưu ảnh mới
             FileStorage file = new FileStorage();
             file.setFileName(imageFile.getOriginalFilename());
             file.setContentType(imageFile.getContentType());
@@ -77,6 +85,7 @@ public class CatalogService {
             FileStorage savedFile = fileStorageRepo.save(file);
             service.setImageFileId(savedFile.getFileId());
         } else if (service.getServiceId() != null) {
+            // Giữ lại ảnh cũ nếu không upload mới
             Services old = servicesRepo.findById(service.getServiceId()).orElse(null);
             if (old != null) {
                 service.setImageFileId(old.getImageFileId());
@@ -86,7 +95,7 @@ public class CatalogService {
             }
         }
 
-        // Logic mặc định
+        // 2. Thiết lập giá trị mặc định
         if ("FIXED".equals(service.getPriceModel()) && service.getFixedPrice() == null) {
             service.setFixedPrice(BigDecimal.ZERO);
         }
@@ -94,7 +103,7 @@ public class CatalogService {
             service.setVersion(0);
         }
 
-        // [QUAN TRỌNG] Return đối tượng đã lưu (chứa ID vừa sinh ra)
+        // 3. Lưu xuống DB
         return servicesRepo.save(service);
     }
 
@@ -138,23 +147,23 @@ public class CatalogService {
         }
     }
 
-  // 2. [SỬA LỖI COMBO] Sử dụng đối tượng trả về
     @Transactional
     public void createCombo(Services combo, MultipartFile img, List<Integer> childIds) throws IOException {
         combo.setServiceType("COMBO");
         combo.setPriceModel("FIXED");
-        
-        // [FIX] Lấy đối tượng đã lưu để chắc chắn có ID
+
+        // Lưu Combo để có ID trước
         Services savedCombo = saveService(combo, img);
-        
-        // Xóa cũ nếu update
+
+        // Xóa các item cũ nếu đang update
         List<ServiceComboItems> existing = comboItemsRepo.findByComboServiceId(savedCombo.getServiceId());
         comboItemsRepo.deleteAll(existing);
 
+        // Thêm các item mới
         if (childIds != null) {
             for (Integer childId : childIds) {
                 ServiceComboItems item = new ServiceComboItems();
-                item.setComboServiceId(savedCombo.getServiceId()); // ID giờ đã có, không bị Null nữa
+                item.setComboServiceId(savedCombo.getServiceId());
                 item.setSingleServiceId(childId);
                 comboItemsRepo.save(item);
             }
@@ -168,20 +177,24 @@ public class CatalogService {
         Services s = getServiceById(serviceId);
         Pets p = petRepo.findById(petId).orElseThrow(() -> new IllegalArgumentException("Pet not found"));
 
+        // 1. Giá cố định
         if ("FIXED".equals(s.getPriceModel())) {
             return s.getFixedPrice();
         }
 
+        // 2. Giá theo đơn vị (VD: 50k / KG)
         if ("PER_UNIT".equals(s.getPriceModel()) && "KG".equals(s.getPriceUnit())) {
             BigDecimal weight = BigDecimal.valueOf(p.getWeightKg() != null ? p.getWeightKg() : 0);
             return s.getFixedPrice().multiply(weight);
         }
 
+        // 3. Giá ma trận (Matrix) - Chỉ cho Spa
         if ("MATRIX".equals(s.getPriceModel())) {
             String species = p.getSpecies();
             String coat = (p.getCoatLength() != null) ? p.getCoatLength() : "SHORT";
             Float weight = (p.getWeightKg() != null) ? p.getWeightKg() : 0f;
 
+            // Tìm giá khớp nhất
             List<ServicePricingMatrix> matches = pricingRepo.findMatchingPrice(
                     serviceId, species, coat, weight, PageRequest.of(0, 1)
             );
@@ -191,7 +204,7 @@ public class CatalogService {
             }
         }
 
-        return BigDecimal.ZERO;
+        return BigDecimal.ZERO; // Fallback
     }
 
     // =========================================================
@@ -204,6 +217,15 @@ public class CatalogService {
         return categoryRepo.findAll();
     }
 
+    // [MỚI] Lấy danh mục theo loại (SPA hoặc CLINIC)
+    public List<ServiceCategory> getCategoriesByType(String type) {
+        return categoryRepo.findByCategoryTypeAndActiveTrue(type);
+    }
+
+    public List<ServiceCategory> getAllCategoriesBySystem(String type) {
+        return categoryRepo.findByCategoryType(type);
+    }
+
     public List<ServiceCategory> getAllCategories() {
         return categoryRepo.findAll();
     }
@@ -213,14 +235,38 @@ public class CatalogService {
     }
 
     @Transactional
-    public void saveCategory(ServiceCategory category) {
+    public void saveCategory(ServiceCategory category, MultipartFile imageFile) throws IOException {
+        // Xử lý ảnh
+        if (imageFile != null && !imageFile.isEmpty()) {
+            if (category.getServiceCategoryId() != null) {
+                ServiceCategory old = categoryRepo.findById(category.getServiceCategoryId()).orElse(null);
+                if (old != null && old.getImageFileId() != null) {
+                    fileStorageRepo.deleteById(old.getImageFileId());
+                }
+            }
+            FileStorage file = new FileStorage();
+            file.setFileName(imageFile.getOriginalFilename());
+            file.setContentType(imageFile.getContentType());
+            file.setFileSizeBytes(imageFile.getSize());
+            file.setData(imageFile.getBytes());
+            file.setUploadedAt(LocalDateTime.now());
+            FileStorage savedFile = fileStorageRepo.save(file);
+
+            category.setImageFileId(savedFile.getFileId());
+        } else if (category.getServiceCategoryId() != null) {
+            ServiceCategory old = categoryRepo.findById(category.getServiceCategoryId()).orElse(null);
+            if (old != null) {
+                category.setImageFileId(old.getImageFileId());
+            }
+        }
+
         if (category.getServiceCategoryId() == null) {
             category.setActive(true);
         }
         categoryRepo.save(category);
     }
 
-   // 3. [TÍNH NĂNG MỚI] Xóa danh mục nâng cao (Option 3)
+    // Xử lý xóa danh mục nâng cao (3 options)
     @Transactional
     public void deleteCategoryWithAdvancedOption(Integer catId, String action, Integer targetCatId, List<Integer> idsToMove) {
         ServiceCategory cat = categoryRepo.findById(catId)
@@ -228,27 +274,22 @@ public class CatalogService {
 
         if ("JUST_DELETE".equals(action)) {
             cat.setActive(false);
-        } 
-        else if ("DISABLE_SERVICES".equals(action)) {
+        } else if ("DISABLE_SERVICES".equals(action)) {
             servicesRepo.disableServicesByCategory(catId);
             cat.setActive(false);
-        } 
-        else if ("MOVE_SERVICES".equals(action)) {
+        } else if ("MOVE_SERVICES".equals(action)) {
             if (targetCatId != null) {
                 servicesRepo.moveServicesToCategory(catId, targetCatId);
             }
             cat.setActive(false);
-        } 
-        else if ("SELECTIVE_MOVE".equals(action)) { // [MỚI] Option 3
-            // Lấy tất cả dịch vụ trong nhóm cũ
+        } else if ("SELECTIVE_MOVE".equals(action)) {
             List<Services> children = servicesRepo.findByServiceCategoryIdAndActiveTrue(catId);
-            
             for (Services s : children) {
                 if (idsToMove != null && idsToMove.contains(s.getServiceId())) {
-                    // Nếu được chọn -> Chuyển sang nhóm mới
-                    if (targetCatId != null) s.setServiceCategoryId(targetCatId);
+                    if (targetCatId != null) {
+                        s.setServiceCategoryId(targetCatId);
+                    }
                 } else {
-                    // Nếu không chọn -> Ẩn đi
                     s.setActive(false);
                 }
                 servicesRepo.save(s);
@@ -258,12 +299,22 @@ public class CatalogService {
         categoryRepo.save(cat);
     }
 
-    // Hàm hỗ trợ lấy list con để hiện lên Modal
+    // Hỗ trợ View
     public List<Services> getServicesByCategory(Integer catId) {
         return servicesRepo.findByServiceCategoryIdAndActiveTrue(catId);
     }
 
-    // Hàm Mở khóa & Xóa cứng (Giữ nguyên logic cũ nhưng gom vào đây cho gọn)
+    public Map<Integer, Long> getCategoryCounts() {
+        List<Object[]> results = servicesRepo.countServicesByCategory();
+        Map<Integer, Long> map = new HashMap<>();
+        for (Object[] row : results) {
+            Integer catId = (Integer) row[0];
+            Long count = (Long) row[1];
+            map.put(catId, count);
+        }
+        return map;
+    }
+
     @Transactional
     public void activateCategory(Integer id) {
         ServiceCategory cat = categoryRepo.findById(id).orElseThrow();
@@ -277,18 +328,6 @@ public class CatalogService {
             throw new IllegalStateException("Không thể xóa danh mục đang chứa dịch vụ.");
         }
         categoryRepo.deleteById(id);
-    }
-
-    // [MỚI] Lấy Map thống kê số lượng
-    public Map<Integer, Long> getCategoryCounts() {
-        List<Object[]> results = servicesRepo.countServicesByCategory();
-        Map<Integer, Long> map = new HashMap<>();
-        for (Object[] row : results) {
-            Integer catId = (Integer) row[0];
-            Long count = (Long) row[1];
-            map.put(catId, count);
-        }
-        return map;
     }
 
     // =========================================================
@@ -310,4 +349,5 @@ public class CatalogService {
     public void deleteMatrix(Integer id) {
         pricingRepo.deleteById(id);
     }
+
 }

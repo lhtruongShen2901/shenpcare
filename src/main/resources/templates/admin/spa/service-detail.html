@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html class="light" lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="admin/layout :: adminHead"><title>Chi tiết Dịch vụ</title></head>
+<head th:replace="admin/layout :: adminHead"><title>Chi tiết Dịch vụ Spa</title></head>
 <body class="font-display bg-background-light">
 <div th:replace="admin/layout :: adminShell(~{::section}, ${activeMenu})">
 <section>
@@ -10,7 +10,7 @@
                 <a th:href="@{/admin/services}" class="text-sm text-gray-500 hover:text-[#03594D] flex items-center gap-1 mb-2">
                     <span class="material-symbols-outlined text-sm">arrow_back</span> Quay lại danh sách
                 </a>
-                <h1 class="text-[#03594D] text-3xl font-black" th:text="${isEdit} ? 'Chỉnh sửa Dịch vụ' : 'Thêm Dịch vụ Mới'"></h1>
+                <h1 class="text-[#03594D] text-3xl font-black" th:text="${isEdit} ? 'Chỉnh sửa Dịch vụ Spa' : 'Thêm Dịch vụ Spa Mới'"></h1>
             </div>
             <div th:if="${isEdit}">
                 <form th:action="@{/admin/services/delete}" method="post" onsubmit="return confirm('Bạn có chắc muốn xóa dịch vụ này không?');">
@@ -64,7 +64,7 @@
                     <h3 class="text-xl font-bold text-[#03594D] mb-6 flex items-center gap-2"><span class="material-symbols-outlined">edit_note</span> Thông tin cơ bản</h3>
                     <div class="space-y-6">
                         <div class="grid grid-cols-2 gap-6">
-                            <label class="block"><span class="label">Tên dịch vụ *</span><input type="text" th:field="*{name}" required class="input-field" placeholder="VD: Cạo vôi răng..."/></label>
+                            <label class="block"><span class="label">Tên dịch vụ *</span><input type="text" th:field="*{name}" required class="input-field" placeholder="VD: Tắm Gội..."/></label>
                             <label class="block"><span class="label">Danh mục *</span>
                                 <select th:field="*{serviceCategoryId}" required class="input-field">
                                     <option th:each="cat : ${categories}" th:value="${cat.serviceCategoryId}" th:text="${cat.name}"></option>
@@ -77,14 +77,14 @@
                                 <span class="label text-blue-800">Mô hình tính giá</span>
                                 <select id="priceModelSelect" th:field="*{priceModel}" class="w-full mt-1 p-2.5 rounded-lg border border-blue-200 font-bold text-blue-800" onchange="togglePriceUI()">
                                     <option value="FIXED">Giá Cố định</option>
-                                    <option value="MATRIX">Giá theo Cân nặng</option>
-                                    <option value="PER_UNIT">Giá theo Đơn vị</option>
+                                    <option value="MATRIX">Giá theo Cân nặng (Matrix)</option>
+                                    <option value="PER_UNIT">Giá theo Đơn vị (VD: Kg)</option>
                                 </select>
                             </label>
                             <div id="areaFixedPrice" class="grid grid-cols-2 gap-4">
                                 <label><span class="label">Đơn giá (VNĐ)</span><input type="number" th:field="*{fixedPrice}" class="input-field font-mono font-bold text-[#03594D]" placeholder="0"></label>
                                 <label id="areaUnit"><span class="label">Đơn vị tính</span>
-                                    <select th:field="*{priceUnit}" class="input-field"><option value="LẦN">Lần</option><option value="KG">Kg</option><option value="GIỜ">Giờ</option><option value="CÁI">Cái</option></select>
+                                    <select th:field="*{priceUnit}" class="input-field"><option value="LẦN">Lần</option><option value="KG">Kg</option><option value="GIỜ">Giờ</option></select>
                                 </label>
                             </div>
                             <div id="areaMatrixInfo" class="hidden text-sm text-gray-600 italic mt-2">
@@ -95,7 +95,7 @@
                         <div class="grid grid-cols-3 gap-6">
                             <label class="block"><span class="label">Loài áp dụng</span><select th:field="*{targetSpecies}" class="input-field"><option value="BOTH">Cả hai</option><option value="DOG">Chó</option><option value="CAT">Mèo</option></select></label>
                             <label class="block"><span class="label">Thời lượng (Phút) *</span><input type="number" th:field="*{durationMinutes}" required min="0" step="5" class="input-field"/></label>
-                            <label class="block"><span class="label">Tags</span><input type="text" th:field="*{tags}" class="input-field" placeholder="HOT, NEW..."/></label>
+                            <label class="block"><span class="label">Tags</span><input type="text" th:field="*{tags}" class="input-field" placeholder="SPA, GROOM..."/></label>
                         </div>
                         <label class="block"><span class="label">Mô tả</span><textarea th:field="*{description}" rows="4" class="input-field h-auto py-3"></textarea></label>
                     </div>
@@ -108,7 +108,7 @@
                     <h3 class="text-xl font-bold text-[#03594D] mb-6 flex items-center gap-2"><span class="material-symbols-outlined">calculate</span> Bảng giá chi tiết</h3>
                     
                     <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-4">
-                        <p class="text-xs font-bold text-gray-500 uppercase mb-3">Thêm khoảng giá (Nhập số thập phân dùng dấu phẩy)</p>
+                        <p class="text-xs font-bold text-gray-50 uppercase mb-3">Thêm khoảng giá (Nhập số thập phân dùng dấu phẩy)</p>
                         <div class="grid grid-cols-12 gap-2 items-end">
                             <div class="col-span-2">
                                 <label class="sub-label">Loài</label>
@@ -193,6 +193,7 @@
             if(currentServiceId && currentServiceId !== 'null') loadMatrixData();
         });
 
+        // [FIX] URL API CHUẨN: /admin/services/...
         function loadMatrixData() {
             fetch(`/admin/services/${currentServiceId}/matrix`)
                 .then(res => res.json())
@@ -218,7 +219,6 @@
         }
 
         function addMatrixRow() {
-            // [FIX] Xử lý dấu phẩy thành dấu chấm để gửi về Backend
             let minStr = document.getElementById('mxMin').value.replace(',', '.');
             let maxStr = document.getElementById('mxMax').value.replace(',', '.');
             
@@ -233,11 +233,13 @@
 
             if(payload.price <= 0) { alert("Vui lòng nhập giá tiền"); return; }
             
+            // [FIX] URL API CHUẨN
             fetch('/admin/services/matrix/save', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) })
                 .then(res => { if(res.ok) { loadMatrixData(); document.getElementById('mxPrice').value = ''; } else { alert('Lỗi lưu'); } });
         }
 
         function deleteMatrix(id) {
+            // [FIX] URL API CHUẨN
             if(confirm("Xóa dòng giá này?")) fetch(`/admin/services/matrix/${id}`, {method: 'DELETE'}).then(res => { if(res.ok) loadMatrixData(); });
         }
     </script>
