@@ -46,4 +46,11 @@ public interface UserAccountRepository extends JpaRepository<UserAccount, Intege
     // Sửa Long -> Integer cho userId
     boolean existsByEmailIgnoreCaseAndUserIdNot(String email, Integer userId);
     boolean existsByPhoneAndUserIdNot(String phone, Integer userId);
+
+
+    List<UserAccount> findByRoleAndActive(String role, Boolean isActive);
+
+    List<UserAccount> findByRole(String role);
+
+    List<UserAccount> findByRoleIn(List<String> roles);
 }

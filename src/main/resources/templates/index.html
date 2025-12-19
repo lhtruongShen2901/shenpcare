@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Live Chat - Pet Care Support</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+    <style>
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .chat-widget-enter {
+            animation: slideUp 0.3s ease-out forwards;
+        }
+
+        @keyframes bounce-gentle {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+
+        .bounce-gentle {
+            animation: bounce-gentle 2s infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 font-sans">
+
+<!-- Floating Chat Button -->
+<button
+        id="chatToggleBtn"
+        onclick="toggleChat()"
+        class="fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-br from-[#03594D] to-[#D8E268] rounded-full shadow-2xl flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-all duration-300 z-50 bounce-gentle group">
+    <span class="material-symbols-outlined text-3xl group-hover:rotate-12 transition-transform"
+          id="chatIcon">chat</span>
+    <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-bold"
+          id="unreadBadge" style="display: none;">3</span>
+</button>
+
+<!-- Chat Widget Container -->
+<div id="chatWidget" class="fixed bottom-24 right-6 w-[450px] h-[650px] z-40" style="display: none;">
+    <div class="w-full h-full bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border-2 border-[#03594D]/10 chat-widget-enter">
+
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-[#03594D] to-[#026B5E] text-white p-5 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-full bg-[#D8E268] flex items-center justify-center text-2xl shadow-lg">
+                    🐾
+                </div>
+                <div>
+                    <h2 class="text-lg font-bold">Pet Care Support</h2>
+                    <!-- ✅ FIX: ID rõ ràng để JavaScript cập nhật -->
+                    <div class="text-sm opacity-90" id="connectionStatus">
+                        <span class="flex items-center gap-1 text-[#D8E268]">
+                            <span class="text-base animate-pulse">●</span>
+                            Đang kết nối...
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <button onclick="toggleChat()"
+                    class="w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center transition-colors">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="bg-gradient-to-r from-[#F8F9FA] to-[#E3E5D2]/30 border-b border-[#E3E5D2] px-4 py-3">
+            <div class="flex flex-wrap gap-2">
+                <button onclick="askQuestion('Dịch vụ và giá cả')"
+                        class="px-3 py-1.5 text-xs bg-white border border-[#E3E5D2] rounded-full hover:bg-[#03594D] hover:text-white hover:border-[#03594D] transition-all font-semibold text-[#03594D] shadow-sm">
+                    💰 Giá dịch vụ
+                </button>
+                <button onclick="askQuestion('Giờ làm việc')"
+                        class="px-3 py-1.5 text-xs bg-white border border-[#E3E5D2] rounded-full hover:bg-[#03594D] hover:text-white hover:border-[#03594D] transition-all font-semibold text-[#03594D] shadow-sm">
+                    🕐 Giờ làm việc
+                </button>
+                <button onclick="askQuestion('Đặt lịch hẹn')"
+                        class="px-3 py-1.5 text-xs bg-white border border-[#E3E5D2] rounded-full hover:bg-[#03594D] hover:text-white hover:border-[#03594D] transition-all font-semibold text-[#03594D] shadow-sm">
+                    📅 Đặt lịch
+                </button>
+                <button onclick="askQuestion('Kiểm tra đơn hàng')"
+                        class="px-3 py-1.5 text-xs bg-white border border-[#E3E5D2] rounded-full hover:bg-[#03594D] hover:text-white hover:border-[#03594D] transition-all font-semibold text-[#03594D] shadow-sm">
+                    📦 Đơn hàng
+                </button>
+                <button onclick="askQuestion('Tình trạng thú cưng')"
+                        class="px-3 py-1.5 text-xs bg-white border border-[#E3E5D2] rounded-full hover:bg-[#03594D] hover:text-white hover:border-[#03594D] transition-all font-semibold text-[#03594D] shadow-sm">
+                    🐶 Thú cưng
+                </button>
+            </div>
+        </div>
+
+        <!-- Messages Area -->
+        <div id="messagesArea" class="flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 to-[#F8F9FA] p-5 space-y-4">
+
+            <div th:each="msg : ${messages}"
+                 th:class="${msg.sender.userId == customer.userId ? 'flex justify-end' : 'flex justify-start'}">
+                <div class="max-w-[70%]">
+                    <div th:class="${msg.sender.userId == customer.userId
+                            ? 'bg-gradient-to-br from-[#03594D] to-[#026B5E] text-white rounded-2xl rounded-br-md px-4 py-3 text-sm shadow-lg'
+                            : 'bg-white text-[#03594D] rounded-2xl rounded-bl-md shadow-md px-4 py-3 text-sm border border-[#E3E5D2]'}"
+                         th:text="${msg.messageText}"></div>
+                    <div class="text-[11px] text-gray-400 mt-1 px-2 font-medium"
+                         th:text="${#temporals.format(msg.sentAt, 'HH:mm')}"></div>
+                </div>
+            </div>
+
+            <!-- Typing Indicator -->
+            <div id="typingIndicator" class="hidden">
+                <div class="bg-white px-4 py-3 rounded-2xl shadow-md w-fit border border-[#E3E5D2]">
+                    <div class="flex gap-1">
+                        <span class="w-2 h-2 bg-[#03594D] rounded-full animate-bounce"></span>
+                        <span class="w-2 h-2 bg-[#03594D] rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                        <span class="w-2 h-2 bg-[#03594D] rounded-full animate-bounce [animation-delay:0.4s]"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="border-t border-[#E3E5D2] bg-white px-4 py-4 flex gap-3 items-center">
+            <input
+                    id="messageInput"
+                    type="text"
+                    placeholder="Nhập tin nhắn..."
+                    onkeydown="handleKeyDown(event)"
+                    class="flex-1 border-2 border-[#E3E5D2] rounded-full px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#03594D] focus:border-transparent transition-all"/>
+            <button
+                    onclick="sendMessage()"
+                    class="w-11 h-11 rounded-full bg-gradient-to-br from-[#03594D] to-[#026B5E] text-white flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-lg hover:shadow-xl">
+                <span class="material-symbols-outlined">send</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const customerId = /*[[${customer.userId}]]*/ 0;
+    let sessionId = /*[[${chatSession != null ? chatSession.id : 0}]]*/ 0;
+    let initialStatus = /*[[${chatSession != null ? chatSession.status.name() : 'WAITING'}]]*/ 'WAITING';
+    const initialStaffName = /*[[${chatSession != null ? chatSession.supportStaff?.fullName : null}]]*/ null;
+
+
+    let stompClient = null;
+    let typingTimeout = null;
+    let sending = false;
+    let connected = false;
+    const renderedMessageIds = new Set();
+    let isChatOpen = false;
+
+    // ✅ FIX: Hàm cập nhật status UI
+    function updateConnectionStatus(status, staffName) {
+        const statusEl = document.getElementById('connectionStatus');
+
+        if (status === 'ACTIVE' && staffName) {
+            statusEl.innerHTML = `
+                <span class="flex items-center gap-1 text-[#D8E268]">
+                    <span class="text-base">●</span>
+                    ${staffName}
+                </span>
+            `;
+        } else if (status === 'WAITING') {
+            statusEl.innerHTML = `
+                <span class="flex items-center gap-1 text-[#D8E268]">
+                    <span class="text-base animate-pulse">●</span>
+                    Đang chờ nhân viên tiếp nhận…
+                </span>
+            `;
+        }
+    }
+
+    function toggleChat() {
+        const chatWidget = document.getElementById('chatWidget');
+        const chatIcon = document.getElementById('chatIcon');
+        const unreadBadge = document.getElementById('unreadBadge');
+
+        isChatOpen = !isChatOpen;
+
+        if (isChatOpen) {
+            chatWidget.style.display = 'block';
+            chatIcon.textContent = 'close';
+            unreadBadge.style.display = 'none';
+            setTimeout(() => scrollToBottom(), 100);
+            document.getElementById('messageInput')?.focus();
+        } else {
+            chatWidget.style.display = 'none';
+            chatIcon.textContent = 'chat';
+        }
+    }
+
+    function connectWebSocket() {
+        return new Promise((resolve, reject) => {
+
+            if (stompClient && stompClient.connected) {
+                resolve();
+                return;
+            }
+
+            const socket = new SockJS('/ws-chat');
+            stompClient = Stomp.over(socket);
+
+            stompClient.connect({}, () => {
+                console.log('✅ WebSocket connected');
+
+                connected = true;
+
+                // Subscribe messages
+                stompClient.subscribe(
+                    '/topic/session/' + sessionId + '/messages',
+                    msg => {
+                        displayMessage(JSON.parse(msg.body));
+                        if (!isChatOpen) {
+                            document.getElementById('unreadBadge').style.display = 'flex';
+                        }
+                    }
+                );
+
+                // Subscribe typing indicator
+                stompClient.subscribe(
+                    '/topic/session/' + sessionId + '/typing',
+                    msg => {
+                        const data = JSON.parse(msg.body);
+                        if (data.userId !== customerId) showTypingIndicator();
+                    }
+                );
+
+                // Subscribe status
+                stompClient.subscribe(
+                    '/topic/session/' + sessionId + '/status',
+                    msg => {
+                        const data = JSON.parse(msg.body);
+                        updateConnectionStatus(data.status, data.staffName);
+                    }
+                );
+
+                // Request initial status
+                stompClient.send(
+                    '/app/chat.getStatus',
+                    {},
+                    JSON.stringify(sessionId)
+                );
+
+                resolve();
+            }, error => {
+                connected = false;
+                reject(error);
+            });
+        });
+    }
+
+
+    function connect() {
+        if (connected) return;
+        connected = true;
+
+        const socket = new SockJS('/ws-chat');
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, () => {
+            console.log('✅ WebSocket connected');
+
+            // Subscribe messages
+            stompClient.subscribe(
+                '/topic/session/' + sessionId + '/messages',
+                msg => {
+                    displayMessage(JSON.parse(msg.body));
+                    if (!isChatOpen) {
+                        document.getElementById('unreadBadge').style.display = 'flex';
+                    }
+                }
+            );
+
+            // Subscribe typing indicator
+            stompClient.subscribe(
+                '/topic/session/' + sessionId + '/typing',
+                msg => {
+                    const data = JSON.parse(msg.body);
+                    if (data.userId !== customerId) showTypingIndicator();
+                }
+            );
+
+            // ✅ FIX: Subscribe status updates
+            stompClient.subscribe(
+                '/topic/session/' + sessionId + '/status',
+                msg => {
+                    const data = JSON.parse(msg.body);
+                    console.log('📡 Status update:', data);
+                    updateConnectionStatus(data.status, data.staffName);
+                }
+            );
+
+            // ✅ FIX: Yêu cầu status ngay sau khi kết nối
+            setTimeout(() => {
+                console.log('🔍 Requesting initial status...');
+                stompClient.send(
+                    '/app/chat.getStatus',
+                    {},
+                    JSON.stringify(sessionId)
+                );
+            }, 500);
+        });
+    }
+
+    async function sendMessage() {
+        if (sending) return;
+
+        const input = document.getElementById('messageInput');
+        const text = input.value.trim();
+        if (!text) return;
+
+        // 🔹 Chưa có session → tạo trước
+        if (!sessionId) {
+            try {
+                sending = true;
+
+                const res = await fetch('/customer/api/sessions/start', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!res.ok) {
+                    alert('Không thể tạo phiên chat');
+                    sending = false;
+                    return;
+                }
+
+                const session = await res.json();
+                sessionId = session.id;
+                initialStatus = session.status;
+
+                // (nếu websocket chưa connect thì connect tại đây)
+                if (!stompClient || !stompClient.connected) {
+                    await connectWebSocket();
+                }
+
+            } catch (e) {
+                console.error(e);
+                alert('Lỗi khi tạo phiên chat');
+                sending = false;
+                return;
+            }
+        }
+
+        // 🔹 Gửi tin nhắn
+        stompClient.send('/app/chat.sendMessage', {}, JSON.stringify({
+            sessionId: sessionId,
+            senderId: customerId,
+            messageText: text
+        }));
+
+        input.value = '';
+        setTimeout(() => sending = false, 150);
+    }
+
+
+    function displayMessage(msg) {
+        if (renderedMessageIds.has(msg.id)) return;
+        renderedMessageIds.add(msg.id);
+
+        const area = document.getElementById('messagesArea');
+        const isCustomer = msg.sender.userId === customerId;
+
+        const wrapper = document.createElement('div');
+        wrapper.className = isCustomer ? 'flex justify-end' : 'flex justify-start';
+
+        wrapper.innerHTML = `
+            <div class="max-w-[70%]">
+                <div class="px-4 py-3 text-sm ${
+            isCustomer
+                ? 'bg-gradient-to-br from-[#03594D] to-[#026B5E] text-white rounded-2xl rounded-br-md shadow-lg'
+                : 'bg-white text-[#03594D] rounded-2xl rounded-bl-md shadow-md border border-[#E3E5D2]'
+        }">
+                    ${msg.messageText}
+                </div>
+                <div class="text-[11px] text-gray-400 mt-1 px-2 font-medium">
+                    ${new Date(msg.sentAt).toLocaleTimeString('vi-VN', {hour: '2-digit', minute: '2-digit'})}
+                </div>
+            </div>
+        `;
+
+        area.appendChild(wrapper);
+        area.scrollTop = area.scrollHeight;
+        hideTypingIndicator();
+    }
+
+    function handleKeyDown(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            sendMessage();
+            return;
+        }
+        notifyTyping();
+    }
+
+    function notifyTyping() {
+        stompClient?.send('/app/chat.typing', {}, JSON.stringify({sessionId, userId: customerId}));
+    }
+
+    function showTypingIndicator() {
+        const el = document.getElementById('typingIndicator');
+        el.classList.remove('hidden');
+        clearTimeout(typingTimeout);
+        typingTimeout = setTimeout(hideTypingIndicator, 3000);
+    }
+
+    function hideTypingIndicator() {
+        document.getElementById('typingIndicator').classList.add('hidden');
+    }
+
+    function askQuestion(topic) {
+        document.getElementById('messageInput').value = 'Tôi muốn hỏi về ' + topic;
+        document.getElementById('messageInput').focus();
+    }
+
+    function scrollToBottom() {
+        const area = document.getElementById('messagesArea');
+        area.scrollTop = area.scrollHeight;
+    }
+
+    window.addEventListener('load', () => {
+        if(!sessionId) return;
+        connect();
+        updateConnectionStatus(initialStatus, initialStaffName);
+        scrollToBottom();
+
+    });
+
+    /*]]>*/
+</script>
+</body>
+</html>

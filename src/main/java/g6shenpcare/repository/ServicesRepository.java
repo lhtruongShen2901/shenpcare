@@ -48,4 +48,9 @@ public interface ServicesRepository extends JpaRepository<Services, Integer> {
 
     @Query("SELECT s.serviceCategoryId, COUNT(s) FROM Services s GROUP BY s.serviceCategoryId")
     List<Object[]> countServicesByCategory();
+
+
+
+
+    List<Services> findByActive(Boolean isActive);
 }

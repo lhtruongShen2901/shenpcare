@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head></head>
+<body>
+<!-- Sidebar Fragment -->
+<div th:fragment="sidebar(staff, mySessions, openTickets, activePage)">
+    <aside class="bg-white border-r border-[#E3E5D2] flex flex-col shadow-sm h-screen">
+        <!-- Logo & User -->
+        <div class="p-5 border-b border-[#E3E5D2]">
+            <h2 class="text-xl font-black text-[#03594D] mb-1">🐾 ShenPCare</h2>
+            <div class="text-sm font-bold text-gray-600" th:text="${staff.fullName}"></div>
+            <div class="text-xs text-gray-400">Support Agent</div>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="flex-1 p-4 space-y-1">
+            <a th:href="@{/support/chat}"  th:classappend="${activePage=='chat'} ? ' bg-[#D8E268] text-[#03594D] font-bold shadow-sm' : 'text-gray-600 hover:bg-gray-50 font-semibold'"
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all">
+                <span class="material-symbols-outlined text-[20px]">forum</span>
+                <span>Chat Support</span>
+            </a>
+
+            <a th:href="@{/support/tickets}" th:classappend="${activePage=='tickets'} ? ' bg-[#D8E268] text-[#03594D] font-bold shadow-sm' : 'text-gray-600 hover:bg-gray-50 font-semibold'"
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all">
+                <span class="material-symbols-outlined text-[20px]">confirmation_number</span>
+                <span>Tickets</span>
+            </a>
+            <a th:href="@{/support/lookup}"  th:classappend="${activePage=='lookup'} ? ' bg-[#D8E268] text-[#03594D] font-bold shadow-sm' : 'text-gray-600 hover:bg-gray-50 font-semibold'"
+               class="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all">
+                <span class="material-symbols-outlined text-[20px]">search</span>
+                <span>Tra cứu</span>
+            </a>
+
+            <a th:href="@{/support/customers}" th:classappend="${activePage=='customers'} ? ' bg-[#D8E268] text-[#03594D] font-bold shadow-sm' : 'text-gray-600 hover:bg-gray-50 font-semibold'"
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all">
+                <span class="material-symbols-outlined text-[20px]">groups</span>
+                <span>Khách hàng</span>
+            </a>
+
+            <a th:href="@{/support/reports}"
+               th:classappend="${activePage=='reports'} ? ' bg-[#D8E268] text-[#03594D] font-bold shadow-sm' : 'text-gray-600 hover:bg-gray-50 font-semibold'"
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all">
+                <span class="material-symbols-outlined text-[20px]">analytics</span>
+                <span>Báo cáo</span>
+            </a>
+
+
+        </nav>
+
+        <!-- Quick Stats -->
+        <div th:if="(${mySessions != null and !#lists.isEmpty(mySessions)}) or (${openTickets != null and !#lists.isEmpty(openTickets)})"
+
+             class="p-4 border-t border-[#E3E5D2] bg-[#F8F9FA]">
+            <div class="text-xs uppercase font-bold text-gray-400 mb-2">Hôm nay</div>
+            <div class="grid grid-cols-2 gap-2 text-center">
+                <div class="bg-white rounded-lg p-2 border border-[#E3E5D2]">
+                    <div class="text-lg font-black text-[#03594D]" th:text="${mySessions != null ? #lists.size(mySessions) : 0}">0</div>
+                    <div class="text-xs text-gray-500 font-semibold">Chats</div>
+                </div>
+                <div class="bg-white rounded-lg p-2 border border-[#E3E5D2]">
+                    <div class="text-lg font-black text-[#03594D]" th:text="${openTickets != null ? #lists.size(openTickets) : 0}">0</div>
+                    <div class="text-xs text-gray-500 font-semibold">Tickets</div>
+                </div>
+            </div>
+        </div>
+
+    </aside>
+</div>
+
+</body>
+</html>

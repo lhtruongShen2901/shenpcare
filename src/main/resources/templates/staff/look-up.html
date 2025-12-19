@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support Staff Dashboard - ShenPCare</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@400" rel="stylesheet">
+</head>
+<body class="bg-[#F8F9FA] font-sans">
+<div class="grid grid-cols-[220px_1fr] h-screen">
+
+    <div th:replace="staff/layout/layout-staff :: sidebar(${staff}, null, null, 'lookup')"></div>
+
+    <main class="flex flex-col overflow-hidden">
+
+        <!-- Header -->
+        <div class="bg-white border-b border-[#E3E5D2] px-8 py-5 flex justify-between items-center shadow-sm">
+            <div>
+                <h1 class="text-[#03594D] text-3xl font-black leading-tight tracking-tight">Tra Cứu</h1>
+                <p class="text-sm text-gray-500 mt-1">Tra cứu các thông tin cần biết</p>
+            </div>
+        </div>
+
+        <div class="max-w-7xl mx-15 px-4 sm:px-6 lg:px-8 py-6">
+            <!-- Search Section -->
+            <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">
+                    <i class="fas fa-search mr-2 text-blue-600"></i>
+                    Tra cứu thông tin
+                </h2>
+                <form th:action="@{/support/lookup/search}" method="get" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tìm theo</label>
+                        <select name="searchType" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="customer">Khách hàng (SĐT/Email)</option>
+                            <option value="pet">Thú cưng (Mã/Tên)</option>
+                            <option value="booking">Booking ID</option>
+                            <option value="order">Order ID</option>
+                            <option value="ticket">Ticket ID</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Từ khóa</label>
+                        <input type="text" name="keyword" placeholder="Nhập thông tin cần tìm..."
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    <div class="flex items-end">
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-150">
+                            <i class="fas fa-search mr-2"></i>Tìm kiếm
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Customer Profile Section -->
+            <div th:if="${customer != null}" class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-semibold text-gray-800">
+                        <i class="fas fa-user mr-2 text-blue-600"></i>
+                        Thông tin khách hàng
+                    </h2>
+                    <span th:class="${customer.isActive} ? 'px-3 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full' : 'px-3 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full'">
+                    <span th:text="${customer.isActive} ? 'Đang hoạt động' : 'Không hoạt động'"></span>
+                </span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="space-y-3">
+                        <div class="flex">
+                            <span class="text-sm font-medium text-gray-500 w-32">ID:</span>
+                            <span class="text-sm text-gray-900" th:text="${customer.customerId}">12345</span>
+                        </div>
+                        <div class="flex">
+                            <span class="text-sm font-medium text-gray-500 w-32">Họ tên:</span>
+                            <span class="text-sm text-gray-900" th:text="${customer.fullName}">Nguyễn Văn A</span>
+                        </div>
+                        <div class="flex">
+                            <span class="text-sm font-medium text-gray-500 w-32">Email:</span>
+                            <span class="text-sm text-gray-900" th:text="${customer.email}">email@example.com</span>
+                        </div>
+                        <div class="flex">
+                            <span class="text-sm font-medium text-gray-500 w-32">Điện thoại:</span>
+                            <span class="text-sm text-gray-900" th:text="${customer.phone}">0912345678</span>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex">
+                            <span class="text-sm font-medium text-gray-500 w-32">Địa chỉ:</span>
+                            <span class="text-sm text-gray-900" th:text="${customer.addressLine}">123 Đường ABC</span>
+                        </div>
+                        <div class="flex">
+                            <span class="text-sm font-medium text-gray-500 w-32">Phường/Xã:</span>
+                            <span class="text-sm text-gray-900" th:text="${customer.ward}">Phường 1</span>
+                        </div>
+                        <div class="flex">
+                            <span class="text-sm font-medium text-gray-500 w-32">Quận/Huyện:</span>
+                            <span class="text-sm text-gray-900" th:text="${customer.district}">Quận 1</span>
+                        </div>
+                        <div class="flex">
+                            <span class="text-sm font-medium text-gray-500 w-32">Thành phố:</span>
+                            <span class="text-sm text-gray-900" th:text="${customer.city}">TP.HCM</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div th:if="${customer.notes}" class="mt-4 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                    <span class="text-sm font-medium text-yellow-800">Ghi chú:</span>
+                    <p class="text-sm text-yellow-700 mt-1" th:text="${customer.notes}"></p>
+                </div>
+            </div>
+
+            <!-- Pets Section -->
+            <div th:if="${pets != null && !pets.isEmpty()}" class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">
+                    <i class="fas fa-paw mr-2 text-blue-600"></i>
+                    Thú cưng (<span th:text="${pets.size()}">0</span>)
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div th:each="pet : ${pets}" class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition duration-150">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                    <i class="fas fa-paw text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-900" th:text="${pet.name}">Pet Name</h3>
+                                    <span class="text-xs text-gray-500" th:text="${pet.petCode}">PET001</span>
+                                </div>
+                            </div>
+                            <span th:class="${pet.isActive} ? 'px-2 py-1 text-xs bg-green-100 text-green-800 rounded' : 'px-2 py-1 text-xs bg-gray-100 text-gray-800 rounded'">
+                            <span th:text="${pet.isActive} ? 'Hoạt động' : 'Không hoạt động'"></span>
+                        </span>
+                        </div>
+
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Loài:</span>
+                                <span class="font-medium" th:text="${pet.species}">Dog</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Giống:</span>
+                                <span class="font-medium" th:text="${pet.breed}">Golden Retriever</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Giới tính:</span>
+                                <span class="font-medium" th:text="${pet.gender}">Male</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Cân nặng:</span>
+                                <span class="font-medium" th:text="${pet.weightKg} + ' kg'">25 kg</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Màu lông:</span>
+                                <span class="font-medium" th:text="${pet.color}">Vàng</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Độ dài lông:</span>
+                                <span class="font-medium" th:text="${pet.coatLength}">Dài</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Triệt sản:</span>
+                                <span th:class="${pet.isSterilized} ? 'font-medium text-green-600' : 'font-medium text-gray-600'">
+                                <span th:text="${pet.isSterilized} ? 'Có' : 'Không'"></span>
+                            </span>
+                            </div>
+                        </div>
+
+                        <div th:if="${pet.notes}" class="mt-3 p-2 bg-gray-50 rounded text-xs text-gray-600">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            <span th:text="${pet.notes}"></span>
+                        </div>
+
+                        <button type="button" th:onclick="'showMedicalHistory(' + ${pet.petId} + ')'"
+                                class="mt-3 w-full text-sm bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium py-2 rounded transition duration-150">
+                            <i class="fas fa-file-medical mr-2"></i>Xem hồ sơ sức khỏe
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Medical Records Section -->
+            <div th:if="${medicalRecords != null && !medicalRecords.isEmpty()}" class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">
+                    <i class="fas fa-file-medical mr-2 text-blue-600"></i>
+                    Hồ sơ sức khỏe - Pet Health Passport
+                </h2>
+
+                <div class="space-y-4">
+                    <div th:each="record : ${medicalRecords}" class="border border-gray-200 rounded-lg p-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <div>
+                            <span class="text-sm font-medium text-gray-900">
+                                Ngày khám: <span th:text="${#temporals.format(record.visitDate, 'dd/MM/yyyy HH:mm')}"></span>
+                            </span>
+                                <span class="ml-4 text-sm text-gray-500">
+                                Booking ID: <span th:text="${record.bookingId}"></span>
+                            </span>
+                            </div>
+                            <span class="text-xs text-gray-500">
+                            Bác sĩ: <span th:text="${record.doctorName}">Dr. Name</span>
+                        </span>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
+                            <div class="p-3 bg-red-50 rounded">
+                                <span class="text-xs font-medium text-red-800">Triệu chứng</span>
+                                <p class="text-sm text-red-700 mt-1" th:text="${record.symptoms}">-</p>
+                            </div>
+                            <div class="p-3 bg-blue-50 rounded">
+                                <span class="text-xs font-medium text-blue-800">Chẩn đoán</span>
+                                <p class="text-sm text-blue-700 mt-1" th:text="${record.diagnosis}">-</p>
+                            </div>
+                            <div class="p-3 bg-green-50 rounded">
+                                <span class="text-xs font-medium text-green-800">Điều trị</span>
+                                <p class="text-sm text-green-700 mt-1" th:text="${record.treatment}">-</p>
+                            </div>
+                        </div>
+
+                        <div th:if="${record.notes}" class="p-3 bg-gray-50 rounded mb-3">
+                            <span class="text-xs font-medium text-gray-700">Ghi chú:</span>
+                            <p class="text-sm text-gray-600 mt-1" th:text="${record.notes}"></p>
+                        </div>
+
+                        <div th:if="${record.nextVisitDate}" class="flex items-center text-sm text-purple-600">
+                            <i class="far fa-calendar-alt mr-2"></i>
+                            Tái khám: <span th:text="${#temporals.format(record.nextVisitDate, 'dd/MM/yyyy')}" class="font-medium ml-1"></span>
+                        </div>
+
+                        <!-- Prescriptions -->
+                        <div th:if="${record.prescriptions != null && !record.prescriptions.isEmpty()}" class="mt-3 border-t pt-3">
+                            <h4 class="text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-pills mr-2"></i>Đơn thuốc
+                            </h4>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full text-sm">
+                                    <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">Tên thuốc</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">Liều lượng</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">Tần suất</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">Thời gian</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr th:each="item : ${record.prescriptions}" class="border-t">
+                                        <td class="px-3 py-2" th:text="${item.medicineName}">Medicine</td>
+                                        <td class="px-3 py-2" th:text="${item.dosage}">1 viên</td>
+                                        <td class="px-3 py-2" th:text="${item.frequency}">2 lần/ngày</td>
+                                        <td class="px-3 py-2" th:text="${item.durationDays} + ' ngày'">7 ngày</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bookings Section -->
+            <div th:if="${bookings != null && !bookings.isEmpty()}" class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">
+                    <i class="fas fa-calendar-check mr-2 text-blue-600"></i>
+                    Lịch hẹn & Dịch vụ
+                </h2>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full">
+                        <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">ID</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">Ngày</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">Thú cưng</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">Dịch vụ</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">Trạng thái</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">Thanh toán</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">Số tiền</th>
+                        </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                        <tr th:each="booking : ${bookings}" class="hover:bg-gray-50">
+                            <td class="px-4 py-3 text-sm" th:text="${booking.bookingId}">1001</td>
+                            <td class="px-4 py-3 text-sm" th:text="${#temporals.format(booking.startTime, 'dd/MM/yyyy HH:mm')}">01/12/2024</td>
+                            <td class="px-4 py-3 text-sm" th:text="${booking.petName}">Max</td>
+                            <td class="px-4 py-3 text-sm" th:text="${booking.serviceName}">Khám tổng quát</td>
+                            <td class="px-4 py-3">
+                                <span th:class="'px-2 py-1 text-xs font-medium rounded ' +
+                                    (${booking.status == 'COMPLETED'} ? 'bg-green-100 text-green-800' :
+                                     ${booking.status == 'CONFIRMED'} ? 'bg-blue-100 text-blue-800' :
+                                     ${booking.status == 'CANCELLED'} ? 'bg-red-100 text-red-800' :
+                                     'bg-yellow-100 text-yellow-800')"
+                                      th:text="${booking.status}">
+                                </span>
+                            </td>
+                            <td class="px-4 py-3">
+                                <span th:class="'px-2 py-1 text-xs font-medium rounded ' +
+                                    (${booking.paymentStatus == 'PAID'} ? 'bg-green-100 text-green-800' :
+                                     ${booking.paymentStatus == 'PENDING'} ? 'bg-yellow-100 text-yellow-800' :
+                                     'bg-red-100 text-red-800')"
+                                      th:text="${booking.paymentStatus}">
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 text-sm font-medium" th:text="${#numbers.formatDecimal(booking.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">500,000 VNĐ</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Orders Section -->
+            <div th:if="${orders != null && !orders.isEmpty()}" class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">
+                    <i class="fas fa-shopping-cart mr-2 text-blue-600"></i>
+                    Đơn hàng sản phẩm
+                </h2>
+
+                <div class="space-y-4">
+                    <div th:each="order : ${orders}" class="border border-gray-200 rounded-lg p-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <div>
+                                <span class="text-sm font-semibold text-gray-900">Order #<span th:text="${order.orderId}">1001</span></span>
+                                <span class="ml-4 text-sm text-gray-500" th:text="${#temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm')}"></span>
+                            </div>
+                            <span th:class="'px-3 py-1 text-xs font-medium rounded ' +
+                            (${order.status == 'COMPLETED'} ? 'bg-green-100 text-green-800' :
+                             ${order.status == 'PROCESSING'} ? 'bg-blue-100 text-blue-800' :
+                             ${order.status == 'CANCELLED'} ? 'bg-red-100 text-red-800' :
+                             'bg-yellow-100 text-yellow-800')"
+                                  th:text="${order.status}">
+                        </span>
+                        </div>
+
+                        <div class="mb-3 text-sm text-gray-600">
+                            <i class="fas fa-map-marker-alt mr-2"></i>
+                            <span th:text="${order.shippingAddress}">Địa chỉ giao hàng</span>
+                        </div>
+
+                        <div th:if="${order.items != null}" class="mb-3">
+                            <div class="text-xs font-medium text-gray-700 mb-2">Sản phẩm:</div>
+                            <div class="space-y-2">
+                                <div th:each="item : ${order.items}" class="flex justify-between text-sm bg-gray-50 p-2 rounded">
+                                <span>
+                                    <span th:text="${item.productName}">Product</span>
+                                    <span class="text-gray-500"> x <span th:text="${item.quantity}">1</span></span>
+                                </span>
+                                    <span class="font-medium" th:text="${#numbers.formatDecimal(item.lineTotal, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-center pt-3 border-t">
+                            <span class="text-sm text-gray-600">Tổng cộng:</span>
+                            <span class="text-lg font-bold text-gray-900" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"></span>
+                        </div>
+
+                        <div th:if="${order.notes}" class="mt-3 p-2 bg-yellow-50 rounded text-xs text-yellow-700">
+                            <i class="fas fa-sticky-note mr-1"></i>
+                            <span th:text="${order.notes}"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Support Tickets Section -->
+            <div th:if="${supportTickets != null && !supportTickets.isEmpty()}" class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">
+                    <i class="fas fa-headset mr-2 text-blue-600"></i>
+                    Lịch sử hỗ trợ
+                </h2>
+
+                <div class="space-y-4">
+                    <div th:each="ticket : ${supportTickets}" class="border border-gray-200 rounded-lg p-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <div>
+                            <span class="text-sm font-semibold text-gray-900">
+                                Ticket #<span th:text="${ticket.ticketId}">101</span>
+                            </span>
+                                <span class="ml-2 text-sm text-gray-500" th:text="${#temporals.format(ticket.createdAt, 'dd/MM/yyyy HH:mm')}"></span>
+                            </div>
+                            <span th:class="'px-3 py-1 text-xs font-medium rounded ' +
+                            (${ticket.status == 'CLOSED'} ? 'bg-gray-100 text-gray-800' :
+                             ${ticket.status == 'IN_PROGRESS'} ? 'bg-blue-100 text-blue-800' :
+                             'bg-yellow-100 text-yellow-800')"
+                                  th:text="${ticket.status}">
+                        </span>
+                        </div>
+
+                        <h3 class="font-medium text-gray-900 mb-2" th:text="${ticket.subject}">Tiêu đề</h3>
+                        <p class="text-sm text-gray-600 mb-3" th:text="${ticket.content}">Nội dung</p>
+
+                        <div class="flex items-center justify-between text-xs text-gray-500">
+                        <span th:if="${ticket.assignedStaffName}">
+                            <i class="fas fa-user-tie mr-1"></i>
+                            Người xử lý: <span th:text="${ticket.assignedStaffName}"></span>
+                        </span>
+                            <span th:if="${ticket.closedAt}">
+                            <i class="fas fa-check-circle mr-1"></i>
+                            Đóng: <span th:text="${#temporals.format(ticket.closedAt, 'dd/MM/yyyy HH:mm')}"></span>
+                        </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </main>
+
+    </div>
+
+<script>
+    function showMedicalHistory(petId) {
+        // This would trigger an AJAX request or redirect to medical history page
+        window.location.href = `/support/pet/${petId}/medical-history`;
+    }
+</script>
+</body>
+</html>

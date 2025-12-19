@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticket Detail - Chat Integration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@400" rel="stylesheet">
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        /* Slide animations */
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+            }
+            to {
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+            }
+            to {
+                transform: translateX(100%);
+            }
+        }
+
+        .slide-in-right {
+            animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .slide-out-right {
+            animation: slideOutRight 0.3s cubic-bezier(0.7, 0, 0.84, 0) forwards;
+        }
+
+        /* Chat panel overlay */
+        .chat-overlay {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 450px;
+            background: white;
+            box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            transform: translateX(100%);
+        }
+
+        .chat-overlay.active {
+            transform: translateX(0);
+        }
+
+        /* Backdrop */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        .backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 999;
+            backdrop-filter: blur(2px);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+
+        .fade-out {
+            animation: fadeOut 0.2s ease-out forwards;
+        }
+
+        /* Custom scrollbar */
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #03594D;
+            border-radius: 3px;
+        }
+
+        /* Shine effect */
+        @keyframes shine {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .btn-shine::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shine 3s infinite;
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .chat-overlay {
+                width: 100vw;
+            }
+        }
+    </style>
+</head>
+<body class="bg-[#F8F9FA] font-sans">
+<div class="grid grid-cols-[220px_1fr] h-screen">
+
+    <div th:replace="staff/layout/layout-staff :: sidebar(${staff}, null, null, 'tickets')"></div>
+
+    <!-- Main Container -->
+    <div class="min-h-screen max-h-screen overflow-y-auto">
+        <!-- Header -->
+        <div class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-10">
+            <div class="bg-white border-b border-[#E3E5D2] px-8 py-6 flex justify-start items-center shadow-sm">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <button onclick="window.history.back()"
+                                class="p-2 hover:bg-gray-100 rounded-lg transition">
+                            <span class="material-symbols-outlined">arrow_back</span>
+                        </button>
+                        <div>
+                            <h1 class="text-[#03594D] text-3xl font-black leading-tight tracking-tight flex items-center gap-2">
+                                <span class="material-symbols-outlined">confirmation_number</span>
+                                Ticket #<span th:text="${ticket.id}"></span></h1>
+                            <p class="text-sm text-gray-500 mt-1">Chi tiết và xử lý ticket</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="max-w-7xl mx-auto px-6 py-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                <!-- Left Column: Ticket Details -->
+                <div class="lg:col-span-2 space-y-6">
+
+                    <!-- Status Card -->
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center gap-2 mb-4">
+                            <span class="material-symbols-outlined text-blue-600">info</span>
+                            <h2 class="font-bold text-gray-800">Thông tin ticket</h2>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-sm text-gray-600" >Trạng thái</label>
+                                <div class="mt-1">
+                                    <div th:switch="${ticket.status.name()}">
+                                        <span th:case="'OPEN'" class="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">📝 Mở</span>
+                                        <span th:case="'IN_PROGRESS'" class="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">⚙️ Đang xử lý</span>
+                                        <span th:case="'RESOLVED'" class="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">✅ Đã xử lý</span>
+                                        <span th:case="'CLOSED'" class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">🔒 Đã đóng</span>
+                                    </div>
+
+
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-sm text-gray-600">Độ ưu tiên</label>
+                                <div class="mt-1">
+                                <span  th:switch="${ticket.priority.name()}">
+                                    <span th:case="'HIGH'" class="px-3 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-400">🟠 Cao</span>
+                                    <span th:case="'URGENT'" class="px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-400">🔴 Khẩn cấp</span>
+                                    <span th:case="'MEDIUM'" class="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-400">🟡 Trung bình</span>
+                                    <span th:case="'LOW'" class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-400">🔵 Thấp</span>
+                                </span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-sm text-gray-600">Danh mục</label>
+                                <p class="mt-1 font-semibold text-gray-800" th:text="${ticket.category}">Dịch vụ</p>
+                            </div>
+                            <div>
+                                <label class="text-sm text-gray-600">Người xử lý</label>
+                                <p class="mt-1 font-semibold text-gray-800" th:text="${ticket.assignedTo != null ? ticket.assignedTo.fullName : 'Chưa phân công'}">Trần Thị B</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Content Card -->
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center gap-2 mb-4">
+                            <span class="material-symbols-outlined text-orange-600">description</span>
+                            <h2 class="font-bold text-gray-800">Nội dung ticket</h2>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-sm font-semibold text-gray-600">Tiêu đề</label>
+                                <p class="mt-1 text-gray-900" th:text="${ticket.subject}"></p>
+                            </div>
+
+                            <div>
+                                <label class="text-sm font-semibold text-gray-600">Mô tả chi tiết</label>
+                                <div class="mt-1 bg-gray-50 p-4 rounded-lg border border-gray-200 text-gray-700 leading-relaxed"  th:text="${ticket.description}">
+
+                                </div>
+                            </div>
+
+                            <div class="flex justify-between text-sm text-gray-500 pt-4 border-t">
+                                <span>Tạo lúc: <strong th:text="${#temporals.format(ticket.createdAt, 'dd/MM/yyyy HH:mm')}"></strong></span>
+                                <span>Bởi: <strong th:text="${ticket.createdBy.fullName}"></strong></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Timeline -->
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center gap-2 mb-4">
+                            <span class="material-symbols-outlined text-purple-600">history</span>
+                            <h2 class="font-bold text-gray-800">Lịch sử xử lý</h2>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div class="flex gap-3">
+                                <div class="flex flex-col items-center">
+                                    <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                                    <div class="w-0.5 flex-1 bg-gray-200 mt-1"></div>
+                                </div>
+                                <div class="flex-1 pb-4">
+                                    <p class="text-xs text-gray-500 mb-1" th:text="${#temporals.format(ticket.createdAt, 'HH:mm')}">09:15</p>
+                                    <p class="text-sm text-gray-700">Ticket được tạo bởi <span th:text="${ticket.createdBy.fullName}"></span></p>
+                                </div>
+                            </div>
+
+                            <div class="flex gap-3">
+                                <div class="flex flex-col items-center">
+                                    <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                                    <div class="w-0.5 flex-1 bg-gray-200 mt-1"></div>
+                                </div>
+                                <div class="flex-1 pb-4">
+                                    <p class="text-xs text-gray-500 mb-1" th:text="${#temporals.format(ticket.createdAt, 'HH:mm')}">09:18</p>
+                                    <p class="text-sm text-gray-700">Assigned cho <span th:text="${ticket.assignedTo.fullName}"></span></p>
+                                </div>
+                            </div>
+
+                            <div class="flex gap-3">
+                                <div class="flex flex-col items-center">
+                                    <div class="w-2 h-2 rounded-full bg-gray-400"></div>
+                                    <div class="w-0.5 flex-1 bg-gray-200 mt-1"></div>
+                                </div>
+                                <div class="flex-1 pb-4">
+                                    <p class="text-xs text-gray-500 mb-1">09:30</p>
+                                    <p class="text-sm text-gray-700">Trần Thị B: Đã kiểm tra hệ thống đơn hàng</p>
+                                </div>
+                            </div>
+
+                            <div class="flex gap-3">
+                                <div class="flex flex-col items-center">
+                                    <div class="w-2 h-2 rounded-full bg-purple-500"></div>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-xs text-gray-500 mb-1">10:30</p>
+                                    <p class="text-sm text-gray-700">Chờ phản hồi từ bộ phận vận hành</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Note Section -->
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center gap-2 mb-4">
+                            <span class="material-symbols-outlined text-indigo-600">edit_note</span>
+                            <h2 class="font-bold text-gray-800">Ghi chú xử lý</h2>
+                        </div>
+
+                        <textarea th:text="${ticket.note}" rows="4"  id="noteInput"
+                                  placeholder="Nhập ghi chú nội bộ về quá trình xử lý..."
+                                  class="w-full p-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all"></textarea>
+
+                        <button id="saveNoteBtn" class="mt-3 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold text-sm transition-all hover:shadow-lg flex items-center gap-2">
+                            <span class="material-symbols-outlined text-base">send</span>
+                            Lưu ghi chú
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Column: Customer Info & Actions -->
+                <div class="space-y-6">
+
+                    <!-- Customer Info -->
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center gap-2 mb-4">
+                            <span class="material-symbols-outlined text-blue-600">person</span>
+                            <h2 class="font-bold text-gray-800">Khách hàng</h2>
+                        </div>
+
+                        <div class="space-y-3 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Tên:</span>
+                                <span class="font-semibold text-gray-900" th:text="${ticket.customer.fullName}"></span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">SĐT:</span>
+                                <span class="font-semibold text-blue-600" th:text="${ticket.customer.phone}"></span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Email:</span>
+                                <span class="font-semibold text-blue-600 text-xs" th:text="${ticket.customer.email}"></span>
+                            </div>
+                        </div>
+
+                        <button th:onclick="'openChatPanel(' + ${mySession.id} + ')'" class="w-full mt-4 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition font-semibold text-sm flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-base">chat</span>
+                            Mở Chat
+                        </button>
+
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center gap-2 mb-4">
+                            <span class="material-symbols-outlined text-green-600">bolt</span>
+                            <h2 class="font-bold text-gray-800">Thao tác</h2>
+                        </div>
+
+                        <div class="space-y-2">
+
+                            <button onclick="updateStatus('IN_PROGRESS')"  th:if="${ticket.status.name() == 'OPEN'}" class="w-full px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-2">
+                                <span class="material-symbols-outlined text-base">settings</span>
+                                Đang xử lý
+                            </button>
+                            <button onclick="updateStatus('RESOLVED')"  th:if="${ticket.status.name() == 'IN_PROGRESS' || ticket.status.name() == 'OPEN'}" class="w-full px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-2">
+                                <span class="material-symbols-outlined text-base">check_circle</span>
+                                Đánh dấu hoàn thành
+                            </button>
+                            <button onclick="updateStatus('CLOSED')" th:if="${ticket.status.name() == 'RESOLVED'}" class="w-full px-4 py-2.5 bg-gray-800 hover:bg-gray-900 text-white rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-2">
+                                <span class="material-symbols-outlined text-base">lock</span>
+                                Đóng ticket
+                            </button>
+
+                            <button onclick="updateStatus('IN_PROGRESS')" th:if="${ticket.status.name() == 'CLOSED'}" class="w-full px-4 py-2.5 bg-gray-800 hover:bg-gray-900 text-white rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-2">
+                                <span class="material-symbols-outlined text-base">unlock</span>
+                                Mở lại ticket
+                            </button>
+
+                        </div>
+                    </div>
+
+                    <!-- Related Info -->
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Overlay Panel (Hidden by default) -->
+    <div id="chatBackdrop" class="backdrop hidden"></div>
+
+    <div id="chatPanel" class="chat-overlay">
+        <div class="h-full flex flex-col">
+
+            <!-- Chat Header -->
+            <div class="bg-gradient-to-r from-[#03594D] to-[#026B5E] text-white p-4 flex items-center justify-between shadow-lg">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-[#D8E268] rounded-full flex items-center justify-center font-bold text-[#03594D]">
+                        N
+                    </div>
+                    <div>
+                        <div class="font-bold">Nguyễn Văn A</div>
+                        <div class="text-xs opacity-90 flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 bg-green-400 rounded-full"></span>
+                            Đang online
+                        </div>
+                    </div>
+                </div>
+                <button onclick="closeChatPanel()"
+                        class="p-2 hover:bg-white/10 rounded-lg transition">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+
+            <!-- Chat Messages -->
+            <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50 chat-messages">
+
+                <!-- Customer Message -->
+                <div class="flex gap-2">
+                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-sm font-bold text-blue-600 flex-shrink-0">
+                        N
+                    </div>
+                    <div>
+                        <div class="bg-white rounded-lg rounded-tl-none p-3 shadow-sm border border-gray-200 max-w-xs">
+                            <p class="text-sm text-gray-800">Xin chào, tôi muốn kiểm tra tình trạng đơn hàng #ORD-5678</p>
+                        </div>
+                        <div class="text-xs text-gray-400 mt-1">09:10</div>
+                    </div>
+                </div>
+
+                <!-- Staff Message -->
+                <div class="flex gap-2 justify-end">
+                    <div>
+                        <div class="bg-[#03594D] text-white rounded-lg rounded-tr-none p-3 shadow-sm max-w-xs">
+                            <p class="text-sm">Xin chào anh/chị! Để em kiểm tra giúp anh chị nhé.</p>
+                        </div>
+                        <div class="text-xs text-gray-400 mt-1 text-right">09:11</div>
+                    </div>
+                    <div class="w-8 h-8 bg-[#D8E268] rounded-full flex items-center justify-center text-sm font-bold text-[#03594D] flex-shrink-0">
+                        T
+                    </div>
+                </div>
+
+                <!-- Customer Message -->
+                <div class="flex gap-2">
+                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-sm font-bold text-blue-600 flex-shrink-0">
+                        N
+                    </div>
+                    <div>
+                        <div class="bg-white rounded-lg rounded-tl-none p-3 shadow-sm border border-gray-200 max-w-xs">
+                            <p class="text-sm text-gray-800">Dạ em cảm ơn nhiều ạ!</p>
+                        </div>
+                        <div class="text-xs text-gray-400 mt-1">09:11</div>
+                    </div>
+                </div>
+
+                <!-- Staff Message -->
+                <div class="flex gap-2 justify-end">
+                    <div>
+                        <div class="bg-[#03594D] text-white rounded-lg rounded-tr-none p-3 shadow-sm max-w-xs">
+                            <p class="text-sm">Em đã kiểm tra rồi ạ. Đơn hàng của anh/chị đang trong quá trình xử lý. Dự kiến sẽ hoàn thành trong 2 ngày nữa.</p>
+                        </div>
+                        <div class="text-xs text-gray-400 mt-1 text-right">09:15</div>
+                    </div>
+                    <div class="w-8 h-8 bg-[#D8E268] rounded-full flex items-center justify-center text-sm font-bold text-[#03594D] flex-shrink-0">
+                        T
+                    </div>
+                </div>
+
+                <!-- System Message -->
+                <div class="flex justify-center">
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-2 text-xs text-yellow-800">
+                        <span class="material-symbols-outlined text-sm align-middle">info</span>
+                        Ticket #1234 đã được tạo từ cuộc trò chuyện này
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+
+<script  th:inline="javascript">
+
+    /*<![CDATA[*/
+    let isAnimating = false;
+    const ticketId = /*[[${ticket.id}]]*/ 1234;
+    const customerId = /*[[${ticket.customer.userId}]]*/ 1;
+
+    async function openChatPanel(sessionId) {
+        if (isAnimating) return;
+        isAnimating = true;
+
+        const panel = document.getElementById('chatPanel');
+        const backdrop = document.getElementById('chatBackdrop');
+
+        backdrop.classList.remove('hidden');
+        panel.classList.remove('hidden');
+
+        requestAnimationFrame(() => {
+            backdrop.classList.add('fade-in');
+            panel.classList.add('slide-in-right');
+        });
+
+        await loadSessionMessages(sessionId);
+
+        isAnimating = false;
+    }
+
+    async function loadSessionMessages(sessionId) {
+        try {
+            const response = await fetch(`/support/api/sessions/${sessionId}/messages`);
+            const messages = await response.json();
+            const messagesContainer = document.getElementById('chatMessages');
+
+            messagesContainer.innerHTML = '';
+
+            messages.forEach(msg => {
+                const isStaff = msg.sender.userId !== customerId;
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'flex gap-2';
+
+                const avatarChar = msg.sender.fullName ? msg.sender.fullName.charAt(0) : '?';
+
+                if (isStaff) {
+                    messageDiv.classList.add('justify-end');
+                    messageDiv.innerHTML = `
+            <div class="flex flex-col items-end">
+                <div class="bg-[#03594D] text-white rounded-lg rounded-tr-none p-3 shadow-sm max-w-xs">
+                    <p class="text-sm">${escapeHtml(msg.messageText)}</p>
+                </div>
+                <div class="text-xs text-gray-400 mt-1">${formatTime(msg.sentAt)}</div>
+            </div>
+            <div class="w-8 h-8 bg-[#D8E268] rounded-full flex items-center justify-center text-sm font-bold text-[#03594D] flex-shrink-0">
+                ${avatarChar}
+            </div>
+        `;
+                } else {
+                    messageDiv.classList.add('justify-start');
+                    messageDiv.innerHTML = `
+            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-sm font-bold text-blue-600 flex-shrink-0">
+                ${avatarChar}
+            </div>
+            <div class="flex flex-col">
+                <div class="bg-white rounded-lg rounded-tl-none p-3 shadow-sm border border-gray-200 max-w-xs">
+                    <p class="text-sm text-gray-800">${escapeHtml(msg.messageText)}</p>
+                </div>
+                <div class="text-xs text-gray-400 mt-1">${formatTime(msg.sentAt)}</div>
+            </div>
+        `;
+                }
+
+                messagesContainer.appendChild(messageDiv);
+            });
+
+
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+        } catch (err) {
+            console.error('Failed to load messages:', err);
+        }
+    }
+
+    function formatTime(dateStr) {
+        const d = new Date(dateStr);
+        return d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+        return text.replace(/[&<>"']/g, m => map[m]);
+    }
+
+
+
+
+    function updateStatus(newStatus) {
+        if (!confirm('Bạn có chắc chắn muốn thay đổi trạng thái?')) return;
+
+        fetch(`/support/tickets/api/${ticketId}/status`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({status: newStatus})
+        })
+            .then(response => response.json())
+            .then(data => window.location.reload())
+            .catch(error => console.error('Error:', error));
+    }
+
+
+
+    function closeChatPanel() {
+        if (isAnimating) return;
+        isAnimating = true;
+
+        const panel = document.getElementById('chatPanel');
+        const backdrop = document.getElementById('chatBackdrop');
+
+        backdrop.classList.remove('fade-in');
+        backdrop.classList.add('fade-out');
+        panel.classList.remove('slide-in-right');
+        panel.classList.add('slide-out-right');
+
+        setTimeout(() => {
+            backdrop.classList.add('hidden');
+            panel.classList.add('hidden');
+            backdrop.classList.remove('fade-out');
+            panel.classList.remove('slide-out-right');
+            isAnimating = false;
+        }, 300);
+    }
+
+
+
+
+
+
+
+    document.getElementById('chatBackdrop').addEventListener('click', closeChatPanel);
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !document.getElementById('chatPanel').classList.contains('hidden')) {
+            closeChatPanel();
+        }
+    });
+
+
+
+    const noteInput = document.getElementById('noteInput');
+    const saveNoteBtn = document.getElementById('saveNoteBtn');
+
+    saveNoteBtn.addEventListener('click', function() {
+        const content = noteInput.value.trim();
+        if (!content) return alert('Vui lòng nhập ghi chú.');
+
+        fetch(`/support/tickets/api/${ticketId}/note`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({content})
+        })
+            .then(res => res.json())
+            .then(data => {
+                alert('Ghi chú đã được lưu.');
+            })
+            .catch(err => console.error(err));
+    });
+
+
+    /*]]>*/
+</script>
+
+</body>
+</html>

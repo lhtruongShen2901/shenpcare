@@ -47,13 +47,13 @@ public class AdminAuthController {
         long adminCount = userRepo.countByRoleIgnoreCase("ADMIN");
 
         // Nếu đã có ít nhất 1 ADMIN thì không cho đăng ký nữa
-        if (adminCount > 0) {
-            redirectAttributes.addFlashAttribute(
-                    "errorMessage",
-                    "Hệ thống đã có tài khoản Admin. Vui lòng đăng nhập."
-            );
-            return "redirect:/admin/login";
-        }
+//            if (adminCount > 0) {
+//            redirectAttributes.addFlashAttribute(
+//                    "errorMessage",
+//                    "Hệ thống đã có tài khoản Admin. Vui lòng đăng nhập."
+//            );
+//            return "redirect:/admin/login";
+//        }
 
         if (!model.containsAttribute("form")) {
             model.addAttribute("form", new AdminRegisterForm());
@@ -74,13 +74,13 @@ public class AdminAuthController {
 
         // Kiểm tra lại lần nữa: nếu đã có ADMIN thì chặn
         long adminCount = userRepo.countByRoleIgnoreCase("ADMIN");
-        if (adminCount > 0) {
-            redirectAttributes.addFlashAttribute(
-                    "errorMessage",
-                    "Hệ thống đã có tài khoản Admin. Vui lòng đăng nhập."
-            );
-            return "redirect:/admin/login";
-        }
+//        if (adminCount > 0) {
+//            redirectAttributes.addFlashAttribute(
+//                    "errorMessage",
+//                    "Hệ thống đã có tài khoản Admin. Vui lòng đăng nhập."
+//            );
+//            return "redirect:/admin/login";
+//        }
 
         // Lỗi validate annotation (@NotBlank, @Size, @Email, ...)
         if (bindingResult.hasErrors()) {

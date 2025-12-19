@@ -50,6 +50,7 @@ public class SecurityConfig {
                 .requestMatchers("/admin/login", "/admin/register").permitAll()
                 // 3. Khu admin nội bộ (Admin + Staff)
                 .requestMatchers("/admin/**").hasAnyRole("ADMIN","DOCTOR","GROOMER","SUPPORT","STORE")
+                .requestMatchers("/support/**").hasAnyRole("SUPPORT", "ADMIN")
                 // 4. Mọi request khác
                 .anyRequest().authenticated()
             )

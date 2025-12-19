@@ -1,10 +1,15 @@
 package g6shenpcare.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
+@Getter
+@Setter
 @Table(name = "Orders")
 public class Order {
 
@@ -13,8 +18,9 @@ public class Order {
     @Column(name = "OrderId")
     private Long orderId;
 
+    // change to Long to match typical ID types Integer
     @Column(name = "CustomerId", nullable = false)
-    private Long customerId;
+    private Integer customerId;
 
     @Column(name = "OrderDate", nullable = false)
     private LocalDateTime orderDate;
@@ -34,59 +40,5 @@ public class Order {
     public Order() {
     }
 
-    public Long getOrderId() {
-        return orderId;
-    }
 
-    public void setOrderId(Long orderId) {
-        this.orderId = orderId;
-    }
-
-    public Long getCustomerId() {
-        return customerId;
-    }
-
-    public void setCustomerId(Long customerId) {
-        this.customerId = customerId;
-    }
-
-    public LocalDateTime getOrderDate() {
-        return orderDate;
-    }
-
-    public void setOrderDate(LocalDateTime orderDate) {
-        this.orderDate = orderDate;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getShippingAddress() {
-        return shippingAddress;
-    }
-
-    public void setShippingAddress(String shippingAddress) {
-        this.shippingAddress = shippingAddress;
-    }
-
-    public BigDecimal getTotalAmount() {
-        return totalAmount;
-    }
-
-    public void setTotalAmount(BigDecimal totalAmount) {
-        this.totalAmount = totalAmount;
-    }
-
-    public String getNotes() {
-        return notes;
-    }
-
-    public void setNotes(String notes) {
-        this.notes = notes;
-    }
 }
