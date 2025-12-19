@@ -19,15 +19,9 @@ public interface ServicesRepository extends JpaRepository<Services, Integer> {
     @Override
     Page<Services> findAll(Pageable pageable);
 
-    long countByServiceCategoryId(Integer categoryId);
+    @Query("SELECT COUNT(s) FROM Services s WHERE s.serviceCategory.serviceCategoryId = :catId")
+    long countByServiceCategoryId(@Param("catId") Integer categoryId);
 
-    @Modifying
-    @Query("UPDATE Services s SET s.serviceCategoryId = :newId WHERE s.serviceCategoryId = :oldId")
-    void moveServicesToCategory(@Param("oldId") Integer oldId, @Param("newId") Integer newId);
-
-    @Modifying
-    @Query("UPDATE Services s SET s.active = false WHERE s.serviceCategoryId = :catId")
-    void disableServicesByCategory(@Param("catId") Integer catId);
 
     // --- CÁC HÀM MỚI CHO LOGIC COMBO ---
     // 1. Tìm các dịch vụ KHÔNG PHẢI là loại này (Ví dụ: Lấy tất cả trừ COMBO)
@@ -51,7 +45,22 @@ public interface ServicesRepository extends JpaRepository<Services, Integer> {
     List<Object[]> countServicesByCategory();
 
 
+    @Query("SELECT s FROM Services s JOIN s.serviceCategory c WHERE c.categoryType = :catType")
+    @EntityGraph(attributePaths = {"serviceCategory"})
+    Page<Services> findByCategoryType(@Param("catType") String categoryType, Pageable pageable);
 
 
     List<Services> findByActive(Boolean isActive);
+
+
+    @Query("SELECT COUNT(s) FROM Services s WHERE s.serviceCategory.serviceCategoryId = :catId")
+    long countServicesInClinic(@Param("catId") Integer categoryId);
+
+    @Modifying
+    @Query("UPDATE Services s SET s.serviceCategoryId = :newId WHERE s.serviceCategoryId = :oldId")
+    void moveServicesToCategory(@Param("oldId") Integer oldId, @Param("newId") Integer newId);
+
+    @Modifying
+    @Query("UPDATE Services s SET s.active = false WHERE s.serviceCategoryId = :catId")
+    void disableServicesByCategory(@Param("catId") Integer catId);
 }
