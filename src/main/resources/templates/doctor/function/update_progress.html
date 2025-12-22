@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Cập nhật tiến độ - Bác sĩ Thú y</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+</head>
+<body class="bg-white font-display text-primary">
+  <div class="max-w-6xl mx-auto p-6">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold">Cập nhật tiến độ lịch hẹn</h1>
+      <a th:href="@{/doctor/work}" class="px-3 py-2 bg-gray-100 rounded">Quay về</a>
+    </div>
+
+    <div class="bg-white border rounded p-4">
+      <table class="w-full">
+        <thead>
+          <tr class="text-left border-b">
+            <th class="p-2">Thời gian</th>
+            <th class="p-2">Khách hàng / Thú cưng</th>
+            <th class="p-2">Dịch vụ</th>
+            <th class="p-2">Trạng thái hiện tại</th>
+            <th class="p-2">Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="appt : ${appointments}" class="border-b">
+            <td class="p-2" th:text="${#temporals.format(appt.startTime,'dd/MM/yyyy HH:mm')}">20/07/2024 09:00</td>
+            <td class="p-2">
+              <div class="font-bold" th:text="${appt.customer.user.fullName}">Nguyễn A</div>
+              <div class="text-sm text-gray-600" th:text="${appt.pet.name}">Lucky</div>
+            </td>
+            <td class="p-2" th:text="${appt.serviceType}">Khám tổng quát</td>
+            <td class="p-2" th:text="${appt.status}">PENDING</td>
+            <td class="p-2">
+              <form th:action="@{/doctor/appointments/update}" method="post" class="flex gap-2 items-start">
+                <input type="hidden" name="appointmentId" th:value="${appt.bookingId}" />
+                <select name="status" class="border rounded px-2 py-1">
+                  <option value="PENDING" th:selected="${appt.status == 'PENDING'}">Chờ xác nhận</option>
+                  <option value="CONFIRMED" th:selected="${appt.status == 'CONFIRMED'}">Đã xác nhận</option>
+                  <option value="COMPLETED" th:selected="${appt.status == 'COMPLETED'}">Hoàn thành</option>
+                  <option value="CANCELLED" th:selected="${appt.status == 'CANCELLED'}">Đã huỷ</option>
+                </select>
+                <textarea name="notes" placeholder="Ghi chú (tuỳ chọn)" class="border rounded px-2 py-1 text-sm" rows="1" style="width:220px;" th:text="${appt.notes}"></textarea>
+                <button type="submit" class="px-3 py-1 bg-primary text-white rounded">Cập nhật</button>
+              </form>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div th:if="${appointments == null || appointments.isEmpty()}" class="p-4 text-center text-gray-500">Không có lịch hẹn</div>
+    </div>
+  </div>
+</body>
+</html>

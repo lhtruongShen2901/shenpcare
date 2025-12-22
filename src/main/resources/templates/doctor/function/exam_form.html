@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Khám bệnh &amp; Cập nhật bệnh án</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13eca4", 
+                        "vet-text": "#03594D",
+                        "vet-border": "#03594D",
+                        "vet-button-general": "#D8E268",
+                        "vet-button-dog": "#FF9124",
+                        "vet-button-cat": "#FCCDDC",
+                        "vet-bg-light": "#F2F9F8",
+                        "vet-accent": "#D8E268"
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "0.75rem", "xl": "1rem", "2xl": "1.5rem", "full": "9999px"},
+                    boxShadow: {
+                        'soft': '0 4px 20px -2px rgba(3, 89, 77, 0.05)',
+                        'card': '0 0 0 1px rgba(3, 89, 77, 0.1), 0 2px 8px rgba(3, 89, 77, 0.05)'
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 500,
+            'GRAD' 0,
+            'opsz' 24
+        }
+        .filled-icon {
+            font-variation-settings: 'FILL' 1 !important;
+        }
+        body {
+            background-color: #ffffff;
+            background-image: radial-gradient(#03594d 0.5px, transparent 0.5px), radial-gradient(#03594d 0.5px, #ffffff 0.5px);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+            background-attachment: fixed;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #03594D; 
+            border-radius: 10px;
+            opacity: 0.2;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #024037; 
+        }
+        .bg-white-overlay {
+            background-color: rgba(255, 255, 255, 0.95);
+        }
+    </style>
+</head>
+<body class="font-display text-vet-text antialiased">
+<div class="min-h-screen flex flex-col">
+    <header class="bg-white border-b-2 border-vet-border/10 sticky top-0 z-30 shadow-sm px-6 py-3">
+        <div class="max-w-[1600px] mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-vet-text flex items-center justify-center text-white">
+                    <span class="material-symbols-outlined filled-icon">pets</span>
+                </div>
+                <div>
+                    <h1 class="text-xl font-black text-vet-text leading-none">VET CLINIC</h1>
+                    <p class="text-xs font-medium text-vet-text/60">Hệ thống quản lý thú y</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-6">
+                <nav class="hidden md:flex gap-1 bg-vet-bg-light/50 p-1 rounded-lg border border-vet-border/10">
+                    <a class="px-4 py-2 rounded-md hover:bg-white text-sm font-bold text-vet-text/70 hover:text-vet-text hover:shadow-sm transition-all" th:href="@{/doctor/work}">Lịch hẹn</a>
+                    <a class="px-4 py-2 rounded-md bg-white shadow-sm text-sm font-bold text-vet-text border border-vet-border/10" href="#">Khám bệnh</a>
+                    <a class="px-4 py-2 rounded-md hover:bg-white text-sm font-bold text-vet-text/70 hover:text-vet-text hover:shadow-sm transition-all" th:href="@{/doctor/dashboard}">Bảng điều khiển</a>
+                </nav>
+                <div class="h-8 w-[2px] bg-vet-border/10"></div>
+                <div class="flex items-center gap-3">
+                    <div class="text-right hidden sm:block">
+                        <p class="text-sm font-bold text-vet-text" th:text="${currentUser?.fullName ?: 'BS. Nguyễn Văn An'}">BS. Nguyễn Văn An</p>
+                        <p class="text-xs text-vet-text/60">Khoa Nội</p>
+                    </div>
+                    <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 ring-2 ring-vet-border/20" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBooOq8NVAukqhBRP4UNGyyQNTPljWW90knQ94DLjr76Q95A0pVUwbH4pSmaBI1CEGtKQFTvDz_lKD1p58eFIHFdS45uFDJaDflq9FpsX78LSwKHSBpgQ-Wel-3GeJGBRnbyNdBzOXV0p7jyvFZ6VCI0aCbqWcZWg10VzXWPzY6VIdzb6yeXHrrn-XewbBQcaQ8QmjrdHcbmiqg9D4dfR9rPZvp5KJPFz_6ghLeSxVExdQb6Hzso6DYLFUMeaNHt4uGyFe3NReYHjd4');"></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 p-4 lg:p-8">
+        <div class="max-w-[1600px] mx-auto">
+            <div class="flex flex-wrap items-end justify-between gap-4 mb-8 bg-white/80 backdrop-blur-sm p-4 rounded-2xl border border-vet-border/10 shadow-soft">
+                <div class="flex flex-col gap-1">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-vet-text text-[32px] filled-icon">medical_services</span>
+                        <h2 class="text-vet-text text-3xl font-black leading-tight">Phiếu Khám Bệnh</h2>
+                    </div>
+                    <p class="text-vet-text/70 text-sm font-medium pl-11">Mã phiếu: KB-<span th:text="${appointment?.bookingId}">20240720-001</span> • <span class="text-vet-button-dog font-bold" th:text="${appointment?.pet?.species == 'Cat' ? 'Thú cưng: Mèo' : 'Thú cưng: Chó'}">Thú cưng: Chó</span></p>
+                </div>
+                <div class="flex gap-3">
+                    <button class="bg-white border-2 border-vet-border/20 text-vet-text hover:border-vet-border font-bold py-2.5 px-5 rounded-xl flex items-center gap-2 transition-all" type="button" onclick="window.print()">
+                        <span class="material-symbols-outlined">print</span>
+                        In phiếu tiếp nhận
+                    </button>
+                    <button class="bg-vet-button-general border-2 border-vet-button-general text-vet-text hover:brightness-105 font-bold py-2.5 px-5 rounded-xl flex items-center gap-2 shadow-sm transition-transform active:scale-95" type="button" onclick="saveTempData()">
+                        <span class="material-symbols-outlined filled-icon">save</span>
+                        Lưu tạm
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-12 gap-6 lg:gap-8">
+                <div class="col-span-12 lg:col-span-4 xl:col-span-3 flex flex-col gap-6">
+                    <div class="bg-white border-2 border-vet-border/10 rounded-2xl p-6 shadow-card relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-vet-button-dog/10 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110"></div>
+                        <div class="flex flex-col items-center text-center gap-4 relative z-10">
+                            <div class="relative">
+                                <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-36 h-36 border-4 border-white shadow-lg ring-4 ring-vet-button-dog/20" th:style="|background-image: url('@{/doctor/pet-photo/{id}(id=${appointment?.pet?.petId})}');|" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBoVXj5Q2QlqrVOQ2HWHvrien1VaLMLKKhW9dPyLIn1YyChqA6Kr16WWXolbfyCcx5kynU2PTnQK_K4X2GSvFHjbiSAZPMl6oml5ao9tnYtSPvVDhWFIlml8j4WXcvFriqcmbfp4vKaO5U73PtSpYqjBKIObR-SzeAz11faB1-rSqVT6NnjY_DljdK4HmJgXKzphIPKK0nR4ToXxcnih7m3KpmyB31-FPx-hqYyR7oYVNqCzyQnXmiszpqL8ISjO6pWanpL7KRgrktN");'></div>
+                                <div class="absolute bottom-0 right-0 bg-white p-1.5 rounded-full shadow-md border border-vet-border/10" th:title="${appointment?.pet?.gender}">
+                                    <span class="material-symbols-outlined text-blue-500 font-bold">male</span>
+                                </div>
+                            </div>
+                            <div class="w-full">
+                                <h2 class="text-vet-text text-3xl font-black tracking-tight" th:text="${appointment?.pet?.name ?: 'Lucky'}">Lucky</h2>
+                                <div class="flex justify-center mt-2 mb-4">
+                                    <span class="bg-vet-button-dog text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm" th:text="${appointment?.pet?.breed ?: 'Golden Retriever'}">Golden Retriever</span>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2 text-sm border-t border-vet-border/10 pt-4 mt-2">
+                                    <div class="flex flex-col p-2 bg-vet-bg-light rounded-lg">
+                                        <span class="text-xs text-vet-text/60 font-bold uppercase">Tuổi</span>
+                                        <span class="font-bold text-vet-text" th:text="${appointment?.pet?.birthDate != null ? (T(java.time.Period).between(appointment?.pet?.birthDate, T(java.time.LocalDate).now()).getYears() + ' tuổi') : '3 tuổi'}">3 tuổi</span>
+                                    </div>
+                                    <div class="flex flex-col p-2 bg-vet-bg-light rounded-lg">
+                                        <span class="text-xs text-vet-text/60 font-bold uppercase">Mã số</span>
+                                        <span class="font-bold text-vet-text" th:text="'PET-' + ${appointment?.pet?.petId}">PET-00123</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t-2 border-dashed border-vet-border/10">
+                            <div class="flex items-center gap-3 bg-white p-3 rounded-xl border border-vet-border/10 shadow-sm hover:border-vet-border/30 transition-colors cursor-pointer">
+                                <div class="w-10 h-10 rounded-full bg-vet-text/5 flex items-center justify-center text-vet-text font-bold text-lg">M</div>
+                                <div class="flex-1 text-left">
+                                    <p class="text-vet-text font-bold text-sm" th:text="${appointment?.customer?.user?.fullName ?: 'Trần Bình Minh'}">Trần Bình Minh</p>
+                                    <p class="text-vet-text/70 text-xs flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[14px]">call</span>
+                                        <span th:text="${appointment?.customer?.user?.phone ?: '0909 123 456'}">0909 123 456</span>
+                                    </p>
+                                </div>
+                                <span class="material-symbols-outlined text-vet-text/40">chevron_right</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border-2 border-vet-border/10 rounded-2xl p-6 shadow-card flex-1">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-black text-vet-text flex items-center gap-2">
+                                <span class="material-symbols-outlined filled-icon">history</span>
+                                Tiền sử
+                            </h3>
+                            <button class="text-xs font-bold text-vet-text underline hover:text-vet-button-dog" type="button">Xem tất cả</button>
+                        </div>
+                        <div class="relative pl-4 space-y-0 max-h-96 overflow-y-auto">
+                            <div class="absolute left-[23px] top-2 bottom-4 w-0.5 bg-vet-border/10"></div>
+                            <th:block th:if="${appointmentHistory != null && !appointmentHistory.isEmpty()}">
+                                <th:block th:each="hist,iter : ${appointmentHistory}">
+                                    <th:block th:if="${iter.index < 5}">
+                                        <div class="relative pl-8 pb-8 group">
+                                            <div class="absolute left-0 top-1 w-12 h-12 flex items-center justify-center">
+                                                <div th:if="${iter.index == 0}" class="w-4 h-4 rounded-full bg-vet-button-general ring-4 ring-white border-2 border-vet-border z-10 group-hover:scale-110 transition-transform"></div>
+                                                <div th:unless="${iter.index == 0}" class="w-3 h-3 rounded-full bg-white ring-4 ring-white border-2 border-vet-border/40 z-10"></div>
+                                            </div>
+                                            <div class="bg-vet-bg-light p-4 rounded-xl border border-vet-border/10 group-hover:border-vet-border/30 transition-colors">
+                                                <div class="flex justify-between items-start mb-1">
+                                                    <span class="text-xs font-bold text-vet-text bg-white px-2 py-0.5 rounded shadow-sm border border-vet-border/10" th:text="${iter.index == 0 ? 'Hôm nay' : #temporals.format(hist.startTime, 'dd/MM/yyyy')}">Hôm nay</span>
+                                                    <span class="text-xs font-bold text-vet-text/50" th:text="${#temporals.format(hist.startTime, 'HH:mm')}">09:30</span>
+                                                </div>
+                                                <p class="text-sm font-bold text-vet-text mt-1" th:text="${hist.serviceType ?: 'Khám bệnh'}">Khám tiêu hóa</p>
+                                                <p class="text-xs text-vet-text/70 mt-0.5" th:text="${currentUser?.fullName ?: 'BS. Nguyễn Văn An'}">BS. Nguyễn Văn An</p>
+                                            </div>
+                                        </div>
+                                    </th:block>
+                                </th:block>
+                            </th:block>
+                            <div th:unless="${appointmentHistory != null && !appointmentHistory.isEmpty()}" class="text-center text-vet-text/60 py-4">
+                                <p class="text-sm">Chưa có tiền sử khám</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-span-12 lg:col-span-8 xl:col-span-9">
+                    <form th:action="@{/doctor/appointments/{id}/exam(id=${appointment?.bookingId})}" method="post" class="flex flex-col gap-6">
+                        <!-- Pet Selection Card (TOP) -->
+                        <div class="bg-white border-2 border-vet-border/10 rounded-2xl p-6 shadow-card">
+                            <h3 class="text-lg font-black text-vet-text uppercase tracking-wider mb-4 flex items-center gap-2">
+                                <span class="material-symbols-outlined filled-icon text-xl">pets</span>
+                                Chọn Thú Cưng
+                            </h3>
+                            <div class="flex flex-col sm:flex-row gap-4 items-center">
+                                <div class="flex-1">
+                                    <label class="text-sm font-bold text-vet-text/60 block mb-2">Thú cưng khám bệnh</label>
+                                    <select id="petSelect" class="w-full bg-white border-2 border-vet-border/10 focus:border-vet-text focus:ring-0 text-vet-text rounded-xl px-4 py-3 text-sm font-bold" onchange="validatePetSelection()">
+                                        <option value="">-- Chọn thú cưng --</option>
+                                        <option th:if="${appointment?.pet}" th:value="${appointment?.pet?.petId}" th:text="${appointment?.pet?.name + ' (' + appointment?.pet?.species + ')'}" selected></option>
+                                    </select>
+                                    <p id="petError" class="text-xs text-red-600 mt-1 hidden">Vui lòng chọn thú cưng</p>
+                                </div>
+                                <div class="bg-vet-button-dog/20 p-4 rounded-xl flex-shrink-0">
+                                    <div class="flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-vet-button-dog text-2xl">pets</span>
+                                        <div>
+                                            <p class="text-xs font-bold text-vet-text/60">Thú cưng hiện tại</p>
+                                            <p class="text-sm font-bold text-vet-text" th:text="${appointment?.pet?.name + ' (' + appointment?.pet?.species + ')'}">Milu (Dog)</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white border-2 border-vet-border/10 rounded-2xl p-6 shadow-card">
+                            <h3 class="text-sm font-black text-vet-text uppercase tracking-wider mb-4 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-lg filled-icon">cardiology</span>
+                                Chỉ số sinh tồn (Vitals)
+                            </h3>
+                            <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                                <div class="p-3 rounded-xl bg-vet-bg-light border border-vet-border/10 flex flex-col items-center justify-center relative group hover:border-vet-border/30 transition-all">
+                                    <label class="text-xs font-bold text-vet-text/60 mb-1">Cân nặng (kg)</label>
+                                    <div class="flex items-center gap-1">
+                                        <input class="w-16 bg-transparent text-center font-black text-xl text-vet-text border-0 p-0 focus:ring-0 placeholder-vet-text/20" placeholder="0.0" type="number" name="weight" step="0.1"/>
+                                    </div>
+                                    <span class="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 material-symbols-outlined text-vet-text/40 text-sm">edit</span>
+                                </div>
+                                <div class="p-3 rounded-xl bg-vet-bg-light border border-vet-border/10 flex flex-col items-center justify-center relative group hover:border-vet-border/30 transition-all">
+                                    <label class="text-xs font-bold text-vet-text/60 mb-1">Nhiệt độ (°C)</label>
+                                    <div class="flex items-center gap-1">
+                                        <input class="w-16 bg-transparent text-center font-black text-xl text-vet-text border-0 p-0 focus:ring-0 placeholder-vet-text/20" placeholder="37.0" type="number" name="temperature" step="0.1"/>
+                                    </div>
+                                </div>
+                                <div class="p-3 rounded-xl bg-vet-bg-light border border-vet-border/10 flex flex-col items-center justify-center relative group hover:border-vet-border/30 transition-all">
+                                    <label class="text-xs font-bold text-vet-text/60 mb-1">Nhịp tim (bpm)</label>
+                                    <div class="flex items-center gap-1">
+                                        <input class="w-16 bg-transparent text-center font-black text-xl text-vet-text border-0 p-0 focus:ring-0 placeholder-vet-text/20" placeholder="--" type="number" name="heartRate"/>
+                                    </div>
+                                </div>
+                                <div class="p-3 rounded-xl bg-vet-bg-light border border-vet-border/10 flex flex-col items-center justify-center relative group hover:border-vet-border/30 transition-all">
+                                    <label class="text-xs font-bold text-vet-text/60 mb-1">Nhịp thở (rpm)</label>
+                                    <div class="flex items-center gap-1">
+                                        <input class="w-16 bg-transparent text-center font-black text-xl text-vet-text border-0 p-0 focus:ring-0 placeholder-vet-text/20" placeholder="--" type="number" name="respirationRate"/>
+                                    </div>
+                                </div>
+                                <div class="p-3 rounded-xl bg-vet-bg-light border border-vet-border/10 flex flex-col items-center justify-center relative group hover:border-vet-border/30 transition-all">
+                                    <label class="text-xs font-bold text-vet-text/60 mb-1">CRT (giây)</label>
+                                    <div class="flex items-center gap-1">
+                                        <select class="bg-transparent text-center font-bold text-md text-vet-text border-0 p-0 focus:ring-0 cursor-pointer" name="crt">
+                                            <option>&lt; 2s</option>
+                                            <option>&gt; 2s</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white border-2 border-vet-border/10 rounded-2xl shadow-card overflow-hidden">
+                            <div class="p-6 border-b border-vet-border/10 bg-vet-bg-light/30 flex justify-between items-center">
+                                <h3 class="text-lg font-black text-vet-text flex items-center gap-2">
+                                    <span class="material-symbols-outlined filled-icon">stethoscope</span>
+                                    Khám lâm sàng &amp; Chẩn đoán
+                                </h3>
+                            </div>
+                            <div class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                <div class="space-y-4">
+                                    <label class="text-sm font-bold text-vet-text uppercase tracking-wider block">Triệu chứng &amp; Biểu hiện</label>
+                                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-2">
+                                        <label class="flex items-center gap-2 p-2 rounded-lg border border-vet-border/10 bg-white hover:bg-vet-bg-light cursor-pointer transition-colors">
+                                            <input class="rounded text-vet-text focus:ring-vet-text border-gray-300" type="checkbox" name="symptoms" value="Sốt"/>
+                                            <span class="text-sm font-medium text-vet-text">Sốt</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 p-2 rounded-lg border border-vet-border/10 bg-white hover:bg-vet-bg-light cursor-pointer transition-colors">
+                                            <input class="rounded text-vet-text focus:ring-vet-text border-gray-300" type="checkbox" name="symptoms" value="Nôn mửa"/>
+                                            <span class="text-sm font-medium text-vet-text">Nôn mửa</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 p-2 rounded-lg border border-vet-border/10 bg-white hover:bg-vet-bg-light cursor-pointer transition-colors">
+                                            <input class="rounded text-vet-text focus:ring-vet-text border-gray-300" type="checkbox" name="symptoms" value="Tiêu chảy"/>
+                                            <span class="text-sm font-medium text-vet-text">Tiêu chảy</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 p-2 rounded-lg border border-vet-border/10 bg-white hover:bg-vet-bg-light cursor-pointer transition-colors">
+                                            <input class="rounded text-vet-text focus:ring-vet-text border-gray-300" type="checkbox" name="symptoms" value="Ho"/>
+                                            <span class="text-sm font-medium text-vet-text">Ho / Hắt hơi</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 p-2 rounded-lg border border-vet-border/10 bg-white hover:bg-vet-bg-light cursor-pointer transition-colors">
+                                            <input class="rounded text-vet-text focus:ring-vet-text border-gray-300" type="checkbox" name="symptoms" value="Ngứa"/>
+                                            <span class="text-sm font-medium text-vet-text">Ngứa da</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 p-2 rounded-lg border border-vet-border/10 bg-white hover:bg-vet-bg-light cursor-pointer transition-colors">
+                                            <input class="rounded text-vet-text focus:ring-vet-text border-gray-300" type="checkbox" name="symptoms" value="Bỏ ăn"/>
+                                            <span class="text-sm font-medium text-vet-text">Bỏ ăn</span>
+                                        </label>
+                                    </div>
+                                    <textarea class="w-full bg-vet-bg-light/50 border-2 border-vet-border/10 focus:border-vet-text focus:ring-0 text-vet-text rounded-xl p-4 text-sm min-h-[160px] transition-colors placeholder-vet-text/40" placeholder="Mô tả chi tiết tình trạng bệnh..." name="symptoms_detail"></textarea>
+                                </div>
+                                <div class="space-y-4">
+                                    <label class="text-sm font-bold text-vet-text uppercase tracking-wider block">Chẩn đoán</label>
+                                    <div class="space-y-3">
+                                        <div>
+                                            <span class="text-xs font-bold text-vet-text/60 mb-1 block">Chẩn đoán sơ bộ</span>
+                                            <input class="w-full bg-white border-2 border-vet-border/10 focus:border-vet-text focus:ring-0 text-vet-text rounded-xl px-4 py-2 text-sm font-semibold" placeholder="VD: Viêm dạ dày ruột" type="text" name="diagnosis_initial"/>
+                                        </div>
+                                        <div>
+                                            <span class="text-xs font-bold text-vet-text/60 mb-1 block">Chẩn đoán phân biệt</span>
+                                            <input class="w-full bg-white border-2 border-vet-border/10 focus:border-vet-text focus:ring-0 text-vet-text rounded-xl px-4 py-2 text-sm" placeholder="VD: Nhiễm Parvovirus, Ký sinh trùng" type="text" name="diagnosis_differential"/>
+                                        </div>
+                                        <div>
+                                            <span class="text-xs font-bold text-vet-text/60 mb-1 block">Kết luận / Ghi chú điều trị</span>
+                                            <textarea class="w-full bg-vet-bg-light/50 border-2 border-vet-border/10 focus:border-vet-text focus:ring-0 text-vet-text rounded-xl p-4 text-sm min-h-[80px] transition-colors placeholder-vet-text/40" placeholder="Ghi chú thêm..." name="diagnosis_notes"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white border-2 border-vet-border/10 rounded-2xl shadow-card">
+                            <div class="p-6 border-b border-vet-border/10 flex flex-wrap justify-between items-center gap-4">
+                                <h3 class="text-lg font-black text-vet-text flex items-center gap-2">
+                                    <span class="material-symbols-outlined filled-icon">pill</span>
+                                    Đơn thuốc &amp; Điều trị
+                                </h3>
+                                <div class="flex gap-2">
+                                    <button class="bg-vet-button-general text-vet-text px-4 py-2 rounded-xl text-sm font-bold shadow-sm hover:brightness-105 flex items-center gap-2" type="button" onclick="addMedicineRow()">
+                                        <span class="material-symbols-outlined text-[18px]">add_circle</span>
+                                        Thêm thuốc
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <div class="overflow-x-auto border border-vet-border/10 rounded-xl">
+                                    <table class="w-full text-sm text-left">
+                                        <thead class="bg-vet-bg-light text-vet-text font-bold uppercase text-xs tracking-wider">
+                                            <tr>
+                                                <th class="p-4 rounded-tl-xl">Tên thuốc / Dược chất</th>
+                                                <th class="p-4 w-24 text-center">Sáng</th>
+                                                <th class="p-4 w-24 text-center">Chiều</th>
+                                                <th class="p-4 w-24 text-center">Tối</th>
+                                                <th class="p-4 w-32">Đơn vị</th>
+                                                <th class="p-4">Cách dùng</th>
+                                                <th class="p-4 w-12 rounded-tr-xl"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-vet-border/10 bg-white" id="medicineBody">
+                                            <tr class="group hover:bg-vet-bg-light/30 transition-colors">
+                                                <td class="p-4">
+                                                    <div class="flex flex-col">
+                                                        <input type="text" name="medicine_name[]" class="font-bold text-vet-text text-base bg-transparent border-0 p-0 focus:ring-0" value="Amoxicillin 500mg"/>
+                                                        <input type="text" name="medicine_description[]" class="text-xs text-vet-text/60 bg-transparent border-0 p-0 focus:ring-0" value="Kháng sinh phổ rộng"/>
+                                                    </div>
+                                                </td>
+                                                <td class="p-2"><input class="w-full text-center border-vet-border/20 rounded-lg py-1.5 text-sm font-bold focus:border-vet-text focus:ring-0" type="text" name="medicine_morning[]" value="1"/></td>
+                                                <td class="p-2"><input class="w-full text-center border-vet-border/20 rounded-lg py-1.5 text-sm font-bold focus:border-vet-text focus:ring-0" type="text" name="medicine_afternoon[]" value="0"/></td>
+                                                <td class="p-2"><input class="w-full text-center border-vet-border/20 rounded-lg py-1.5 text-sm font-bold focus:border-vet-text focus:ring-0" type="text" name="medicine_evening[]" value="1"/></td>
+                                                <td class="p-4"><input type="text" name="medicine_unit[]" class="text-vet-text font-medium bg-transparent border-0 p-0 focus:ring-0" value="Viên"/></td>
+                                                <td class="p-4"><input type="text" name="medicine_instruction[]" class="text-vet-text/80 bg-transparent border-0 p-0 focus:ring-0 w-full" value="Uống sau khi ăn 30 phút"/></td>
+                                                <td class="p-4 text-center">
+                                                    <button class="text-red-400 hover:text-red-600 p-1 rounded-full hover:bg-red-50 transition-all" type="button" onclick="this.closest('tr').remove()">
+                                                        <span class="material-symbols-outlined text-[20px]">delete</span>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr class="group hover:bg-vet-bg-light/30 transition-colors">
+                                                <td class="p-4">
+                                                    <div class="flex flex-col">
+                                                        <input type="text" name="medicine_name[]" class="font-bold text-vet-text text-base bg-transparent border-0 p-0 focus:ring-0" value="Probio Pet"/>
+                                                        <input type="text" name="medicine_description[]" class="text-xs text-vet-text/60 bg-transparent border-0 p-0 focus:ring-0" value="Men tiêu hóa"/>
+                                                    </div>
+                                                </td>
+                                                <td class="p-2"><input class="w-full text-center border-vet-border/20 rounded-lg py-1.5 text-sm font-bold focus:border-vet-text focus:ring-0" type="text" name="medicine_morning[]" value="1"/></td>
+                                                <td class="p-2"><input class="w-full text-center border-vet-border/20 rounded-lg py-1.5 text-sm font-bold focus:border-vet-text focus:ring-0" type="text" name="medicine_afternoon[]" value="1"/></td>
+                                                <td class="p-2"><input class="w-full text-center border-vet-border/20 rounded-lg py-1.5 text-sm font-bold focus:border-vet-text focus:ring-0" type="text" name="medicine_evening[]" value="1"/></td>
+                                                <td class="p-4"><input type="text" name="medicine_unit[]" class="text-vet-text font-medium bg-transparent border-0 p-0 focus:ring-0" value="Gói"/></td>
+                                                <td class="p-4"><input type="text" name="medicine_instruction[]" class="text-vet-text/80 bg-transparent border-0 p-0 focus:ring-0 w-full" value="Trộn thức ăn"/></td>
+                                                <td class="p-4 text-center">
+                                                    <button class="text-red-400 hover:text-red-600 p-1 rounded-full hover:bg-red-50 transition-all" type="button" onclick="this.closest('tr').remove()">
+                                                        <span class="material-symbols-outlined text-[20px]">delete</span>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="bg-white border-2 border-vet-border/10 rounded-2xl p-6 shadow-card flex flex-col h-full">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h3 class="text-sm font-black text-vet-text uppercase tracking-wider flex items-center gap-2">
+                                        <span class="material-symbols-outlined filled-icon text-lg">home_health</span>
+                                        Dặn dò chủ nuôi
+                                    </h3>
+                                </div>
+                                <textarea class="flex-1 w-full bg-vet-bg-light/30 border-2 border-vet-border/10 focus:border-vet-text focus:ring-0 text-vet-text rounded-xl p-4 text-sm resize-none transition-colors" placeholder="Chế độ ăn uống, vệ sinh, theo dõi..." name="instructions"></textarea>
+                            </div>
+                            <div class="bg-white border-2 border-vet-border/10 rounded-2xl p-6 shadow-card flex flex-col h-full gap-4">
+                                <h3 class="text-sm font-black text-vet-text uppercase tracking-wider flex items-center gap-2">
+                                    <span class="material-symbols-outlined filled-icon text-lg">event_upcoming</span>
+                                    Kế hoạch điều trị
+                                </h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="text-xs font-bold text-vet-text/60 mb-1 block">Ngày tái khám</label>
+                                        <div class="flex gap-2">
+                                            <input class="flex-1 bg-white border-2 border-vet-border/10 focus:border-vet-text focus:ring-0 text-vet-text rounded-xl px-4 py-2 text-sm font-medium" type="date" name="recheck_date"/>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="text-xs font-bold text-vet-text/60 mb-1 block">Trạng thái bệnh án</label>
+                                        <select class="w-full bg-white border-2 border-vet-border/10 focus:border-vet-text focus:ring-0 text-vet-text rounded-xl px-4 py-2 text-sm font-bold" name="medical_record_status">
+                                            <option>Đang điều trị</option>
+                                            <option>Theo dõi thêm</option>
+                                            <option>Đã khỏi bệnh</option>
+                                            <option>Chuyển viện</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 mt-6 border-t-2 border-vet-border/10 border-dashed">
+                            <div class="flex gap-3 w-full sm:w-auto">
+                                <button class="flex-1 sm:flex-none justify-center bg-vet-button-general text-vet-text hover:brightness-105 font-bold py-3 px-6 rounded-xl flex items-center gap-2 shadow-sm transition-all" type="button" onclick="window.print()">
+                                    <span class="material-symbols-outlined">receipt_long</span>
+                                    Tạo hóa đơn
+                                </button>
+                                <button class="flex-1 sm:flex-none justify-center bg-white border-2 border-vet-button-general text-vet-text hover:bg-vet-button-general/10 font-bold py-3 px-6 rounded-xl flex items-center gap-2 transition-all" type="button" onclick="window.print()">
+                                    <span class="material-symbols-outlined">print</span>
+                                    In toa thuốc
+                                </button>
+                            </div>
+                            <button class="w-full sm:w-auto justify-center bg-vet-text text-white hover:bg-opacity-90 font-bold py-3 px-8 rounded-xl flex items-center gap-3 shadow-lg hover:shadow-xl transition-all active:scale-95 text-lg" type="submit" onclick="return confirm('Bạn có chắc chắn muốn hoàn thành khám bệnh này?')">
+                                <span class="material-symbols-outlined filled-icon">check_circle</span>
+                                HOÀN TẤT KHÁM
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+function validatePetSelection() {
+    const petSelect = document.getElementById('petSelect');
+    const petError = document.getElementById('petError');
+    
+    if (!petSelect.value) {
+        petError.classList.remove('hidden');
+        // Disable submit button or highlight the section
+        const submitBtn = document.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.6';
+        }
+    } else {
+        petError.classList.add('hidden');
+        const submitBtn = document.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = '1';
+        }
+    }
+}
+
+function addMedicineRow() {
+    const tbody = document.getElementById('medicineBody');
+    const newRow = document.createElement('tr');
+    newRow.className = 'group hover:bg-vet-bg-light/30 transition-colors';
+    newRow.innerHTML = `
+        <td class="p-4">
+            <div class="flex flex-col">
+                <input type="text" name="medicine_name[]" class="font-bold text-vet-text text-base bg-transparent border-0 p-0 focus:ring-0" placeholder="Tên thuốc"/>
+                <input type="text" name="medicine_description[]" class="text-xs text-vet-text/60 bg-transparent border-0 p-0 focus:ring-0" placeholder="Dược chất"/>
+            </div>
+        </td>
+        <td class="p-2"><input class="w-full text-center border-vet-border/20 rounded-lg py-1.5 text-sm font-bold focus:border-vet-text focus:ring-0" type="text" name="medicine_morning[]" value=""/></td>
+        <td class="p-2"><input class="w-full text-center border-vet-border/20 rounded-lg py-1.5 text-sm font-bold focus:border-vet-text focus:ring-0" type="text" name="medicine_afternoon[]" value=""/></td>
+        <td class="p-2"><input class="w-full text-center border-vet-border/20 rounded-lg py-1.5 text-sm font-bold focus:border-vet-text focus:ring-0" type="text" name="medicine_evening[]" value=""/></td>
+        <td class="p-4"><input class="text-vet-text font-medium border-0 bg-transparent focus:ring-0 w-full" type="text" placeholder="Viên" name="medicine_unit[]"/></td>
+        <td class="p-4"><input class="text-vet-text/80 border-0 bg-transparent focus:ring-0 w-full" type="text" placeholder="Cách dùng" name="medicine_instruction[]"/></td>
+        <td class="p-4 text-center">
+            <button class="text-red-400 hover:text-red-600 p-1 rounded-full hover:bg-red-50 transition-all" type="button" onclick="this.closest('tr').remove()">
+                <span class="material-symbols-outlined text-[20px]">delete</span>
+            </button>
+        </td>
+    `;
+    tbody.appendChild(newRow);
+}
+
+function saveTempData() {
+    alert('Dữ liệu đã được lưu tạm thời');
+}
+
+// Initialize pet selection validation
+document.addEventListener('DOMContentLoaded', () => {
+    validatePetSelection();
+});
+</script>
+</body>
+</html>

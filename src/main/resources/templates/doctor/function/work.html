@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" spellcheck="false">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Quản lý lịch hẹn - Bác sĩ Thú y</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings:
+                'FILL' 0,
+                'wght' 500,
+                'GRAD' 0,
+                'opsz' 24
+        }
+        .icon-filled {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#03594D",
+                        "filter": "#D8E268",
+                        "dog": "#FF9124",
+                        "cat": "#FCCDDC",
+                    },
+                    fontFamily: { "display": ["Inter", "sans-serif"] },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.75rem",
+                        "xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-white font-display text-primary">
+<div class="relative flex min-h-screen w-full flex-col">
+<div class="flex h-full grow flex-row">
+<aside class="flex h-full min-h-screen flex-col bg-white p-4 w-64 fixed border-r border-primary/20 z-10">
+<div class="flex flex-col gap-6 h-full">
+<div class="flex gap-3 items-center pb-2 border-b border-primary/10">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12 border-2 border-primary/20" style='background-image: url("https://cdn-icons-png.flaticon.com/512/616/616408.png");'></div>
+<div class="flex flex-col">
+<h1 class="text-primary text-base font-bold leading-normal" th:text="${currentUser != null ? currentUser.fullName : 'Dr. Nguyễn Văn A'}">Dr. Nguyễn Văn A</h1>
+  <a th:href="@{/doctor/dashboard}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+    <span class="material-symbols-outlined text-primary">dashboard</span>
+    <span class="text-sm text-gray-700">Bảng điều khiển</span>
+  </a>
+  <a th:href="@{/doctor/work}" class="flex items-center gap-3 px-4 py-2 rounded-lg bg-yellow-100 text-primary transition-colors font-medium">
+    <span class="material-symbols-outlined text-primary">calendar_month</span>
+    <span class="text-sm">Quản lý lịch hẹn</span>
+  </a>
+  <a th:href="@{/doctor/pet-passport}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+    <span class="material-symbols-outlined text-primary">folder_open</span>
+    <span class="text-sm text-gray-700">Hồ sơ bệnh án</span>
+  </a>
+  <a th:href="@{/doctor/customers}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+    <span class="material-symbols-outlined text-primary">group</span>
+    <span class="text-sm text-gray-700">Khách hàng</span>
+  </a>
+  <a th:href="@{/doctor/reports}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+    <span class="material-symbols-outlined text-primary">bar_chart</span>
+    <span class="text-sm text-gray-700">Báo cáo</span>
+  </a>
+  <a th:href="@{/doctor/settings}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+    <span class="material-symbols-outlined text-primary">settings</span>
+    <span class="text-sm text-gray-700">Cài đặt</span>
+  </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-filter/30 transition-colors group" th:href="@{/doctor/reports}">
+<span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">bar_chart</span>
+<p class="text-primary text-sm font-semibold leading-normal">Báo cáo</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-filter/30 transition-colors group" th:href="@{/doctor/settings}">
+<span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">settings</span>
+<p class="text-primary text-sm font-semibold leading-normal">Cài đặt</p>
+</a>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-filter/30 transition-colors group" th:href="@{/doctor/pet-passport}">
+<span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">folder_open</span>
+<p class="text-primary text-sm font-semibold leading-normal">Hồ sơ bệnh án</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-filter/30 transition-colors group" th:href="@{/doctor/customers}">
+<span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">group</span>
+<p class="text-primary text-sm font-semibold leading-normal">Khách hàng</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-filter/30 transition-colors group" th:href="@{/doctor/reports}">
+<span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">bar_chart</span>
+<p class="text-primary text-sm font-semibold leading-normal">Báo cáo</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-filter/30 transition-colors group" th:href="@{/doctor/settings}">
+<span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">settings</span>
+<p class="text-primary text-sm font-semibold leading-normal">Cài đặt</p>
+</a>
+</div>
+<div class="mt-auto pt-4 border-t border-primary/10">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-red-50 transition-colors group" th:href="@{/logout}">
+<span class="material-symbols-outlined text-red-500 group-hover:translate-x-1 transition-transform">logout</span>
+<p class="text-red-500 text-sm font-semibold leading-normal">Đăng xuất</p>
+</a>
+</div>
+</div>
+</aside>
+<main class="flex flex-1 flex-col ml-64 bg-white">
+<div class="px-8 py-8">
+<div class="flex flex-wrap justify-between gap-4 items-end mb-8">
+<div class="flex min-w-72 flex-col gap-1">
+<p class="text-primary text-4xl font-black leading-tight tracking-[-0.033em]">Quản lý lịch hẹn</p>
+<p class="text-primary/70 text-base font-normal leading-normal">Quản lý danh sách và trạng thái cuộc hẹn của bạn.</p>
+</div>
+            <div class="flex items-center gap-3">
+<a th:href="@{/doctor/appointments/new}" class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-11 px-5 bg-filter hover:bg-[#cdd853] text-primary text-sm font-bold leading-normal tracking-[0.015em] transition-all hover:shadow-md active:scale-95 gap-2">
+<span class="material-symbols-outlined text-lg">add</span>
+Tạo lịch hẹn
+</a>
+</div>
+</div>
+<div class="flex flex-col lg:flex-row gap-6">
+<div class="w-full lg:w-2/3 flex flex-col gap-5">
+<div th:if="${appointments == null or appointments.empty}" class="text-center text-gray-400 py-8">Chưa có lịch hẹn nào</div>
+<div th:if="${appointments != null and !appointments.empty}">
+  <!-- ...existing code... -->
+  <div class="flex justify-between items-center px-1">
+    <div class="flex h-10 items-center justify-center rounded-lg bg-white p-1 border border-primary/20 shadow-sm">
+      <label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-md px-3 has-[:checked]:bg-filter has-[:checked]:shadow-sm text-primary/70 has-[:checked]:text-primary text-sm font-bold leading-normal transition-colors">
+        <span class="truncate">Xem theo ngày</span>
+        <input checked="" class="invisible w-0" name="view-mode" type="radio" value="Xem theo ngày"/>
+      </label>
+      <label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-md px-3 has-[:checked]:bg-filter has-[:checked]:shadow-sm text-primary/70 has-[:checked]:text-primary text-sm font-bold leading-normal transition-colors">
+        <span class="truncate">Xem theo tuần</span>
+        <input class="invisible w-0" name="view-mode" type="radio" value="Xem theo tuần"/>
+      </label>
+    </div>
+    <div class="relative flex items-center gap-2">
+      <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-primary/60">search</span>
+      <input class="h-10 rounded-lg border border-primary/20 bg-white pl-10 pr-4 text-primary placeholder:text-primary/40 focus:border-filter focus:ring-filter shadow-sm w-48" placeholder="Tìm kiếm lịch hẹn..." type="text" id="searchInput" onkeyup="filterAppointments()"/>
+    </div>
+  </div>
+  <!-- ...existing code... -->
+</div>
+<div class="bg-white rounded-2xl border border-primary/20 p-5 shadow-sm">
+<div class="flex flex-col gap-4">
+        <h2 class="text-primary text-[22px] font-bold leading-tight tracking-[-0.015em] pt-1">Bộ lọc & Tìm kiếm</h2>
+        
+        <!-- Quick date filter buttons -->
+        <div class="flex gap-2 flex-wrap" id="dayButtons"></div>
+        
+        <form method="get" th:action="@{/doctor/work}" class="flex flex-col gap-3">
+            <div class="flex gap-2 flex-wrap">
+                <input type="date" name="startDate" class="border border-primary/20 rounded-lg px-3 py-2 text-sm text-primary placeholder:text-primary/50" th:value="${filterStartDate}" placeholder="Từ ngày" />
+                <input type="date" name="endDate" class="border border-primary/20 rounded-lg px-3 py-2 text-sm text-primary placeholder:text-primary/50" th:value="${filterEndDate}" placeholder="Đến ngày" />
+                <select name="status" class="border border-primary/20 rounded-lg px-3 py-2 text-sm text-primary bg-white">
+                    <option value="" th:selected="${filterStatus == null or filterStatus == ''}">Tất cả trạng thái</option>
+                    <option value="PENDING" th:selected="${filterStatus == 'PENDING'}">Chờ xác nhận</option>
+                    <option value="CONFIRMED" th:selected="${filterStatus == 'CONFIRMED'}">Đã xác nhận</option>
+                    <option value="COMPLETED" th:selected="${filterStatus == 'COMPLETED'}">Hoàn thành</option>
+                    <option value="CANCELLED" th:selected="${filterStatus == 'CANCELLED'}">Đã hủy</option>
+                </select>
+                <select name="serviceType" class="border border-primary/20 rounded-lg px-3 py-2 text-sm text-primary bg-white">
+                    <option value="" th:selected="${filterServiceType == null or filterServiceType == ''}">Tất cả dịch vụ</option>
+                    <option value="Visit" th:selected="${filterServiceType == 'Visit'}">Thăm khám</option>
+                    <option value="Vaccination" th:selected="${filterServiceType == 'Vaccination'}">Tiêm ngừa</option>
+                    <option value="Grooming" th:selected="${filterServiceType == 'Grooming'}">Tỉa lông</option>
+                    <option value="Surgery" th:selected="${filterServiceType == 'Surgery'}">Phẫu thuật</option>
+                </select>
+                <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg font-bold text-sm hover:opacity-90 transition">Lọc</button>
+                <a th:href="@{/doctor/work}" class="px-4 py-2 bg-gray-200 text-primary rounded-lg font-bold text-sm hover:bg-gray-300 transition">Xóa bộ lọc</a>
+            </div>
+        </form>
+</div>
+
+
+
+    <div class="mt-6 overflow-x-auto">
+<table class="w-full text-left">
+<thead class="border-b border-primary/20">
+<tr>
+<th class="p-3 text-sm font-bold text-primary">Giờ</th>
+<th class="p-3 text-sm font-bold text-primary">Khách hàng &amp; Thú cưng</th>
+<th class="p-3 text-sm font-bold text-primary">Dịch vụ</th>
+<th class="p-3 text-sm font-bold text-primary text-center">Trạng thái</th>
+<th class="p-3 text-sm font-bold text-primary text-right">Hành động</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-primary/10" id="appointmentTable">
+<tr th:each="appt : ${appointments}" class="group hover:bg-primary/5 transition-colors" th:data-status="${appt.status}" th:attr="data-day=${#temporals.format(appt.startTime, 'yyyy-MM-dd')}">
+<td class="p-3 text-sm font-bold text-primary" th:text="${#temporals.format(appt.startTime, 'HH:mm')}">09:00</td>
+<td class="p-3">
+<p class="font-bold text-primary" th:text="${appt.customer.user.fullName}">Lê Thị B</p>
+<p class="text-xs text-primary/70 flex items-center gap-1 mt-0.5">
+<span class="w-4 h-4 rounded-full flex items-center justify-center text-white text-[10px] font-bold" 
+      th:style="${appt.pet.species == 'Cat' ? 'background-color: #FCCDDC;' : 'background-color: #FF9124;'}"
+      th:text="${appt.pet.name.substring(0,1)}">M</span>
+<span th:text="${appt.pet.name}">Mèo Vàng</span>
+</p>
+</td>
+<td class="p-3 text-sm font-medium text-primary" th:text="${appt.serviceType ?: 'Khám tổng quát'}">Khám tổng quát</td>
+<td class="p-3 text-center">
+<span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-bold"
+      th:classappend="${appt.status == 'COMPLETED' ? 'bg-[#E5F7ED] text-[#008744]' : (appt.status == 'PENDING' ? 'bg-filter/50 text-primary' : (appt.status == 'CANCELLED' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'))}"
+      th:text="${appt.status == 'COMPLETED' ? 'Hoàn thành' : (appt.status == 'PENDING' ? 'Chờ xác nhận' : (appt.status == 'CANCELLED' ? 'Đã hủy' : 'Đã xác nhận'))}">Hoàn thành</span>
+</td>
+<td class="p-3 text-right flex gap-2 justify-end">
+    <a th:if="${appt.status != 'COMPLETED' and appt.status != 'CANCELLED'}" class="text-sm font-bold text-primary hover:text-white bg-primary/10 hover:bg-primary px-2 py-1 rounded transition-colors inline-block" th:href="@{/doctor/appointments/{id}/exam(id=${appt.bookingId})}">Thăm khám</a>
+    <button th:if="${appt.status != 'COMPLETED' and appt.status != 'CANCELLED'}" type="button" class="text-sm font-bold text-red-600 hover:text-white bg-red-100 hover:bg-red-600 px-2 py-1 rounded transition-colors" th:onclick="showCancelModal([[${appt.bookingId}]])">Hủy</button>
+    <a th:if="${appt.status == 'COMPLETED'}" class="text-sm font-bold text-primary hover:text-[#008744] transition-colors cursor-pointer" th:href="@{/doctor/pet-passport(petId=${appt.pet.petId})}">Xem hồ sơ</a>
+</td>
+</tr>
+<tr th:if="${appointments.isEmpty()}" class="hover:bg-primary/5">
+<td colspan="5" class="p-3 text-center text-primary/70">Không có lịch hẹn</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<div class="w-full lg:w-1/3 flex flex-col gap-5">
+<div class="bg-white rounded-2xl border border-primary/20 p-5 shadow-sm">
+<h2 class="text-primary text-[22px] font-bold leading-tight tracking-[-0.015em] mb-4 pt-1">Thống kê hôm nay</h2>
+<div class="flex flex-col gap-4">
+<div class="flex justify-between items-center pb-3 border-b border-primary/10">
+<p class="text-primary/70">Tổng lịch hẹn</p>
+<p class="text-2xl font-bold text-primary" th:text="${appointments.size()}">4</p>
+</div>
+    <div class="flex justify-between items-center pb-3 border-b border-primary/10">
+    <p class="text-primary/70">Đã hoàn thành</p>
+    <p class="text-2xl font-bold text-[#008744]" th:text="${completedCount}">2</p>
+    </div>
+    <div class="flex justify-between items-center pb-3 border-b border-primary/10">
+    <p class="text-primary/70">Chờ xác nhận</p>
+    <p class="text-2xl font-bold text-primary" th:text="${pendingCount}">1</p>
+    </div>
+<div class="flex justify-between items-center">
+<p class="text-primary/70">Doanh thu hôm nay</p>
+<p class="text-2xl font-bold text-primary">0 ₫</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+
+<script>
+function filterAppointments() {
+  const input = document.getElementById('searchInput').value.toLowerCase();
+  const table = document.getElementById('appointmentTable');
+  const rows = table.getElementsByTagName('tr');
+  
+  for (let i = 0; i < rows.length; i++) {
+    const text = rows[i].textContent.toLowerCase();
+    rows[i].style.display = text.includes(input) ? '' : 'none';
+  }
+}
+
+// Cancel Modal
+function showCancelModal(bookingId) {
+  const modal = document.getElementById('cancelModal');
+  document.getElementById('cancelBookingId').value = bookingId;
+  modal.classList.remove('hidden');
+}
+
+function closeCancelModal() {
+  document.getElementById('cancelModal').classList.add('hidden');
+}
+
+async function submitCancel() {
+  const bookingId = document.getElementById('cancelBookingId').value;
+  const p1 = document.getElementById('pin1').value || '';
+  const p2 = document.getElementById('pin2').value || '';
+  const p3 = document.getElementById('pin3').value || '';
+  const p4 = document.getElementById('pin4').value || '';
+  const pin = p1 + p2 + p3 + p4;
+
+  if (!/^\d{4}$/.test(pin)) { alert('Vui lòng nhập mã PIN 4 chữ số'); return; }
+  
+  try {
+    const res = await fetch(`/api/appointments/${bookingId}/cancel`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pin })
+    });
+    if (!res.ok) { 
+      const j = await res.json().catch(()=>null);
+      alert('Lỗi: ' + (j?.error || 'Không thể hủy lịch hẹn')); 
+      return; 
+    }
+    alert('Lịch hẹn đã được hủy');
+    location.reload();
+  } catch (e) { alert('Lỗi khi hủy lịch hẹn'); }
+}
+
+// Close modals on background click
+document.addEventListener('click', function(e) {
+  const cancelModal = document.getElementById('cancelModal');
+  if (e.target === cancelModal) closeCancelModal();
+});
+</script>
+</script>
+<script>
+// Populate last 7 day buttons and wire row clicks
+;(function(){
+    const dayButtons = document.getElementById('dayButtons');
+    if (dayButtons) {
+        const today = new Date();
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date(); d.setDate(today.getDate() - i);
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth()+1).padStart(2,'0');
+            const dd = String(d.getDate()).padStart(2,'0');
+            const label = dd + '/' + mm;
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'px-3 py-1 rounded-md border border-primary/10 bg-white text-primary text-sm';
+            btn.textContent = label;
+            btn.addEventListener('click', ()=>{
+                window.location.href = '/doctor/work?startDate=' + yyyy + '-' + mm + '-' + dd + '&endDate=' + yyyy + '-' + mm + '-' + dd;
+            });
+            dayButtons.appendChild(btn);
+        }
+    }
+
+    // make rows clickable to filter by that day
+    const table = document.getElementById('appointmentTable');
+    if (table) {
+        const rows = table.querySelectorAll('tr[th\:each] ~ tr, tr');
+        // simpler: select rows with data-day
+        table.querySelectorAll('tr[data-day]').forEach(r=>{
+            r.addEventListener('click', (e)=>{
+                // don't trigger when clicking on controls inside the row
+                if (e.target.closest('a') || e.target.closest('form') || e.target.tagName === 'SELECT' || e.target.tagName === 'BUTTON') return;
+                const day = r.getAttribute('data-day');
+                if (day) {
+                    window.location.href = '/doctor/work?startDate=' + day + '&endDate=' + day;
+                }
+            });
+        });
+    }
+})();
+</script>
+
+<!-- Cancel Modal -->
+<div id="cancelModal" class="hidden fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+  <div class="bg-white rounded-2xl p-6 w-full max-w-md shadow-lg">
+    <h2 class="text-2xl font-bold text-primary mb-4">Xác nhận hủy lịch hẹn</h2>
+    <p class="text-sm text-primary/70 mb-4">Nhập mã PIN 4 chữ số để xác nhận hủy lịch hẹn</p>
+    <div class="flex gap-3 justify-center mb-6">
+      <input id="pin1" maxlength="1" class="w-12 h-12 text-center text-lg border rounded-lg font-bold">
+      <input id="pin2" maxlength="1" class="w-12 h-12 text-center text-lg border rounded-lg font-bold">
+      <input id="pin3" maxlength="1" class="w-12 h-12 text-center text-lg border rounded-lg font-bold">
+      <input id="pin4" maxlength="1" class="w-12 h-12 text-center text-lg border rounded-lg font-bold">
+    </div>
+    <input type="hidden" id="cancelBookingId">
+    <div class="flex gap-2">
+      <button onclick="submitCancel()" class="flex-1 bg-red-600 text-white font-bold py-2 rounded-lg hover:bg-red-700">Xác nhận hủy</button>
+      <button onclick="closeCancelModal()" class="flex-1 bg-gray-100 text-primary font-bold py-2 rounded-lg hover:bg-gray-200">Đóng</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

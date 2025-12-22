@@ -1,0 +1,47 @@
+<!-- fragments/pin_modal.html -->
+<div id="pinModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden">
+    <div class="bg-white rounded-lg shadow-lg p-8 w-full max-w-sm">
+        <h2 class="text-lg font-bold mb-4">Xác nhận mã PIN</h2>
+        <input id="pinInput" type="password" maxlength="6" class="w-full border rounded px-4 py-2 mb-4" placeholder="Nhập mã PIN" autocomplete="off" />
+        <div class="flex gap-2">
+            <button id="pinModalConfirm" class="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90">Xác nhận</button>
+            <button id="pinModalCancel" class="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300">Hủy</button>
+        </div>
+        <div id="pinModalError" class="text-red-600 mt-2 text-sm hidden"></div>
+    </div>
+</div>
+<script>
+// Simple PIN modal logic
+window.openPinModal = function(callback) {
+    const modal = document.getElementById('pinModal');
+    const input = document.getElementById('pinInput');
+    const confirm = document.getElementById('pinModalConfirm');
+    const cancel = document.getElementById('pinModalCancel');
+    const error = document.getElementById('pinModalError');
+    modal.classList.remove('hidden');
+    input.value = '';
+    error.classList.add('hidden');
+    input.focus();
+    confirm.onclick = async function() {
+        const pin = input.value;
+        if (!pin) {
+            error.textContent = 'Vui lòng nhập mã PIN';
+            error.classList.remove('hidden');
+            return;
+        }
+        const result = await callback(pin);
+        if (result && !result.success) {
+            error.textContent = result.message || 'Mã PIN không đúng';
+            error.classList.remove('hidden');
+        } else {
+            modal.classList.add('hidden');
+        }
+    };
+    cancel.onclick = function() {
+        modal.classList.add('hidden');
+    };
+    input.onkeydown = function(e) {
+        if (e.key === 'Enter') confirm.onclick();
+    };
+};
+</script>

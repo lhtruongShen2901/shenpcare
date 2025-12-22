@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Thêm lịch hẹn</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24 }
+    </style>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: { "primary": "#03594D", "filter": "#D8E268" },
+            fontFamily: { "display": ["Inter", "sans-serif"] },
+          },
+        },
+      }
+    </script>
+</head>
+<body class="bg-gray-50 font-display">
+<div class="min-h-screen flex">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white border-r border-gray-200 p-6 fixed h-screen overflow-y-auto">
+        <div class="flex items-center gap-3 mb-8">
+            <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                <span class="material-symbols-outlined text-white">pets</span>
+            </div>
+            <h1 class="text-lg font-bold text-primary">ShenPCare</h1>
+        </div>
+        <nav class="space-y-2">
+            <a th:href="@{/doctor/dashboard}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                <span class="material-symbols-outlined text-primary">dashboard</span>
+                <span class="text-sm text-gray-700">Bảng điều khiển</span>
+            </a>
+            <a th:href="@{/doctor/work}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                <span class="material-symbols-outlined text-primary">calendar_month</span>
+                <span class="text-sm text-gray-700">Lịch hẹn</span>
+            </a>
+            <a th:href="@{/doctor/pet-passport}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                <span class="material-symbols-outlined text-primary">pets</span>
+                <span class="text-sm text-gray-700">Bệnh án</span>
+            </a>
+            <a th:href="@{/doctor/customers}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                <span class="material-symbols-outlined text-primary">group</span>
+                <span class="text-sm text-gray-700">Khách hàng</span>
+            </a>
+            <a th:href="@{/doctor/reports}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                <span class="material-symbols-outlined text-primary">bar_chart</span>
+                <span class="text-sm text-gray-700">Báo cáo</span>
+            </a>
+            <a th:href="@{/doctor/settings}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                <span class="material-symbols-outlined text-primary">settings</span>
+                <span class="text-sm text-gray-700">Cài đặt</span>
+            </a>
+            <a th:href="@{/logout}" class="flex items-center gap-3 px-4 py-2 rounded-lg text-red-600 hover:bg-red-50 transition-colors">
+                <span class="material-symbols-outlined">logout</span>
+                <span class="text-sm font-medium">Đăng xuất</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="ml-64 flex-1 p-8">
+        <div class="max-w-2xl">
+            <!-- Header -->
+            <div class="mb-8">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="material-symbols-outlined text-primary">event</span>
+                    <h1 class="text-3xl font-bold text-gray-900">Thêm lịch hẹn mới</h1>
+                </div>
+                <p class="text-gray-600">Tạo một cuộc hẹn mới cho khách hàng và thú cưng</p>
+            </div>
+
+            <!-- Form Container -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+                <form id="appointmentForm" th:action="@{/doctor/appointments}" method="post" class="space-y-6">
+                    
+                    <!-- Customer Field -->
+                    <div>
+                        <label for="customerId" class="block text-sm font-medium text-gray-700 mb-2">
+                            Khách hàng <span class="text-red-500">*</span>
+                        </label>
+                        <select 
+                            id="customerId" 
+                            name="customerId" 
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                            required 
+                        >
+                            <option value="">-- Chọn khách hàng --</option>
+                            <option th:each="c : ${customers}" th:value="${c.customerId}" th:text="${c.user.fullName}">Nguyễn Văn A</option>
+                        </select>
+                    </div>
+
+                    <!-- Pet Field -->
+                    <div>
+                        <label for="petId" class="block text-sm font-medium text-gray-700 mb-2">
+                            Thú cưng <span class="text-red-500">*</span>
+                        </label>
+                        <select 
+                            id="petId" 
+                            name="petId" 
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                            required 
+                        >
+                            <option value="">-- Chọn thú cưng --</option>
+                            <option th:each="p : ${pets}" th:value="${p.petId}" th:attr="data-customer=${p.customer.customerId}" th:text="${p.name + ' (' + p.species + ')'}">Micky (Chó)</option>
+                        </select>
+                    </div>
+
+                    <!-- Appointment Date Field -->
+                    <div>
+                        <label for="appointmentDate" class="block text-sm font-medium text-gray-700 mb-2">
+                            Ngày hẹn <span class="text-red-500">*</span>
+                        </label>
+                        <input 
+                            type="date" 
+                            id="appointmentDate" 
+                            name="appointmentDate" 
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                            required 
+                        />
+                    </div>
+
+                    <!-- Appointment Time Field -->
+                    <div>
+                        <label for="appointmentTime" class="block text-sm font-medium text-gray-700 mb-2">
+                            Giờ hẹn <span class="text-red-500">*</span>
+                        </label>
+                        <input 
+                            type="time" 
+                            id="appointmentTime" 
+                            name="appointmentTime" 
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                            required 
+                        />
+                    </div>
+
+                    <!-- Hidden ISO startTime to bind to BookingDto -->
+                    <input type="hidden" id="startTime" name="startTime" />
+
+                    <!-- Service Type Field -->
+                    <div>
+                        <label for="serviceType" class="block text-sm font-medium text-gray-700 mb-2">
+                            Loại dịch vụ <span class="text-red-500">*</span>
+                        </label>
+                        <select 
+                            id="serviceType" 
+                            name="serviceType" 
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                            required 
+                        >
+                            <option value="">-- Chọn dịch vụ --</option>
+                            <option value="Khám bệnh">Khám bệnh</option>
+                            <option value="Tiêm ngừa">Tiêm ngừa</option>
+                            <option value="Cắt móng">Cắt móng</option>
+                            <option value="Tắm gội">Tắm gội</option>
+                            <option value="Phẫu thuật">Phẫu thuật</option>
+                            <option value="Khác">Khác</option>
+                        </select>
+                    </div>
+
+                    <!-- Total Amount Field -->
+                    <div>
+                        <label for="totalAmount" class="block text-sm font-medium text-gray-700 mb-2">
+                            Tổng tiền (VNĐ) <span class="text-red-500">*</span>
+                        </label>
+                        <input 
+                            type="number" 
+                            id="totalAmount" 
+                            name="totalAmount" 
+                            step="1000"
+                            min="0"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                            placeholder="150000"
+                            required 
+                        />
+                    </div>
+
+                    <!-- Notes Field -->
+                    <div>
+                        <label for="notes" class="block text-sm font-medium text-gray-700 mb-2">
+                            Ghi chú
+                        </label>
+                        <textarea 
+                            id="notes" 
+                            name="notes" 
+                            rows="3"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none"
+                            placeholder="Ghi chú thêm về cuộc hẹn..."
+                        ></textarea>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="flex gap-4 pt-4 border-t border-gray-200">
+                        <button 
+                            type="submit" 
+                            class="flex-1 bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+                        >
+                            <span class="material-symbols-outlined">add</span>
+                            Tạo lịch hẹn
+                        </button>
+                        <a 
+                            th:href="@{/doctor/work}" 
+                            class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors text-center"
+                        >
+                            Hủy
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    // Form validation
+    const form = document.getElementById('appointmentForm');
+    
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        const customerId = document.getElementById('customerId').value;
+        const petId = document.getElementById('petId').value;
+        const appointmentDate = document.getElementById('appointmentDate').value;
+        const appointmentTime = document.getElementById('appointmentTime').value;
+        const serviceType = document.getElementById('serviceType').value;
+        const totalAmount = document.getElementById('totalAmount').value;
+
+        if (!customerId) {
+            alert('Vui lòng chọn khách hàng');
+            isValid = false;
+        }
+        if (!petId) {
+            alert('Vui lòng chọn thú cưng');
+            isValid = false;
+        }
+        if (!appointmentDate) {
+            alert('Vui lòng chọn ngày hẹn');
+            isValid = false;
+        }
+        if (!appointmentTime) {
+            alert('Vui lòng chọn giờ hẹn');
+            isValid = false;
+        }
+        if (!serviceType) {
+            alert('Vui lòng chọn loại dịch vụ');
+            isValid = false;
+        }
+        if (!totalAmount || parseFloat(totalAmount) <= 0) {
+            alert('Vui lòng nhập tổng tiền hợp lệ');
+            isValid = false;
+        }
+
+        if (!isValid) {
+            e.preventDefault();
+        }
+    });
+
+</script>
+
+<script>
+    // Combine date and time into ISO string before submit and filter pets by customer
+    const appointmentForm = document.getElementById('appointmentForm');
+    const dateInput = document.getElementById('appointmentDate');
+    const timeInput = document.getElementById('appointmentTime');
+    const startTimeHidden = document.getElementById('startTime');
+    const customerSelect = document.getElementById('customerId');
+    const petSelect = document.getElementById('petId');
+
+    function combineDateTime() {
+        const date = dateInput.value; // YYYY-MM-DD
+        const time = timeInput.value; // HH:mm
+        if (date && time) {
+            // create ISO-like string accepted by LocalDateTime.parse in controller
+            startTimeHidden.value = date + 'T' + time + ':00';
+            return true;
+        }
+        return false;
+    }
+
+    function filterPetsByCustomer() {
+        const selectedCustomer = customerSelect.value;
+        const options = Array.from(petSelect.querySelectorAll('option'));
+        options.forEach(opt => {
+            const cust = opt.getAttribute('data-customer');
+            if (!opt.value) return; // keep placeholder
+            opt.style.display = (selectedCustomer === '' || cust === selectedCustomer) ? '' : 'none';
+        });
+        // if currently selected pet is hidden, reset selection
+        if (petSelect.selectedOptions.length > 0) {
+            const sel = petSelect.selectedOptions[0];
+            if (sel && sel.style.display === 'none') petSelect.value = '';
+        }
+    }
+
+    customerSelect.addEventListener('change', filterPetsByCustomer);
+
+    // Auto-fill total amount based on selected serviceType via server lookup
+    const serviceSelect = document.getElementById('serviceType');
+    const totalInput = document.getElementById('totalAmount');
+
+    async function fetchServicePrice() {
+        const svc = serviceSelect.value;
+        if (!svc) return;
+        try {
+            const url = '/doctor/api/service/price?serviceType=' + encodeURIComponent(svc);
+            const res = await fetch(url, { method: 'GET', headers: { 'Accept': 'application/json' } });
+            const data = await res.json();
+            if (data && data.success && data.price != null) {
+                // set as integer-ish value for the input
+                totalInput.value = parseFloat(data.price);
+            }
+        } catch (err) {
+            console.warn('Could not fetch service price', err);
+        }
+    }
+
+    serviceSelect.addEventListener('change', fetchServicePrice);
+    // if the service was pre-selected, populate on load
+    window.addEventListener('DOMContentLoaded', () => {
+        if (serviceSelect.value) fetchServicePrice();
+    });
+
+    appointmentForm.addEventListener('submit', function(e) {
+        if (!combineDateTime()) {
+            alert('Vui lòng chọn ngày và giờ hợp lệ');
+            e.preventDefault();
+            return;
+        }
+        // allow other validation to proceed
+    });
+</script>
+
+</body>
+</html>

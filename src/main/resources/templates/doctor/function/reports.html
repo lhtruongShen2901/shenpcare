@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="utf-8"/>
+    <title>Báo Cáo Thống Kê</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+    <script>
+        tailwind.config = { theme: { extend: { colors: { "primary": "#03594D", "secondary": "#D8E268" }, fontFamily: { "sans": ["Inter"] } } } }
+    </script>
+</head>
+<body class="bg-gray-50 font-sans text-primary">
+<div class="flex min-h-screen">
+    <aside class="w-64 bg-[#11221c] p-4 flex flex-col fixed h-full text-white z-10">
+        <div class="flex items-center gap-3 mb-8 px-2">
+            <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-primary font-bold">BS</div>
+            <div>
+                <h1 class="font-bold truncate w-40" th:text="${currentUser != null ? currentUser.fullName : 'Bác sĩ'}">BS. Nguyễn Văn An</h1>
+            </div>
+        </div>
+        <nav class="space-y-1 flex-1">
+            <a th:href="@{/doctor/dashboard}" class="flex gap-3 px-3 py-3 text-gray-300 hover:bg-[#23483c] hover:text-white rounded-lg transition">
+                <span class="material-symbols-outlined">dashboard</span> Dashboard
+            </a>
+            <a th:href="@{/doctor/work}" class="flex gap-3 px-3 py-3 text-gray-300 hover:bg-[#23483c] hover:text-white rounded-lg transition">
+                <span class="material-symbols-outlined">calendar_month</span> Lịch hẹn
+            </a>
+                <a th:href="@{/doctor/pet-passport}" class="flex gap-3 px-3 py-3 text-gray-300 hover:bg-[#23483c] hover:text-white rounded-lg transition">
+                    <span class="material-symbols-outlined">folder_open</span> Hồ sơ bệnh án
+                </a>
+                <a th:href="@{/doctor/customers}" class="flex gap-3 px-3 py-3 text-gray-300 hover:bg-[#23483c] hover:text-white rounded-lg transition">
+                    <span class="material-symbols-outlined">group</span> Khách hàng
+                </a>
+                <a th:href="@{/doctor/reports}" class="flex gap-3 px-3 py-3 bg-[#23483c] text-white font-bold rounded-lg transition">
+                    <span class="material-symbols-outlined">bar_chart</span> Báo cáo
+                </a>
+                <a th:href="@{/doctor/settings}" class="flex gap-3 px-3 py-3 text-gray-300 hover:bg-[#23483c] hover:text-white rounded-lg transition">
+                    <span class="material-symbols-outlined">settings</span> Cài đặt
+                </a>
+                <a th:href="@{/doctor/dashboard}" class="flex gap-3 px-3 py-3 text-gray-300 hover:bg-[#23483c] hover:text-white rounded-lg transition">
+                    <span class="material-symbols-outlined">dashboard</span> Dashboard
+                </a>
+                <a th:href="@{/doctor/work}" class="flex gap-3 px-3 py-3 text-gray-300 hover:bg-[#23483c] hover:text-white rounded-lg transition">
+                    <span class="material-symbols-outlined">calendar_month</span> Quản lý lịch hẹn
+                </a>
+                <a th:href="@{/doctor/pet-passport}" class="flex gap-3 px-3 py-3 text-gray-300 hover:bg-[#23483c] hover:text-white rounded-lg transition">
+                    <span class="material-symbols-outlined">folder_open</span> Hồ sơ bệnh án
+                </a>
+                <a th:href="@{/doctor/customers}" class="flex gap-3 px-3 py-3 text-gray-300 hover:bg-[#23483c] hover:text-white rounded-lg transition">
+                    <span class="material-symbols-outlined">group</span> Khách hàng
+                </a>
+                <a th:href="@{/doctor/reports}" class="flex gap-3 px-3 py-3 bg-[#23483c] text-white font-bold rounded-lg transition">
+                    <span class="material-symbols-outlined">bar_chart</span> Báo cáo
+                </a>
+                <a th:href="@{/doctor/settings}" class="flex gap-3 px-3 py-3 text-gray-300 hover:bg-[#23483c] hover:text-white rounded-lg transition">
+                    <span class="material-symbols-outlined">settings</span> Cài đặt
+                </a>
+        </nav>
+        <a th:href="@{/logout}" class="flex gap-3 px-3 py-3 text-red-400 hover:bg-red-900/20 rounded-lg mt-auto transition">
+            <span class="material-symbols-outlined">logout</span> Đăng xuất
+        </a>
+    </aside>
+
+    <main class="ml-64 flex-1 p-8">
+        <h1 class="text-3xl font-black mb-6">Báo Cáo Hiệu Suất</h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8" id="stats-container">
+            <div th:if="${totalRevenue != null}" class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-gray-500 text-sm font-medium">Tổng Doanh Thu</p>
+                        <h3 class="text-2xl font-black text-primary mt-1" th:text="${#numbers.formatDecimal(totalRevenue, 0, 'COMMA', 0, 'POINT') + ' đ'}">0 đ</h3>
+                    </div>
+                    <div class="p-2 bg-green-100 text-green-600 rounded-lg"><span class="material-symbols-outlined">payments</span></div>
+                </div>
+            </div>
+            <div th:if="${totalCustomers != null}" class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-gray-500 text-sm font-medium">Khách hàng</p>
+                        <h3 class="text-2xl font-black text-primary mt-1" th:text="${totalCustomers}">0</h3>
+                    </div>
+                    <div class="p-2 bg-blue-100 text-blue-600 rounded-lg"><span class="material-symbols-outlined">group</span></div>
+                </div>
+            </div>
+            <div th:if="${totalPets != null}" class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-gray-500 text-sm font-medium">Thú cưng</p>
+                        <h3 class="text-2xl font-black text-primary mt-1" th:text="${totalPets}">0</h3>
+                    </div>
+                    <div class="p-2 bg-orange-100 text-orange-600 rounded-lg"><span class="material-symbols-outlined">pets</span></div>
+                </div>
+            </div>
+            <div th:if="${appointments != null}" class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-gray-500 text-sm font-medium">Lịch hẹn hôm nay</p>
+                        <h3 class="text-2xl font-black text-primary mt-1" th:text="${appointments.size()}">0</h3>
+                    </div>
+                    <div class="p-2 bg-purple-100 text-purple-600 rounded-lg"><span class="material-symbols-outlined">event</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white p-6 rounded-xl shadow border">
+                <h3 class="font-bold mb-4 text-lg">Doanh thu 7 ngày gần nhất (VNĐ)</h3>
+                <canvas id="revenueChart"></canvas>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow border">
+                <h3 class="font-bold mb-4 text-lg">Tỉ lệ dịch vụ</h3>
+                <div class="flex items-center justify-center h-48 text-gray-400 bg-gray-50 rounded-lg border border-dashed">
+                    <p>Tính năng đang phát triển</p>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    // Nhận dữ liệu từ Controller (List từ Java -> Array JS)
+    const labels = /*[[${chartLabels}]]*/ ['Mon', 'Tue'];
+    const values = /*[[${chartValues}]]*/ [0, 0];
+
+    const formatCurrency = (amount) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+
+    // Render Biểu đồ
+    const ctx = document.getElementById('revenueChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Doanh thu',
+                data: values,
+                borderColor: '#03594D',
+                backgroundColor: 'rgba(3, 89, 77, 0.1)',
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: '#fff',
+                pointBorderColor: '#03594D',
+                pointBorderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return 'Doanh thu: ' + formatCurrency(context.raw);
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { callback: function(value) { return formatCurrency(value); } }
+                }
+            }
+        }
+    });
+    /*]]>*/
+</script>
+</body>
+
+
+
+</html>

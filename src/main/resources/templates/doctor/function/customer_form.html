@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<!-- Fragment: customer form (customer info + pet list) -->
+<div th:fragment="customerForm">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Thông tin khách hàng -->
+    <div class="card">
+      <h2 class="text-lg font-bold mb-4">Thông tin khách hàng</h2>
+      <div class="space-y-4">
+        <div>
+          <label class="form-label" for="customer-name">Họ và tên <span class="text-red-500">*</span></label>
+          <input id="customer-name" class="form-input" type="text" placeholder="Ví dụ: Nguyễn Văn A" required />
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="form-label" for="phone">Số điện thoại <span class="text-red-500">*</span></label>
+            <input id="phone" class="form-input" type="tel" placeholder="090xxxxxxx" required />
+          </div>
+          <div>
+            <label class="form-label" for="email">Email</label>
+            <input id="email" class="form-input" type="email" placeholder="example@email.com" />
+          </div>
+        </div>
+        <div>
+          <label class="form-label" for="address">Địa chỉ</label>
+          <textarea id="address" class="form-input" rows="3" placeholder="Ví dụ: 123 Đường ABC"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Danh sách thú cưng -->
+    <div class="card">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-bold">Thông tin thú cưng</h2>
+        <span class="text-sm text-gray-500">Có thể thêm nhiều</span>
+      </div>
+
+      <div id="pet-list" class="space-y-4">
+        <!-- JS sẽ thêm các mục thú cưng ở đây -->
+      </div>
+
+      <div class="mt-4 flex gap-3">
+        <button id="add-pet" type="button" class="px-4 py-2 rounded-lg bg-primary text-white font-bold">Thêm thú cưng</button>
+        <button id="open-pin-settings" type="button" class="px-4 py-2 rounded-lg border border-gray-200">Cài đặt PIN</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-8 flex justify-end gap-3">
+    <button id="cancel-all" class="px-6 py-3 rounded-xl border">Hủy</button>
+    <button id="save-all" class="px-6 py-3 rounded-xl bg-accent text-white font-bold">Lưu</button>
+  </div>
+</div>

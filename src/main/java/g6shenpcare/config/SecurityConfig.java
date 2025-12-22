@@ -8,17 +8,40 @@ import org.springframework.security.authentication.LockedException;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.*;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     @Bean
+    public AuthenticationSuccessHandler customSuccessHandler() {
+        return (request, response, authentication) -> {
+            for (GrantedAuthority auth : authentication.getAuthorities()) {
+                String role = auth.getAuthority();
+                if (role.equals("ROLE_ADMIN")) {
+                    response.sendRedirect("/admin/dashboard");
+                    return;
+                } else if (role.equals("ROLE_DOCTOR")) {
+                    response.sendRedirect("/doctor/dashboard");
+                    return;
+                }
+            }
+            response.sendRedirect("/");
+        };
+    }
+
+    @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        return org.springframework.security.crypto.password.NoOpPasswordEncoder.getInstance();
     }
 
     @Bean
@@ -26,14 +49,12 @@ public class SecurityConfig {
         return username -> {
             UserAccount u = userRepo.findByUsername(username)
                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
             if (!u.isActive()) {
                 throw new LockedException("Account is inactive");
             }
-
             return User.withUsername(u.getUsername())
                     .password(u.getPasswordHash())
-                    .roles(u.getRole())  // ADMIN, DOCTOR, GROOMER, SUPPORT, STORE, CUSTOMER
+                    .roles(u.getRole())
                     .build();
         };
     }
@@ -43,20 +64,19 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                // 1. static + trang public + API FILES (QUAN TRỌNG)
                 .requestMatchers("/css/**", "/img/**", "/js/**", "/", "/index.html").permitAll()
-                .requestMatchers("/api/files/**").permitAll() // <--- Cho phép truy cập ảnh công khai
-                // 2. ĐẶT /admin/login, /admin/register TRƯỚC /admin/**
+                .requestMatchers("/api/files/**").permitAll()
                 .requestMatchers("/admin/login", "/admin/register").permitAll()
-                // 3. Khu admin nội bộ (Admin + Staff)
+                // Cho phép cả ADMIN và DOCTOR truy cập /admin/**
                 .requestMatchers("/admin/**").hasAnyRole("ADMIN","DOCTOR","GROOMER","SUPPORT","STORE")
-                // 4. Mọi request khác
+                // Cho phép cả DOCTOR và ADMIN truy cập /doctor/**
+                .requestMatchers("/doctor/**").hasAnyRole("DOCTOR","ADMIN")
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
                 .loginPage("/admin/login")
                 .loginProcessingUrl("/admin/login")
-                .defaultSuccessUrl("/admin/dashboard", true)
+                .successHandler(customSuccessHandler())
                 .failureUrl("/admin/login?error=true")
                 .permitAll()
             )
@@ -64,7 +84,6 @@ public class SecurityConfig {
                 .logoutUrl("/admin/logout")
                 .logoutSuccessUrl("/admin/login?logout=true")
             );
-
         return http.build();
     }
 }

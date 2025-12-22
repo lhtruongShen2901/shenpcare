@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Xác nhận hủy lịch hẹn bằng PIN</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#d8e269",
+                        "accent": "#03594D",
+                        "background-light": "#f8f8f6",
+                        "background-dark": "#1f2012",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "3xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hide for cleaner look if needed */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        /* Cute bounce animation for the icon */
+        @keyframes gentle-bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        .animate-gentle-bounce {
+            animation: gentle-bounce 2s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark text-accent overflow-hidden">
+<!-- Main Background Wrapper (Simulating the Vet App Background) -->
+<div class="relative min-h-screen w-full flex items-center justify-center p-4">
+<!-- Decorative Background Elements to simulate app context -->
+<div class="absolute inset-0 z-0 overflow-hidden opacity-40 blur-sm pointer-events-none">
+<!-- Abstract dashboard shapes -->
+<div class="absolute top-0 left-0 w-64 h-full bg-white border-r border-gray-200"></div>
+<div class="absolute top-10 left-72 right-10 h-32 bg-white rounded-xl shadow-sm"></div>
+<div class="absolute top-48 left-72 right-10 bottom-10 bg-white rounded-xl shadow-sm"></div>
+</div>
+<!-- Dark Overlay for Modal Focus -->
+<div class="absolute inset-0 bg-[#03594D]/20 backdrop-blur-sm z-10"></div>
+<!-- Modal Container -->
+<div class="relative z-20 w-full max-w-[440px] bg-white dark:bg-[#1f2012] rounded-3xl shadow-[0_20px_50px_-12px_rgba(3,89,77,0.25)] overflow-hidden border-4 border-white dark:border-[#2d2e1a]">
+<!-- Cute Decorative Header Pattern -->
+<div class="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-[#f0fdfa] to-white dark:from-[#262716] dark:to-[#1f2012] z-0"></div>
+<div class="relative z-10 px-8 pt-10 pb-8 flex flex-col items-center">
+<!-- Icon Area -->
+<div class="mb-6 relative">
+<div class="h-20 w-20 bg-primary/20 rounded-full flex items-center justify-center animate-gentle-bounce ring-4 ring-white dark:ring-[#1f2012]">
+<span class="material-symbols-outlined text-[40px] text-accent dark:text-primary">pets</span>
+</div>
+<div class="absolute -bottom-1 -right-1 bg-white dark:bg-[#1f2012] rounded-full p-1.5 shadow-sm">
+<span class="material-symbols-outlined text-[20px] text-red-500 block">lock</span>
+</div>
+</div>
+<!-- Text Content -->
+<div class="text-center mb-8">
+<h3 class="text-accent dark:text-[#e3e5d2] text-2xl font-bold tracking-tight mb-2">
+                        Xác nhận hủy lịch hẹn
+                    </h3>
+<p class="text-accent/70 dark:text-[#e3e5d2]/70 text-sm font-medium leading-relaxed px-4">
+                        Vui lòng nhập mã PIN bảo mật 4 chữ số của bạn để xác thực hành động này.
+                    </p>
+</div>
+<!-- PIN Input -->
+<div class="w-full flex justify-center mb-8">
+<fieldset class="flex gap-3 sm:gap-4">
+<input aria-label="Digit 1" class="flex h-14 w-12 sm:w-14 text-center rounded-2xl border-2 border-[#e3e5d2] focus:border-accent focus:ring-0 focus:ring-offset-0 bg-background-light/50 dark:bg-[#2d2e1a] text-accent dark:text-primary text-xl font-bold transition-all duration-200 shadow-sm focus:-translate-y-1 focus:shadow-md" inputmode="numeric" maxlength="1" oninput="this.value=this.value.replace(/[^0-9]/g,''); if(this.value.length &gt;= 1) { this.nextElementSibling?.focus(); }" onkeydown="if(event.key==='Backspace' &amp;&amp; !this.value) { this.previousElementSibling?.focus(); }" type="text"/>
+<input aria-label="Digit 2" class="flex h-14 w-12 sm:w-14 text-center rounded-2xl border-2 border-[#e3e5d2] focus:border-accent focus:ring-0 focus:ring-offset-0 bg-background-light/50 dark:bg-[#2d2e1a] text-accent dark:text-primary text-xl font-bold transition-all duration-200 shadow-sm focus:-translate-y-1 focus:shadow-md" inputmode="numeric" maxlength="1" oninput="this.value=this.value.replace(/[^0-9]/g,''); if(this.value.length &gt;= 1) { this.nextElementSibling?.focus(); }" onkeydown="if(event.key==='Backspace' &amp;&amp; !this.value) { this.previousElementSibling?.focus(); }" type="text"/>
+<input aria-label="Digit 3" class="flex h-14 w-12 sm:w-14 text-center rounded-2xl border-2 border-[#e3e5d2] focus:border-accent focus:ring-0 focus:ring-offset-0 bg-background-light/50 dark:bg-[#2d2e1a] text-accent dark:text-primary text-xl font-bold transition-all duration-200 shadow-sm focus:-translate-y-1 focus:shadow-md" inputmode="numeric" maxlength="1" oninput="this.value=this.value.replace(/[^0-9]/g,''); if(this.value.length &gt;= 1) { this.nextElementSibling?.focus(); }" onkeydown="if(event.key==='Backspace' &amp;&amp; !this.value) { this.previousElementSibling?.focus(); }" type="text"/>
+<input aria-label="Digit 4" class="flex h-14 w-12 sm:w-14 text-center rounded-2xl border-2 border-[#e3e5d2] focus:border-accent focus:ring-0 focus:ring-offset-0 bg-background-light/50 dark:bg-[#2d2e1a] text-accent dark:text-primary text-xl font-bold transition-all duration-200 shadow-sm focus:-translate-y-1 focus:shadow-md" inputmode="numeric" maxlength="1" oninput="this.value=this.value.replace(/[^0-9]/g,''); if(this.value.length &gt;= 1) { this.blur(); }" onkeydown="if(event.key==='Backspace' &amp;&amp; !this.value) { this.previousElementSibling?.focus(); }" type="text"/>
+</fieldset>
+</div>
+<!-- Action Buttons -->
+<div class="w-full flex flex-col gap-3">
+<button class="group relative w-full h-12 flex items-center justify-center overflow-hidden rounded-full bg-primary text-accent font-bold text-sm tracking-wide shadow-md transition-all hover:bg-[#dce678] hover:shadow-lg active:scale-[0.98]">
+<span class="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+<span class="relative flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">check_circle</span>
+                            Xác nhận
+                        </span>
+</button>
+<button class="w-full h-12 flex items-center justify-center rounded-full bg-transparent border-2 border-accent/10 dark:border-white/10 text-accent dark:text-white font-bold text-sm tracking-wide transition-all hover:bg-accent/5 dark:hover:bg-white/5 hover:border-accent/30 active:scale-[0.98]">
+                        Hủy
+                    </button>
+</div>
+</div>
+<!-- Bottom decorative curve -->
+<div class="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent opacity-50"></div>
+</div>
+</div>
+</body></html>

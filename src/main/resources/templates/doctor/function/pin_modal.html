@@ -1,0 +1,74 @@
+<!-- Modal xác nhận mã PIN khi xóa dữ liệu (dùng cho doctor) -->
+<div id="pin-modal" class="fixed inset-0 hidden items-center justify-center bg-black/40 z-50">
+  <div class="bg-white rounded-2xl p-6 w-full max-w-md">
+    <h3 class="text-lg font-bold text-primary mb-2">Xác nhận hành động</h3>
+    <p class="text-sm text-gray-600 mb-4">Nhập mã PIN 4 chữ số để xác thực xóa dữ liệu.</p>
+    <div class="flex gap-2 justify-center mb-4">
+      <input maxlength="1" class="pin-digit w-12 h-12 text-center text-xl border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none" inputmode="numeric"/>
+      <input maxlength="1" class="pin-digit w-12 h-12 text-center text-xl border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none" inputmode="numeric"/>
+      <input maxlength="1" class="pin-digit w-12 h-12 text-center text-xl border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none" inputmode="numeric"/>
+      <input maxlength="1" class="pin-digit w-12 h-12 text-center text-xl border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none" inputmode="numeric"/>
+    </div>
+    <div class="flex justify-end gap-3">
+      <button id="pin-cancel" class="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50">Hủy</button>
+      <button id="pin-confirm" class="px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary/90">Xác nhận</button>
+    </div>
+    <p id="pin-error" class="text-red-500 text-sm mt-3 hidden">Mã PIN không đúng.</p>
+  </div>
+</div>
+<script>
+(function(){
+  const pinModal = document.getElementById('pin-modal');
+  const pinCancelBtn = document.getElementById('pin-cancel');
+  const pinConfirmBtn = document.getElementById('pin-confirm');
+  const pinErrorMsg = document.getElementById('pin-error');
+  let pinCallback = null;
+  function openPinModal(callback){
+    pinCallback = callback;
+    pinErrorMsg.classList.add('hidden');
+    pinModal.classList.remove('hidden');
+    const inputs = pinModal.querySelectorAll('.pin-digit');
+    inputs.forEach((input, idx) => {
+      input.value = '';
+      input.addEventListener('input', (e) => {
+        if (e.target.value && idx < 3) inputs[idx+1].focus();
+      });
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && !e.target.value && idx > 0) inputs[idx-1].focus();
+        if (e.key === 'Enter') pinConfirmBtn.click();
+      });
+    });
+    inputs[0].focus();
+  }
+  function closePinModal(){
+    pinModal.classList.add('hidden');
+    pinCallback = null;
+  }
+  pinCancelBtn.addEventListener('click', closePinModal);
+  pinConfirmBtn.addEventListener('click', async ()=>{
+    const pin = Array.from(pinModal.querySelectorAll('.pin-digit')).map(i=>i.value).join('');
+    if(!/^[0-9]{4}$/.test(pin)) { pinErrorMsg.textContent = 'Vui lòng nhập đủ 4 chữ số'; pinErrorMsg.classList.remove('hidden'); return; }
+    try {
+      const res = await fetch('/api/pin/check', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ pin }),
+        credentials: 'same-origin'
+      });
+      const data = await res.json();
+      if(res.ok && data.ok){
+        closePinModal();
+        if(typeof pinCallback==='function') pinCallback();
+      } else {
+        pinErrorMsg.textContent = data.error || 'Mã PIN không đúng';
+        pinErrorMsg.classList.remove('hidden');
+      }
+    } catch(e){
+      pinErrorMsg.textContent = 'Lỗi xác thực: ' + e.message;
+      pinErrorMsg.classList.remove('hidden');
+    }
+  });
+  window.openPinModal = openPinModal;
+})();
+
+</script>

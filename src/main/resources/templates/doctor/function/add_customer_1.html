@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:replace="fragments/layout :: content">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add Customer</title>
+    <link rel="stylesheet" th:href="@{/css/add-customer.css}" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
+    <script>
+      tailwind.config = { darkMode: 'class', theme: { extend: { colors: { primary: '#03594D' } } } };
+    </script>
+  </head>
+
+  <div class="max-w-6xl mx-auto p-6">
+    <header class="mb-6">
+      <h1 class="text-3xl font-extrabold text-primary">Thêm khách hàng và thú cưng</h1>
+      <p class="text-sm text-gray-600 mt-1">Điền thông tin khách hàng và thêm một hoặc nhiều thú cưng.</p>
+    </header>
+
+    <div th:replace="~{fragments/customer_form :: customerForm}"></div>
+
+    <!-- Template element (ẩn) -->
+    <template id="pet-template">
+      <div class="border rounded-2xl p-4 bg-white relative pet-card">
+        <button class="absolute top-3 right-3 text-sm text-red-500 remove-pet" title="Xóa">X</button>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-start">
+          <label class="block w-full sm:w-32 h-28 border-dashed border-2 border-gray-200 rounded-xl flex items-center justify-center cursor-pointer overflow-hidden relative">
+            <img src="" alt="Ảnh thú cưng" class="w-full h-full object-cover hidden preview-img" />
+            <span class="text-sm text-gray-400">Ảnh</span>
+            <input type="file" accept="image/*" class="absolute inset-0 opacity-0 file-input" />
+          </label>
+          <div class="sm:col-span-2 space-y-2">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="text-xs font-bold">Tên <span class="text-red-500">*</span></label>
+                <input class="form-input pet-name" type="text" required />
+              </div>
+              <div>
+                <label class="text-xs font-bold">Loài</label>
+                <select class="form-input pet-species">
+                  <option value="dog">Chó</option>
+                  <option value="cat">Mèo</option>
+                  <option value="other">Khác</option>
+                </select>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="text-xs font-bold">Giống</label>
+                <input class="form-input pet-breed" type="text" />
+              </div>
+              <div>
+                <label class="text-xs font-bold">Ngày sinh</label>
+                <input class="form-input pet-dob" type="date" />
+              </div>
+            </div>
+            <div>
+              <label class="text-xs font-bold">Ghi chú</label>
+              <textarea class="form-input pet-notes" rows="2"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <div th:replace="~{fragments/pin_modal :: pinModal}"></div>
+  </div>
+
+  <th:block th:replace="~{fragments/layout :: scripts}" />
+</html>
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quản lý Thú Y - Thêm khách hàng và thú cưng</title>
+  <link href="https://fonts.googleapis.com" rel="preconnect" />
+  <link crossorigin href="https://fonts.gstatic.com" rel="preconnect" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&amp;display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: { primary: '#03594D', accent: '#D8E268', background: '#F8FAFC' },
+          fontFamily: { sans: ['Nunito', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .form-input { @apply w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-sm; }
+      .form-label { @apply block mb-2 text-sm font-bold text-primary; }
+      .card { @apply p-5 border rounded-2xl bg-white shadow-sm; }
+    }
+  </style>
+  <link rel="stylesheet" th:href="@{/css/add-customer.css}" />
+</head>
+<body class="bg-background text-gray-800 font-sans min-h-screen">
+  <div class="max-w-6xl mx-auto p-6">
+    <header class="mb-6">
+      <h1 class="text-3xl font-extrabold text-primary">Thêm khách hàng và thú cưng</h1>
+      <p class="text-sm text-gray-600 mt-1">Điền thông tin khách hàng và thêm một hoặc nhiều thú cưng. Trường "tên đăng nhập" đã bị loại bỏ.</p>
+    </header>
+
+    <div th:replace="~{fragments/customer_form :: customerForm}"></div>
+  </div>
+
+  <!-- Template element (ẩn) -->
+  <template id="pet-template">
+    <div class="border rounded-2xl p-4 bg-white relative pet-card">
+      <button class="absolute top-3 right-3 text-sm text-red-500 remove-pet" title="Xóa">X</button>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-start">
+        <label class="block w-full sm:w-32 h-28 border-dashed border-2 border-gray-200 rounded-xl flex items-center justify-center cursor-pointer overflow-hidden relative">
+          <img src="" alt="Ảnh thú cưng" class="w-full h-full object-cover hidden preview-img" />
+          <span class="text-sm text-gray-400">Ảnh</span>
+          <input type="file" accept="image/*" class="absolute inset-0 opacity-0 file-input" />
+        </label>
+        <div class="sm:col-span-2 space-y-2">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="text-xs font-bold">Tên <span class="text-red-500">*</span></label>
+              <input class="form-input pet-name" type="text" required />
+            </div>
+            <div>
+              <label class="text-xs font-bold">Loài</label>
+              <select class="form-input pet-species">
+                <option value="dog">Chó</option>
+                <option value="cat">Mèo</option>
+                <option value="other">Khác</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="text-xs font-bold">Giống</label>
+              <input class="form-input pet-breed" type="text" />
+            </div>
+            <div>
+              <label class="text-xs font-bold">Ngày sinh</label>
+              <input class="form-input pet-dob" type="date" />
+            </div>
+          </div>
+          <div>
+            <label class="text-xs font-bold">Ghi chú</label>
+            <textarea class="form-input pet-notes" rows="2"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <!-- include modal fragment -->
+  <div th:replace="~{fragments/pin_modal :: pinModal}"></div>
+
+  <script th:src="@{/js/add-customer.js}"></script>
+</body>
+</html>

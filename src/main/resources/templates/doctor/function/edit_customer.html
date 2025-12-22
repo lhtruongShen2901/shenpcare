@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Chỉnh sửa Khách Hàng - ShenPCare</title>
+    <!-- <meta name="_csrf" th:content="${_csrf.token}"/> -->
+    <!-- <meta name="_csrf_header" th:content="${_csrf.headerName}"/> -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24 }
+        body { font-family: 'Inter', sans-serif; }
+        .pet-card { transition: all 0.3s ease; }
+        /* Avoid @apply to satisfy linters: use explicit properties */
+        .pet-card:hover { border-color: rgba(3,89,77,0.25); box-shadow: 0 8px 20px rgba(3,89,77,0.06); }
+    </style>
+</head>
+<body class="bg-gray-50">
+<div class="min-h-screen flex">
+    <!-- SIDEBAR -->
+    <aside class="w-64 bg-white border-r border-gray-200 p-6 fixed h-screen overflow-y-auto shadow-sm">
+        <div class="flex items-center gap-3 mb-8">
+            <div class="w-10 h-10 bg-teal-600 rounded-full flex items-center justify-center shadow-lg">
+                <span class="material-symbols-outlined text-white text-xl">pets</span>
+            </div>
+            <h1 class="text-lg font-bold text-teal-600">ShenPCare</h1>
+        </div>
+
+        <nav class="space-y-2 mb-8">
+            <a th:href="@{/doctor/dashboard}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-700">
+                <span class="material-symbols-outlined">dashboard</span>
+                <span class="text-sm">Bảng điều khiển</span>
+            </a>
+            <a th:href="@{/doctor/work}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-700">
+                <span class="material-symbols-outlined">calendar_month</span>
+                <span class="text-sm">Lịch hẹn</span>
+            </a>
+            <a th:href="@{/doctor/pet-passport}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-700">
+                <span class="material-symbols-outlined">pets</span>
+                <span class="text-sm">Bệnh án</span>
+            </a>
+            <a th:href="@{/doctor/customers}" class="flex items-center gap-3 px-4 py-2 rounded-lg bg-yellow-100 text-teal-600 font-semibold transition-colors">
+                <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">group</span>
+                <span class="text-sm">Khách hàng</span>
+            </a>
+            <a th:href="@{/doctor/reports}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-700">
+                <span class="material-symbols-outlined">bar_chart</span>
+                <span class="text-sm">Báo cáo</span>
+            </a>
+            <a th:href="@{/doctor/settings}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-700">
+                <span class="material-symbols-outlined">settings</span>
+                <span class="text-sm">Cài đặt</span>
+            </a>
+            <a th:href="@{/logout}" class="flex items-center gap-3 px-4 py-2 rounded-lg text-red-600 hover:bg-red-50 transition-colors">
+                <span class="material-symbols-outlined">logout</span>
+                <span class="text-sm font-medium">Đăng xuất</span>
+            </a>
+        </nav>
+
+        <div class="pt-6 border-t border-gray-200">
+            <a th:href="@{/logout}" class="flex items-center gap-3 px-4 py-2 rounded-lg text-red-600 hover:bg-red-50 transition-colors">
+                <span class="material-symbols-outlined">logout</span>
+                <span class="text-sm font-medium">Đăng xuất</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="ml-64 flex-1 p-8">
+        <div class="max-w-4xl">
+            <!-- Header -->
+            <div class="mb-8">
+                <a th:href="@{/doctor/customers}" class="flex items-center gap-2 text-teal-600 hover:text-teal-700 font-medium mb-4">
+                    <span class="material-symbols-outlined text-lg">arrow_back</span>
+                    <span>Quay về</span>
+                </a>
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center">
+                        <span class="material-symbols-outlined text-teal-600 text-2xl">edit</span>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-900">Chỉnh sửa Thông Tin Khách Hàng</h1>
+                        <p class="text-gray-600 text-sm" th:text="'ID: ' + ${customer.customerId}">ID: #101</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages -->
+            <div th:if="${success}" class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-green-800 flex items-center gap-3">
+                <span class="material-symbols-outlined text-lg">check_circle</span>
+                <span th:text="${success}">Success message</span>
+            </div>
+            <div th:if="${error}" class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800 flex items-center gap-3">
+                <span class="material-symbols-outlined text-lg">error</span>
+                <span th:text="${error}">Error message</span>
+            </div>
+
+            <!-- Edit Form -->
+            <form th:action="@{/doctor/customers/{id}(id=${customer.customerId})}" method="post" class="space-y-6">
+                <!-- Customer Information Card -->
+                <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                    <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-teal-600">person</span>
+                        Thông Tin Khách Hàng
+                    </h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Họ và Tên <span class="text-red-500">*</span></label>
+                            <input type="text" name="fullName" th:value="${customer.user.fullName}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all" required/>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Email <span class="text-red-500">*</span></label>
+                            <input type="email" name="email" th:value="${customer.user.email}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all" required/>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Số điện thoại <span class="text-red-500">*</span></label>
+                            <input type="tel" name="phone" th:value="${customer.user.phone}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all" required/>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Thành phố</label>
+                            <input type="text" name="city" th:value="${customer.city}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all"/>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Quận/Huyện</label>
+                            <input type="text" name="district" th:value="${customer.district}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all"/>
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Địa chỉ</label>
+                            <textarea name="address" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all resize-none" th:text="${customer.defaultAddress}"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pets Management Card -->
+                <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-teal-600">pets</span>
+                            Quản Lý Thú Cưng
+                        </h2>
+                        <button type="button" class="flex items-center gap-2 px-3 py-1.5 bg-teal-100 text-teal-600 font-semibold rounded-lg hover:bg-teal-200 transition-colors" onclick="addPetRow()">
+                            <span class="material-symbols-outlined text-lg">add_circle</span>
+                            <span class="text-sm">Thêm thú cưng</span>
+                        </button>
+                    </div>
+
+                    <!-- Existing Pets List (rendered server-side) -->
+                    <div id="petsList" class="space-y-3 mb-4">
+                        <div th:each="pet : ${customer.pets}" class="pet-card p-4 border-2 border-gray-200 rounded-lg bg-gray-50 group">
+                            <div class="flex items-start justify-between gap-4">
+                                <div class="flex-1 grid grid-cols-1 md:grid-cols-3 gap-3">
+                                    <div>
+                                        <label class="text-xs font-bold text-gray-700 block mb-1">Tên thú cưng</label>
+                                        <div class="px-3 py-2 bg-white border border-gray-300 rounded-lg font-semibold text-teal-600" th:text="${pet.name}">Milu</div>
+                                    </div>
+                                    <div>
+                                        <label class="text-xs font-bold text-gray-700 block mb-1">Loài</label>
+                                        <div class="px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-700" th:text="${pet.species != null ? pet.species : '-'}">-</div>
+                                    </div>
+                                    <div>
+                                        <label class="text-xs font-bold text-gray-700 block mb-1">Giống</label>
+                                        <div class="px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-700" th:text="${pet.breed != null ? pet.breed : '-'}">-</div>
+                                    </div>
+                                </div>
+                                <button type="button" class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100" title="Xóa thú cưng" th:onclick="${'deletePet(' + pet.petId + ')'}">
+                                    <span class="material-symbols-outlined">delete</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- New Pets List -->
+                    <div id="newPetsList" class="space-y-3"></div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex gap-3 pt-4">
+                    <button type="submit" class="flex-1 bg-teal-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-teal-700 transition-colors flex items-center justify-center gap-2 shadow-md">
+                        <span class="material-symbols-outlined">save</span>
+                        Lưu Thay Đổi
+                    </button>
+                    <a th:href="@{/doctor/customers}" class="px-6 py-3 rounded-lg border border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition-colors flex items-center gap-2">
+                        <span class="material-symbols-outlined">close</span>
+                        Hủy
+                    </a>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+
+    <!-- Hidden data: customerId for JS (avoid inline Thymeleaf in scripts) -->
+    <input type="hidden" id="customerIdHidden" th:value="${customer.customerId}" />
+
+<script>
+let petCount = 0;
+const customerId = document.getElementById('customerIdHidden') ? document.getElementById('customerIdHidden').value : null;
+
+// Add new pet row
+function addPetRow() {
+    const newPetsList = document.getElementById('newPetsList');
+    const idx = petCount++;
+    
+    const html = `
+        <div class="pet-card p-4 border-2 border-dashed border-teal-300 rounded-lg bg-teal-50" data-pet-index="${idx}">
+            <div class="flex items-start justify-between gap-4">
+                <div class="flex-1 grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                        <label class="text-xs font-bold text-gray-700 block mb-1">Tên thú cưng <span class="text-red-500">*</span></label>
+                        <input type="text" name="pets[${idx}].name" class="w-full px-3 py-2 bg-white border border-teal-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none" placeholder="Vd: Milu, Fifi..." required/>
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-gray-700 block mb-1">Loài</label>
+                        <select name="pets[${idx}].species" class="w-full px-3 py-2 bg-white border border-teal-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none">
+                            <option value="">Chọn...</option>
+                            <option value="Dog">Chó</option>
+                            <option value="Cat">Mèo</option>
+                            <option value="Rabbit">Thỏ</option>
+                            <option value="Bird">Chim</option>
+                            <option value="Hamster">Chuột Hamster</option>
+                            <option value="Other">Khác</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-gray-700 block mb-1">Giống</label>
+                        <input type="text" name="pets[${idx}].breed" class="w-full px-3 py-2 bg-white border border-teal-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none" placeholder="Vd: Golden Retriever..."/>
+                    </div>
+                </div>
+                <button type="button" class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Xóa" onclick="this.closest('[data-pet-index]').remove()">
+                    <span class="material-symbols-outlined">delete</span>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    newPetsList.appendChild(div.firstElementChild);
+}
+
+// Delete existing pet (send to backend)
+async function deletePet(petId) {
+    if (!confirm('Bạn có chắc chắn muốn xóa thú cưng này?')) return;
+    
+    const token = document.querySelector('meta[name="_csrf"]')?.getAttribute('content') || '';
+    try {
+        const res = await fetch(`/api/pets/${petId}`, {
+            method: 'DELETE',
+            headers: { 'X-CSRF-TOKEN': token },
+            credentials: 'same-origin'
+        });
+        
+        if (res.ok) {
+            location.reload();
+        } else {
+            alert('Lỗi khi xóa thú cưng');
+        }
+    } catch (e) {
+        alert('Lỗi: ' + e.message);
+    }
+}
+
+// Initialize - no-op (existing pets rendered server-side)
+document.addEventListener('DOMContentLoaded', () => {
+    // Server rendered pets; client-side initialization can go here.
+});
+</script>
+
+</body>
+</html>

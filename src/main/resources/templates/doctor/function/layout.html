@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title th:replace="~{::title}">App</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}" />
+    <th:block th:replace="~{::head}" />
+</head>
+<body>
+    <header>
+        <nav>
+            <a th:href="@{/}">Home</a> |
+            <a th:href="@{/doctor/dashboard}">Dashboard</a>
+        </nav>
+    </header>
+
+    <main>
+        <div th:fragment="content">
+            <!-- page content injected here -->
+        </div>
+    </main>
+
+    <footer>
+        <small>© ShenPCare</small>
+    </footer>
+
+    <script th:src="@{/js/add-customer.js}"></script>
+    <th:block th:replace="~{::scripts}" />
+</body>
+</html>

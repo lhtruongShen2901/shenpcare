@@ -1,0 +1,7 @@
+/* Minimal styling overrides for add-customer page */
+:root{
+  --primary:#03594D;
+  --accent:#D8E268;
+}
+.card{background:#fff}
+.form-input{border-radius:12px}
