@@ -1,7 +1,9 @@
 package g6shenpcare.controller.admin;
 
 import g6shenpcare.dto.AdminRegisterForm;
+import g6shenpcare.entity.StaffProfile;
 import g6shenpcare.entity.UserAccount;
+import g6shenpcare.repository.StaffProfileRepository;
 import g6shenpcare.repository.UserAccountRepository;
 import jakarta.validation.Valid;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,88 +23,60 @@ import java.time.LocalDateTime;
 public class AdminAuthController {
 
     private final UserAccountRepository userRepo;
+    private final StaffProfileRepository staffRepo;
     private final PasswordEncoder passwordEncoder;
 
     public AdminAuthController(UserAccountRepository userRepo,
+                               StaffProfileRepository staffRepo,
                                PasswordEncoder passwordEncoder) {
         this.userRepo = userRepo;
+        this.staffRepo = staffRepo;
         this.passwordEncoder = passwordEncoder;
     }
 
-    // ================== LOGIN ==================
-
+    // --- LOGIN ---
     @GetMapping("/login")
     public String showLogin() {
-        // View: src/main/resources/templates/admin/login.html
-        // param.error, param.logout, registerSuccess... xử lý ở Thymeleaf
         return "admin/login";
     }
 
-    // ================== REGISTER ADMIN (GET) ==================
-
+    // --- ĐĂNG KÝ ADMIN ĐẦU TIÊN (HỆ THỐNG CHỈ CHO PHÉP 1 ADMIN TỰ REG) ---
     @GetMapping("/register")
-    public String showRegister(Model model,
-                               RedirectAttributes redirectAttributes) {
-
-        long adminCount = userRepo.countByRoleIgnoreCase("ADMIN");
-
-        // Nếu đã có ít nhất 1 ADMIN thì không cho đăng ký nữa
-        if (adminCount > 0) {
-            redirectAttributes.addFlashAttribute(
-                    "errorMessage",
-                    "Hệ thống đã có tài khoản Admin. Vui lòng đăng nhập."
-            );
+    public String showRegister(Model model, RedirectAttributes ra) {
+        if (userRepo.countByRoleIgnoreCase("ADMIN") > 0) {
+            ra.addFlashAttribute("errorMessage", "Hệ thống đã có Admin. Vui lòng đăng nhập.");
             return "redirect:/admin/login";
         }
-
         if (!model.containsAttribute("form")) {
             model.addAttribute("form", new AdminRegisterForm());
         }
-
-        // View: src/main/resources/templates/admin/register.html
         return "admin/register";
     }
 
-    // ================== REGISTER ADMIN (POST) ==================
-
     @PostMapping("/register")
-    public String handleRegister(
-            @Valid @ModelAttribute("form") AdminRegisterForm form,
-            BindingResult bindingResult,
-            RedirectAttributes redirectAttributes,
-            Model model) {
+    public String handleRegister(@Valid @ModelAttribute("form") AdminRegisterForm form,
+                                 BindingResult bindingResult,
+                                 RedirectAttributes ra,
+                                 Model model) {
 
-        // Kiểm tra lại lần nữa: nếu đã có ADMIN thì chặn
-        long adminCount = userRepo.countByRoleIgnoreCase("ADMIN");
-        if (adminCount > 0) {
-            redirectAttributes.addFlashAttribute(
-                    "errorMessage",
-                    "Hệ thống đã có tài khoản Admin. Vui lòng đăng nhập."
-            );
+        // Check kép an toàn
+        if (userRepo.countByRoleIgnoreCase("ADMIN") > 0) {
             return "redirect:/admin/login";
         }
 
-        // Lỗi validate annotation (@NotBlank, @Size, @Email, ...)
-        if (bindingResult.hasErrors()) {
-            model.addAttribute("form", form);
-            return "admin/register";
-        }
+        if (bindingResult.hasErrors()) return "admin/register";
 
-        // Kiểm tra trùng username (không phân biệt hoa thường)
         if (userRepo.existsByUsernameIgnoreCase(form.getUsername())) {
-            model.addAttribute("form", form);
             model.addAttribute("usernameError", "Tên đăng nhập đã tồn tại.");
             return "admin/register";
         }
 
-        // Kiểm tra mật khẩu và confirm mật khẩu
         if (!form.getPassword().equals(form.getConfirmPassword())) {
-            model.addAttribute("form", form);
-            model.addAttribute("passwordError", "Mật khẩu nhập lại không khớp.");
+            model.addAttribute("passwordError", "Mật khẩu không khớp.");
             return "admin/register";
         }
 
-        // Tạo user ADMIN
+        // Tạo Admin Account
         UserAccount admin = new UserAccount();
         admin.setUsername(form.getUsername().trim());
         admin.setFullName(form.getFullName().trim());
@@ -114,14 +88,18 @@ public class AdminAuthController {
         admin.setUpdatedAt(LocalDateTime.now());
         admin.setPasswordHash(passwordEncoder.encode(form.getPassword()));
 
-        userRepo.save(admin);
+        UserAccount savedAdmin = userRepo.save(admin);
 
-        // Gửi message sang trang login
-        redirectAttributes.addFlashAttribute(
-                "registerSuccess",
-                "Tạo tài khoản Admin thành công. Vui lòng đăng nhập."
-        );
+        // Tạo Profile cho Admin (Admin cũng là nhân viên cấp cao)
+        StaffProfile profile = new StaffProfile();
+        profile.setStaffId(savedAdmin.getUserId());
+        profile.setStaffCode("ADM001");
+        profile.setPosition("Quản trị viên hệ thống");
+        profile.setAnnualLeaveQuota(12);
+        
+        staffRepo.save(profile);
 
+        ra.addFlashAttribute("registerSuccess", "Khởi tạo Admin thành công. Hãy đăng nhập.");
         return "redirect:/admin/login";
     }
 }

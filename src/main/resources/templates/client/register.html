@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html class="light" lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Đăng ký thành viên</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <link rel="stylesheet" th:href="@{/css/admin-auth.css}"/> 
+</head>
+<body class="bg-gray-50 flex items-center justify-center min-h-screen">
+    <div class="w-full max-w-md bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+        <h2 class="text-2xl font-bold text-center text-[#03594D] mb-6">Đăng Ký Thành Viên</h2>
+        
+        <form th:action="@{/register}" th:object="${form}" method="post" class="space-y-4">
+            
+            <div th:if="${usernameError}" class="p-3 bg-red-100 text-red-700 rounded-lg text-sm" th:text="${usernameError}"></div>
+            <div th:if="${passwordError}" class="p-3 bg-red-100 text-red-700 rounded-lg text-sm" th:text="${passwordError}"></div>
+
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-1">Tên đăng nhập</label>
+                <input type="text" th:field="*{username}" required class="w-full rounded-lg border-gray-300 focus:ring-[#D8E268] focus:border-[#D8E268]">
+                <p class="text-xs text-red-500 mt-1" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></p>
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-1">Họ và tên</label>
+                <input type="text" th:field="*{fullName}" required class="w-full rounded-lg border-gray-300 focus:ring-[#D8E268] focus:border-[#D8E268]">
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-1">Số điện thoại</label>
+                <input type="text" th:field="*{phone}" required class="w-full rounded-lg border-gray-300 focus:ring-[#D8E268] focus:border-[#D8E268]" placeholder="09xxxxxxxx">
+                <p class="text-xs text-red-500 mt-1" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></p>
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-1">Email</label>
+                <input type="email" th:field="*{email}" class="w-full rounded-lg border-gray-300 focus:ring-[#D8E268] focus:border-[#D8E268]">
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-1">Mật khẩu</label>
+                <input type="password" th:field="*{password}" required class="w-full rounded-lg border-gray-300 focus:ring-[#D8E268] focus:border-[#D8E268]">
+                <p class="text-xs text-red-500 mt-1" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></p>
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-1">Nhập lại mật khẩu</label>
+                <input type="password" th:field="*{confirmPassword}" required class="w-full rounded-lg border-gray-300 focus:ring-[#D8E268] focus:border-[#D8E268]">
+            </div>
+
+            <button type="submit" class="w-full py-3 bg-[#D8E268] text-[#03594D] font-bold rounded-lg hover:brightness-95 transition-all">
+                Đăng Ký
+            </button>
+
+            <div class="text-center mt-4">
+                <a th:href="@{/login}" class="text-sm text-[#03594D] hover:underline">Quay lại đăng nhập</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

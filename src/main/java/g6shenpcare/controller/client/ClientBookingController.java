@@ -1,101 +1,129 @@
 package g6shenpcare.controller.client;
 
-import g6shenpcare.entity.Booking;
-import g6shenpcare.entity.CustomerProfile; // [MỚI]
+import g6shenpcare.dto.BookingRequestDTO;
+import g6shenpcare.entity.CustomerProfile;
 import g6shenpcare.entity.Pets;
-import g6shenpcare.entity.UserAccount;
-import g6shenpcare.repository.CustomerProfileRepository; // [MỚI]
 import g6shenpcare.repository.PetRepository;
 import g6shenpcare.repository.ServicesRepository;
 import g6shenpcare.service.BookingService;
-import g6shenpcare.service.UserService;
+import g6shenpcare.service.ClientService; // Import Service
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
-import java.util.List;
-import java.util.ArrayList; // Để xử lý trường hợp khách chưa có Profile
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Controller
 @RequestMapping("/booking")
 public class ClientBookingController {
 
-    private final BookingService bookingService;
-    private final ServicesRepository servicesRepository;
-    private final UserService userService;
-    private final PetRepository petRepository;
-    private final CustomerProfileRepository customerProfileRepository; // [Inject thêm cái này]
-
-    public ClientBookingController(BookingService bookingService, 
-                                   ServicesRepository servicesRepository,
-                                   UserService userService,
-                                   PetRepository petRepository,
-                                   CustomerProfileRepository customerProfileRepository) {
-        this.bookingService = bookingService;
-        this.servicesRepository = servicesRepository;
-        this.userService = userService;
-        this.petRepository = petRepository;
-        this.customerProfileRepository = customerProfileRepository;
-    }
+    @Autowired private BookingService bookingService;
+    @Autowired private ServicesRepository servicesRepository;
+    @Autowired private PetRepository petRepository;
+    @Autowired private ClientService clientService; // Dùng cái này thay cho User/Profile Repo lẻ
 
     @GetMapping
     public String showBookingForm(Model model, Principal principal) {
-        if (principal == null) {
-            return "redirect:/login"; 
-        }
+        if (principal == null) return "redirect:/login";
 
-        // 1. Lấy User từ Login
-        UserAccount user = userService.getUserByUsername(principal.getName());
-        
-        // 2. [LOGIC MỚI] Từ User -> Tìm CustomerProfile (Thông tin khách hàng)
-        CustomerProfile customer = customerProfileRepository.findByUserId(user.getUserId())
-                .orElse(null);
+        // Dùng Service lấy Profile chuẩn (tự tạo nếu chưa có)
+        CustomerProfile customer = clientService.getProfileByUsername(principal.getName());
 
-        // Chuẩn bị danh sách Pet
-        List<Pets> myPets = new ArrayList<>();
-        Integer customerId = null;
+        BookingRequestDTO bookingDTO = new BookingRequestDTO();
+        // Pre-fill thông tin
+        bookingDTO.setCustomerName(customer.getFullName());
+        bookingDTO.setCustomerPhone(customer.getPhone());
+        bookingDTO.setCustomerEmail(customer.getEmail());
+        bookingDTO.setCustomerId(Long.valueOf(customer.getCustomerId()));
+        bookingDTO.setCustomerAddress(customer.getAddressLine());
 
-        if (customer != null) {
-            customerId = customer.getCustomerId();
-            // 3. Nếu là Khách hàng đã có hồ sơ -> Lấy danh sách Pet của họ
-            myPets = petRepository.findByCustomerId(customerId);
-        } else {
-            // Trường hợp: User mới tạo tài khoản, chưa cập nhật hồ sơ (Chưa có CustomerId)
-            // -> Có thể redirect họ sang trang cập nhật hồ sơ hoặc để trống
-        }
+        model.addAttribute("booking", bookingDTO);
+        model.addAttribute("myPets", clientService.getPetsByCustomer(customer)); // Lấy list pet chuẩn
+        model.addAttribute("services", servicesRepository.findAll());
 
-        model.addAttribute("myPets", myPets);
-        model.addAttribute("services", servicesRepository.findByServiceTypeNot("COMBO"));
-        
-        Booking booking = new Booking();
-        // Gán CustomerId vào form (nếu có)
-        if (customerId != null) {
-            booking.setCustomerId(customerId);
-        }
-        
-        model.addAttribute("booking", booking);
-        return "client/booking-form";
+        return "client/booking";
     }
 
     @PostMapping("/submit")
-    public String submitBooking(@ModelAttribute Booking booking, RedirectAttributes ra) {
+    public String submitBooking(@ModelAttribute BookingRequestDTO dto,
+                                Principal principal,
+                                RedirectAttributes ra) {
         try {
-            // Kiểm tra nếu khách chưa có CustomerId (chưa có profile)
-            if (booking.getCustomerId() == null) {
-                ra.addFlashAttribute("error", "Vui lòng cập nhật hồ sơ cá nhân trước khi đặt lịch!");
-                return "redirect:/profile"; // Ví dụ đường dẫn
+            if (principal == null) return "redirect:/login";
+
+            // Lấy profile chuẩn từ Service
+            CustomerProfile customer = clientService.getProfileByUsername(principal.getName());
+
+            // Gán ID khách hàng vào DTO
+            dto.setCustomerId(Long.valueOf(customer.getCustomerId()));
+
+            boolean hasBooking = false;
+
+            // TRƯỜNG HỢP 1: Chọn Pet có sẵn
+            if (dto.getSelectedPetIds() != null && !dto.getSelectedPetIds().isEmpty()) {
+                for (Long petId : dto.getSelectedPetIds()) {
+                    BookingRequestDTO petBooking = copyBookingInfo(dto);
+                    petBooking.setPetId(petId);
+                    bookingService.createClientBooking(petBooking);
+                }
+                hasBooking = true;
             }
 
-            bookingService.createClientBooking(booking);
-            ra.addFlashAttribute("message", "Gửi yêu cầu thành công! Nhân viên sẽ gọi xác nhận sớm.");
+            // TRƯỜNG HỢP 2: Tạo Pet mới (Giữ nguyên logic đặc thù này của Booking)
+            if (dto.getPetName() != null && !dto.getPetName().trim().isEmpty()) {
+                Pets newPet = new Pets();
+                // Dùng logic gán tay ở đây vì đây là DTO đặc biệt, 
+                // hoặc gọi clientService.addNewPet(...) nếu muốn refactor sâu hơn.
+                // Ở đây mình giữ nguyên cách set để code booking của bạn chạy ổn định.
+                newPet.setCustomerId(customer.getCustomerId());
+                newPet.setOwnerId(customer.getUserId()); // Fix: Thêm ownerId để không bị lỗi lưu ảo
+                newPet.setName(dto.getPetName());
+                newPet.setSpecies(dto.getPetSpecies());
+                newPet.setBreed(dto.getPetBreed());
+                if (dto.getPetAge() != null) {
+                    newPet.setBirthDate(LocalDate.now().minusYears(dto.getPetAge()));
+                }
+                newPet.setWeight(dto.getPetWeight());
+                newPet.setPetCode("P-BOOK-" + System.currentTimeMillis());
+                newPet.setActive(true);
+                newPet.setCreatedAt(LocalDateTime.now());
+                
+                // Lưu pet
+                Pets savedPet = petRepository.save(newPet);
+
+                BookingRequestDTO newPetBooking = copyBookingInfo(dto);
+                newPetBooking.setPetId(Long.valueOf(savedPet.getPetId()));
+                bookingService.createClientBooking(newPetBooking);
+                hasBooking = true;
+            }
+
+            // TRƯỜNG HỢP 3: Không chọn Pet
+            if (!hasBooking) {
+                BookingRequestDTO noPetBooking = copyBookingInfo(dto);
+                noPetBooking.setPetId(null);
+                bookingService.createClientBooking(noPetBooking);
+            }
+
+            ra.addFlashAttribute("message", "Gửi yêu cầu thành công! Chúng tôi sẽ liên hệ sớm.");
         } catch (Exception e) {
+            e.printStackTrace();
             ra.addFlashAttribute("error", "Lỗi: " + e.getMessage());
         }
         return "redirect:/booking";
+    }
+
+    private BookingRequestDTO copyBookingInfo(BookingRequestDTO original) {
+        BookingRequestDTO copy = new BookingRequestDTO();
+        copy.setCustomerId(original.getCustomerId());
+        copy.setServiceId(original.getServiceId());
+        copy.setBookingDate(original.getBookingDate());
+        copy.setTimeSlot(original.getTimeSlot());
+        copy.setNotes(original.getNotes());
+        copy.setIsUrgent(original.getIsUrgent());
+        return copy;
     }
 }

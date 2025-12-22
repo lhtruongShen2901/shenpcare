@@ -17,6 +17,10 @@ public class StaffProfile {
     @Column(name = "StaffType", length = 50)
     private String staffType;    // ADMIN / DOCTOR / GROOMER / ...
 
+    // [MỚI] Thêm trường Position (Chức vụ)
+    @Column(name = "Position", length = 100)
+    private String position;
+
     @Column(name = "LicenseNumber", length = 100)
     private String licenseNumber;
 
@@ -26,7 +30,7 @@ public class StaffProfile {
     @Column(name = "HireDate")
     private LocalDate hireDate;
 
-    // [MỚI] Hạn mức phép năm (Mặc định 12 ngày)
+    // Hạn mức phép năm (Mặc định 12 ngày)
     @Column(name = "AnnualLeaveQuota")
     private Integer annualLeaveQuota = 12;
 
@@ -43,6 +47,10 @@ public class StaffProfile {
 
     public String getStaffType() { return staffType; }
     public void setStaffType(String staffType) { this.staffType = staffType; }
+
+    // [MỚI] Getter & Setter cho Position
+    public String getPosition() { return position; }
+    public void setPosition(String position) { this.position = position; }
 
     public String getLicenseNumber() { return licenseNumber; }
     public void setLicenseNumber(String licenseNumber) { this.licenseNumber = licenseNumber; }

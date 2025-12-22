@@ -14,78 +14,78 @@ public class Booking {
     @Column(name = "BookingId")
     private Integer bookingId;
 
-    // --- CÁC CỘT ID (Giữ nguyên để map dữ liệu thô) ---
-    @Column(name = "CustomerId", insertable = false, updatable = false)
+    // --- CỘT ID (Dùng để ghi dữ liệu vào DB) ---
+    @Column(name = "CustomerId")
     private Integer customerId;
 
-    @Column(name = "PetId", insertable = false, updatable = false)
+    @Column(name = "PetId")
     private Integer petId;
 
-    @Column(name = "ServiceId", insertable = false, updatable = false)
+    @Column(name = "ServiceId")
     private Integer serviceId;
 
-    @Column(name = "AssignedStaffId", insertable = false, updatable = false)
+    @Column(name = "AssignedStaffId")
     private Integer assignedStaffId;
 
-    // --- [QUAN TRỌNG] THÊM MỐI QUAN HỆ (RELATIONSHIPS) ---
-    // Để BookingService có thể gọi b.getCustomer().getFullName()
+    // --- RELATIONSHIPS (Dùng để đọc dữ liệu hiển thị lên Web) ---
+    // insertable=false, updatable=false: Nghĩa là chỉ dùng để JOIN bảng, không UPDATE qua biến này
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "CustomerId")
-    private CustomerProfile customer; // Hoặc UserAccount tùy DB bạn, ở đây dùng CustomerProfile
+    @JoinColumn(name = "CustomerId", insertable = false, updatable = false)
+    private CustomerProfile customer;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "PetId")
+    @JoinColumn(name = "PetId", insertable = false, updatable = false)
     private Pets pet;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ServiceId")
+    @JoinColumn(name = "ServiceId", insertable = false, updatable = false)
     private Services service;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "AssignedStaffId")
-    private UserAccount staff; // Nhân viên là UserAccount
+    @JoinColumn(name = "AssignedStaffId", insertable = false, updatable = false)
+    private UserAccount staff;
 
-    // --- CÁC TRƯỜNG THÔNG TIN KHÁC ---
+    // --- THÔNG TIN CHI TIẾT ---
     @Column(name = "BookingDate", nullable = false)
     private LocalDate bookingDate;
 
-    @Column(name = "StartTime", nullable = false)
+    @Column(name = "StartTime") // Có thể null lúc mới đặt
     private LocalDateTime startTime;
 
     @Column(name = "EndTime")
     private LocalDateTime endTime;
 
     @Column(name = "Status", nullable = false, length = 20)
-    private String status;
+    private String status; // PENDING, CONFIRMED, COMPLETED, CANCELLED
 
     @Column(name = "PaymentStatus", nullable = false, length = 20)
     private String paymentStatus;
 
-    @Column(name = "TotalAmount", nullable = false, precision = 18, scale = 2)
+    @Column(name = "TotalAmount", precision = 18, scale = 2)
     private BigDecimal totalAmount;
 
     @Column(name = "Notes", length = 500)
     private String notes;
+    
+    @Column(name = "IsUrgent")
+    private Boolean isUrgent = false;
 
-    @Column(name = "CreatedAt", nullable = false)
+    @Column(name = "CreatedAt")
     private LocalDateTime createdAt;
 
     @Column(name = "UpdatedAt")
     private LocalDateTime updatedAt;
 
-    public Booking() {
-    }
+    public Booking() {}
 
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
-        if (this.status == null) {
-            this.status = "PENDING_CONFIRMATION";
-        }
-        if (this.paymentStatus == null) {
-            this.paymentStatus = "UNPAID";
-        }
+        if (this.status == null) this.status = "PENDING";
+        if (this.paymentStatus == null) this.paymentStatus = "UNPAID";
+        if (this.isUrgent == null) this.isUrgent = false;
+        if (this.totalAmount == null) this.totalAmount = BigDecimal.ZERO;
     }
 
     @PreUpdate
@@ -94,133 +94,73 @@ public class Booking {
     }
 
     // --- GETTERS & SETTERS ---
-    // (Bạn generate đầy đủ, lưu ý thêm Get/Set cho các object quan hệ mới)
-    public Integer getBookingId() {
-        return bookingId;
-    }
+    public Integer getBookingId() { return bookingId; }
+    public void setBookingId(Integer bookingId) { this.bookingId = bookingId; }
 
-    public void setBookingId(Integer bookingId) {
-        this.bookingId = bookingId;
-    }
+    public Integer getCustomerId() { return customerId; }
+    public void setCustomerId(Integer customerId) { this.customerId = customerId; }
 
-    public Integer getCustomerId() {
-        return customerId;
-    }
+    public Integer getPetId() { return petId; }
+    public void setPetId(Integer petId) { this.petId = petId; }
 
-    public void setCustomerId(Integer customerId) {
-        this.customerId = customerId;
-    }
+    public Integer getServiceId() { return serviceId; }
+    public void setServiceId(Integer serviceId) { this.serviceId = serviceId; }
 
-    public Integer getPetId() {
-        return petId;
-    }
+    public Integer getAssignedStaffId() { return assignedStaffId; }
+    public void setAssignedStaffId(Integer assignedStaffId) { this.assignedStaffId = assignedStaffId; }
 
-    public void setPetId(Integer petId) {
-        this.petId = petId;
-    }
+    public LocalDate getBookingDate() { return bookingDate; }
+    public void setBookingDate(LocalDate bookingDate) { this.bookingDate = bookingDate; }
 
-    public Integer getServiceId() {
-        return serviceId;
-    }
+    public LocalDateTime getStartTime() { return startTime; }
+    public void setStartTime(LocalDateTime startTime) { this.startTime = startTime; }
 
-    public void setServiceId(Integer serviceId) {
-        this.serviceId = serviceId;
-    }
+    public LocalDateTime getEndTime() { return endTime; }
+    public void setEndTime(LocalDateTime endTime) { this.endTime = endTime; }
 
-    public Integer getAssignedStaffId() {
-        return assignedStaffId;
-    }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 
-    public void setAssignedStaffId(Integer assignedStaffId) {
-        this.assignedStaffId = assignedStaffId;
-    }
+    public String getPaymentStatus() { return paymentStatus; }
+    public void setPaymentStatus(String paymentStatus) { this.paymentStatus = paymentStatus; }
 
-    public LocalDate getBookingDate() {
-        return bookingDate;
-    }
+    public BigDecimal getTotalAmount() { return totalAmount; }
+    public void setTotalAmount(BigDecimal totalAmount) { this.totalAmount = totalAmount; }
 
-    public void setBookingDate(LocalDate bookingDate) {
-        this.bookingDate = bookingDate;
-    }
+    public String getNotes() { return notes; }
+    public void setNotes(String notes) { this.notes = notes; }
 
-    public LocalDateTime getStartTime() {
-        return startTime;
-    }
+    public Boolean getIsUrgent() { return isUrgent; }
+    public void setIsUrgent(Boolean urgent) { isUrgent = urgent; }
 
-    public void setStartTime(LocalDateTime startTime) {
-        this.startTime = startTime;
-    }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 
-    public LocalDateTime getEndTime() {
-        return endTime;
-    }
-
-    public void setEndTime(LocalDateTime endTime) {
-        this.endTime = endTime;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getPaymentStatus() {
-        return paymentStatus;
-    }
-
-    public void setPaymentStatus(String paymentStatus) {
-        this.paymentStatus = paymentStatus;
-    }
-
-    public BigDecimal getTotalAmount() {
-        return totalAmount;
-    }
-
-    public void setTotalAmount(BigDecimal totalAmount) {
-        this.totalAmount = totalAmount;
-    }
-
-    public String getNotes() {
-        return notes;
-    }
-
-    public void setNotes(String notes) {
-        this.notes = notes;
-    }
-
-    // Getters cho Relationships
-    public CustomerProfile getCustomer() {
-        return customer;
-    }
-
+    // --- RELATIONSHIP HELPERS ---
+    // Các hàm này giúp việc set Object trong Controller tự động điền ID vào DB
+    public CustomerProfile getCustomer() { return customer; }
     public void setCustomer(CustomerProfile customer) {
         this.customer = customer;
+        if (customer != null) this.customerId = customer.getCustomerId();
     }
 
-    public Pets getPet() {
-        return pet;
-    }
-
+    public Pets getPet() { return pet; }
     public void setPet(Pets pet) {
         this.pet = pet;
+        if (pet != null) this.petId = pet.getPetId();
     }
 
-    public Services getService() {
-        return service;
-    }
-
+    public Services getService() { return service; }
     public void setService(Services service) {
         this.service = service;
+        if (service != null) this.serviceId = service.getServiceId();
     }
-
-    public UserAccount getStaff() {
-        return staff;
-    }
-
+    
+    public UserAccount getStaff() { return staff; }
     public void setStaff(UserAccount staff) {
         this.staff = staff;
+        if(staff != null) this.assignedStaffId = staff.getUserId();
     }
 }

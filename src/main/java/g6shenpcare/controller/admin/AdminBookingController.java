@@ -1,11 +1,11 @@
 package g6shenpcare.controller.admin;
 
-import g6shenpcare.dto.BookingConfirmForm;
-import g6shenpcare.dto.BookingMonitorDTO;
+import g6shenpcare.entity.Booking;
 import g6shenpcare.entity.UserAccount;
+import g6shenpcare.repository.BookingRepository;
 import g6shenpcare.service.BookingService;
-import g6shenpcare.service.ScheduleService;
 import g6shenpcare.service.UserService;
+import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,123 +15,102 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.security.Principal;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Controller
-@RequestMapping("/admin/booking")
+@RequestMapping("/admin/bookings") // Số nhiều cho chuẩn REST
 public class AdminBookingController {
 
     private final BookingService bookingService;
-    private final ScheduleService scheduleService;
     private final UserService userService;
+    private final BookingRepository bookingRepo;
 
-    public AdminBookingController(BookingService bookingService,
-                                  ScheduleService scheduleService,
-                                  UserService userService) {
+    public AdminBookingController(BookingService bookingService, UserService userService, BookingRepository bookingRepo) {
         this.bookingService = bookingService;
-        this.scheduleService = scheduleService;
         this.userService = userService;
+        this.bookingRepo = bookingRepo;
     }
 
-    // =======================================================
-    // 1. MONITOR DASHBOARD (Hàm duy nhất, không trùng lặp)
-    // =======================================================
-    @GetMapping("/monitor")
-    public String monitorPage(Model model,
-                              @RequestParam(value = "date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-                              @RequestParam(value = "species", required = false, defaultValue = "ALL") String species,
-                              @RequestParam(value = "keyword", required = false) String keyword) { // [ĐÃ SỬA: Đặt tham số đúng vị trí]
+    private void addCommonAttributes(Model model, Principal principal, String activeMenu) {
+        String username = (principal != null) ? principal.getName() : "admin";
+        model.addAttribute("currentUser", username);
+        model.addAttribute("activeMenu", activeMenu);
+    }
 
-        if (date == null) {
-            date = LocalDate.now();
+    // --- 1. TRANG DANH SÁCH BOOKING (QUẢN LÝ TẬP TRUNG) ---
+    @GetMapping("/list")
+    public String listBookings(
+            @RequestParam(name = "date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(name = "status", required = false, defaultValue = "ALL") String status,
+            @RequestParam(name = "keyword", required = false, defaultValue = "") String keyword,
+            Model model,
+            Principal principal) {
+
+        // 1. Lấy dữ liệu thô (Sắp xếp mới nhất)
+        List<Booking> bookings = bookingRepo.findAll(Sort.by(Sort.Direction.DESC, "bookingDate", "startTime"));
+
+        // 2. Logic Lọc dữ liệu (Filtering)
+        if (date != null) {
+            bookings = bookings.stream().filter(b -> b.getBookingDate().equals(date)).collect(Collectors.toList());
+        }
+        if (!"ALL".equals(status)) {
+            bookings = bookings.stream().filter(b -> b.getStatus().equalsIgnoreCase(status)).collect(Collectors.toList());
+        }
+        if (!keyword.isEmpty()) {
+            String k = keyword.toLowerCase();
+            bookings = bookings.stream().filter(b -> 
+                (b.getCustomer() != null && b.getCustomer().getFullName().toLowerCase().contains(k)) ||
+                (b.getCustomer() != null && b.getCustomer().getPhone().contains(k)) ||
+                (" #" + b.getBookingId()).contains(k)
+            ).collect(Collectors.toList());
         }
 
-        // 1. Lấy danh sách DTO từ Service (Đã bao gồm logic lọc & tìm kiếm)
-        List<BookingMonitorDTO> bookings = bookingService.getBookingMonitorData(date, species, keyword);
+        // 3. Lấy danh sách Nhân viên (Bác sĩ/Groomer) -> Để hiện trong Modal gán việc
+        List<UserAccount> staffList = userService.searchStaff("ALL", "ACTIVE", "");
 
-        // 2. Tính toán Sức chứa (Giả lập Spa & Grooming)
-        // Trong thực tế bạn có thể gọi bookingService.getMaxQuota(...)
-        int totalSlots = 20;
-        long usedSlots = bookingService.getCurrentCount(date, "SPA"); // VD lấy SPA
-        int progress = (int) ((double) usedSlots / totalSlots * 100);
-
-        // 3. Truyền data sang View
-        model.addAttribute("bookings", bookings);
-        model.addAttribute("currentDate", date);
-        model.addAttribute("speciesFilter", species);
-        model.addAttribute("keyword", keyword); // Giữ lại keyword trong ô tìm kiếm
-
-        model.addAttribute("spaProgress", progress);
-        model.addAttribute("spaUsed", usedSlots);
-        model.addAttribute("spaTotal", totalSlots);
-
-        return "admin/quota-monitor";
-    }
-
-    // =======================================================
-    // 2. CÁC API KHÁC
-    // =======================================================
-    @PostMapping("/confirm")
-    public String confirmBooking(@ModelAttribute BookingConfirmForm form,
-                                 Principal principal,
-                                 RedirectAttributes ra) {
-        try {
-            UserAccount currentUser = userService.getUserByUsername(principal.getName());
-            bookingService.confirmBooking(form, currentUser.getUserId());
-            ra.addFlashAttribute("message", "Đã xác nhận đơn thành công!");
-        } catch (Exception e) {
-            ra.addFlashAttribute("error", "Lỗi: " + e.getMessage());
-        }
-        return "redirect:/admin/booking/monitor";
-    }
-
-    @GetMapping("/api/staff-on-duty")
-    @ResponseBody
-    public List<Map<String, Object>> getStaffOnDuty(@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-                                                    @RequestParam("role") String role) {
+        addCommonAttributes(model, principal, "bookings");
+        model.addAttribute("pageTitle", "Quản lý Lịch hẹn");
         
-        return scheduleService.getSchedulesByDateRange(date, date).stream()
-                .filter(s -> s.getStaff() != null && s.getStaff().getRole().equalsIgnoreCase(role))
-                .map(s -> {
-                    Map<String, Object> m = new HashMap<>();
-                    m.put("staffId", s.getStaffId());
-                    m.put("fullName", s.getStaff().getFullName());
-                    m.put("shift", s.getStartTime() + " - " + s.getEndTime());
-                    return m;
-                })
-                .collect(Collectors.toList());
-    }
-    // Trong AdminBookingController.java
+        model.addAttribute("bookings", bookings);
+        model.addAttribute("staffList", staffList);
+        
+        // Truyền lại params bộ lọc
+        model.addAttribute("selectedDate", date);
+        model.addAttribute("selectedStatus", status);
+        model.addAttribute("keyword", keyword);
 
-    // 1. API Cập nhật thông tin Booking (Đổi giờ, Đổi ngày, Đổi nhân viên)
+        return "admin/booking-list";
+    }
+
+    // --- 2. API CẬP NHẬT ĐẦY ĐỦ (DÙNG CHO MODAL) ---
     @PostMapping("/update")
-    public String updateBooking(@RequestParam("bookingId") Integer bookingId,
-                                @RequestParam("newDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate newDate,
-                                @RequestParam("newTime") LocalTime newTime,
-                                @RequestParam("newStaffId") Integer newStaffId,
-                                RedirectAttributes ra) {
+    public String updateBookingFull(
+            @RequestParam("bookingId") Integer bookingId,
+            @RequestParam("newDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate newDate,
+            @RequestParam("newTime") LocalTime newTime,
+            @RequestParam(value = "newStaffId", required = false) Integer newStaffId,
+            @RequestParam("newStatus") String newStatus,
+            RedirectAttributes ra) {
         try {
-            // Gọi Service xử lý (Bạn cần thêm hàm này vào Service)
+            // 1. Cập nhật thông tin (Ngày, Giờ, Nhân viên)
             bookingService.updateBookingDetails(bookingId, newDate, newTime, newStaffId);
-            ra.addFlashAttribute("message", "Đã cập nhật thông tin đơn hàng #" + bookingId);
-        } catch (Exception e) {
-            ra.addFlashAttribute("error", "Lỗi: " + e.getMessage());
-        }
-        return "redirect:/admin/booking/monitor?date=" + newDate; // Quay lại đúng ngày vừa chuyển
-    }
+            
+            // 2. Cập nhật trạng thái
+            Booking booking = bookingRepo.findById(bookingId).orElseThrow();
+            if (!booking.getStatus().equals(newStatus)) {
+                booking.setStatus(newStatus);
+                // Nếu hoàn thành -> set Payment PAID (Tùy chỉnh theo nghiệp vụ)
+                if ("COMPLETED".equals(newStatus)) {
+                    booking.setPaymentStatus("PAID");
+                }
+                bookingRepo.save(booking);
+            }
 
-    // 2. API Cập nhật giới hạn (Quota) - Demo nhanh
-    @PostMapping("/update-quota")
-    public String updateQuota(@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-                              @RequestParam("newLimit") Integer newLimit,
-                              RedirectAttributes ra) {
-        // Lưu vào DB (Cần tạo hàm trong Service, tạm thời log ra console)
-        System.out.println("Cập nhật giới hạn ngày " + date + " thành: " + newLimit);
-        // service.updateDailyLimit(date, "SPA", newLimit); 
-        ra.addFlashAttribute("message", "Đã cập nhật giới hạn phục vụ!");
-        return "redirect:/admin/booking/monitor?date=" + date;
+            ra.addFlashAttribute("message", "Cập nhật đơn hàng #" + bookingId + " thành công!");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "Lỗi cập nhật: " + e.getMessage());
+        }
+        return "redirect:/admin/bookings/list";
     }
 }
