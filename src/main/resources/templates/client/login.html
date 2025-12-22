@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html class="light" lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Đăng nhập - ShenPCare</title>
+
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+          crossorigin="anonymous"
+          referrerpolicy="no-referrer"/>
+
+    <link rel="stylesheet" th:href="@{/css/admin-auth.css}"/>
+
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "brand-text": "#03594D",
+                        "brand-accent": "#D8E268",
+                        "brand-error": "#FF6B6B",
+                        "brand-placeholder": "#A0A0A0",
+                    },
+                    fontFamily: {
+                        display: ["Plus Jakarta Sans", "Noto Sans", "sans-serif"]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="font-display">
+    <div class="relative flex min-h-screen w-full flex-col bg-[#F0F8F7] overflow-x-hidden">
+        <div class="flex flex-1 justify-center items-center p-4">
+            <div class="w-full max-w-md space-y-8 rounded-2xl border border-[#03594D]/20 bg-white/50 backdrop-blur-sm p-8 lg:p-12 shadow-xl">
+                
+                <div class="flex flex-col items-center text-center">
+                    <span class="text-4xl mb-2">🐾</span>
+                    <h1 class="text-3xl font-bold text-brand-text mb-2">ShenPCare</h1>
+                    <p class="text-brand-text/80 text-base font-normal">
+                        Hệ thống chăm sóc thú cưng toàn diện
+                    </p>
+                </div>
+
+                <div class="space-y-4">
+                    <div th:if="${param.error}" class="flex w-full items-center gap-3 rounded-lg border border-brand-error/50 bg-brand-error/10 p-3 text-brand-error">
+                        <span class="fa-solid fa-circle-exclamation text-lg"></span>
+                        <p class="text-sm font-medium">Sai tên đăng nhập hoặc mật khẩu.</p>
+                    </div>
+                    <div th:if="${param.logout}" class="flex w-full items-center gap-3 rounded-lg border border-emerald-500/50 bg-emerald-100 p-3 text-emerald-700">
+                        <span class="fa-solid fa-circle-check text-lg"></span>
+                        <p class="text-sm font-medium">Đăng xuất thành công.</p>
+                    </div>
+                    <div th:if="${param.registerSuccess}" class="flex w-full items-center gap-3 rounded-lg border border-emerald-500/50 bg-emerald-100 p-3 text-emerald-700">
+                        <span class="fa-solid fa-circle-check text-lg"></span>
+                        <p class="text-sm font-medium">Đăng ký thành công! Vui lòng đăng nhập.</p>
+                    </div>
+                </div>
+
+                <form th:action="@{/perform_login}" method="post" class="space-y-6">
+                    <label class="flex flex-col min-w-40 flex-1">
+                        <p class="text-brand-text text-base font-medium leading-normal pb-2">Tên đăng nhập</p>
+                        <div class="relative flex items-center">
+                            <span class="fa-solid fa-user absolute left-4 text-brand-placeholder"></span>
+                            <input name="username" required autofocus
+                                   class="form-input flex w-full min-w-0 flex-1 rounded-lg text-brand-text
+                                   focus:outline-0 focus:ring-2 focus:ring-brand-accent/50
+                                   border border-brand-text/20 bg-white h-14 placeholder:text-brand-placeholder
+                                   pl-12 pr-4 text-base font-normal"
+                                   placeholder="Username"/>
+                        </div>
+                    </label>
+
+                    <label class="flex flex-col min-w-40 flex-1">
+                        <div class="flex justify-between items-center pb-2">
+                            <p class="text-brand-text text-base font-medium leading-normal">Mật khẩu</p>
+                        </div>
+                        <div class="relative flex items-center">
+                            <span class="fa-solid fa-lock absolute left-4 text-brand-placeholder"></span>
+                            <input id="login-password" name="password" type="password" required
+                                   class="form-input flex w-full min-w-0 flex-1 rounded-lg text-brand-text
+                                   focus:outline-0 focus:ring-2 focus:ring-brand-accent/50
+                                   border border-brand-text/20 bg-white h-14 placeholder:text-brand-placeholder
+                                   pl-12 pr-12 text-base font-normal"
+                                   placeholder="Password"/>
+                            
+                            <button type="button" class="absolute right-4 text-brand-placeholder toggle-password-btn">
+                                <span class="fa-solid fa-eye"></span>
+                            </button>
+                        </div>
+                    </label>
+
+                    <div class="pt-2 space-y-4">
+                        <button type="submit"
+                                class="flex w-full cursor-pointer items-center justify-center rounded-full h-14 px-5
+                                bg-brand-accent text-brand-text text-base font-bold tracking-[0.015em]
+                                hover:brightness-105 transition-all shadow-md hover:shadow-lg">
+                            <span class="truncate">Đăng nhập</span>
+                        </button>
+                        
+                        <div class="relative flex py-2 items-center">
+                            <div class="flex-grow border-t border-gray-300"></div>
+                            <span class="flex-shrink-0 mx-4 text-gray-400 text-sm">Chưa có tài khoản?</span>
+                            <div class="flex-grow border-t border-gray-300"></div>
+                        </div>
+
+                        <a th:href="@{/register}"
+                           class="flex w-full cursor-pointer items-center justify-center rounded-full h-12 px-4
+                           bg-white border-2 border-brand-accent text-brand-text text-sm font-bold 
+                           hover:bg-brand-accent/10 transition-colors duration-200">
+                            Đăng ký thành viên mới
+                        </a>
+                        
+                        <div class="text-center pt-2">
+                            <a href="/" class="text-brand-text/60 hover:text-brand-text text-sm hover:underline">
+                                ← Quay về Trang chủ
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const pwdInput = document.getElementById('login-password');
+            const toggleBtn = document.querySelector('.toggle-password-btn');
+
+            if (pwdInput && toggleBtn) {
+                toggleBtn.addEventListener('click', function () {
+                    const icon = this.querySelector('span');
+                    const isHidden = pwdInput.type === 'password';
+                    pwdInput.type = isHidden ? 'text' : 'password';
+                    if (icon) {
+                        icon.classList.toggle('fa-eye');
+                        icon.classList.toggle('fa-eye-slash');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

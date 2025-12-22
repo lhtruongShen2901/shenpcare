@@ -20,4 +20,5 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     
     // Lọc theo loại (Vaccine, Medicine...)
     List<Product> findByCategoryAndIsActiveTrue(String category);
+    List<Product> findByIsActiveTrue();
 }

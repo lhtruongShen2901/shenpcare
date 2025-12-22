@@ -210,7 +210,7 @@
                 </form>
             </div>
         </div>
-    
+
         <script>
             const modal = document.getElementById('productModal');
             
@@ -231,10 +231,11 @@
                 fetch(`/admin/clinic/api/product/${id}`)
                     .then(res => res.json())
                     .then(data => {
+                        // Map dữ liệu từ API vào Form
                         document.getElementById('pId').value = data.productId;
                         document.getElementById('pName').value = data.name;
                         document.getElementById('pSku').value = data.sku;
-                        document.getElementById('pCategory').value = data.category;
+                        document.getElementById('pCategory').value = data.category; // String khớp với value option
                         document.getElementById('pIngredient').value = data.ingredient;
                         document.getElementById('pUnit').value = data.unit;
                         document.getElementById('pStock').value = data.stockQuantity;
@@ -242,7 +243,6 @@
                         document.getElementById('pRetailPrice').value = data.retailPrice;
                         document.getElementById('pUsage').value = data.usage;
                         
-                        // Các trường mới
                         document.getElementById('pSpecies').value = data.targetSpecies || 'BOTH';
                         document.getElementById('pForm').value = data.productForm || 'TABLET';
                         document.getElementById('pIsPrescription').checked = data.isPrescription;

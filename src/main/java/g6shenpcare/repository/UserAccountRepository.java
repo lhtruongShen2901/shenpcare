@@ -46,4 +46,5 @@ public interface UserAccountRepository extends JpaRepository<UserAccount, Intege
     // Sửa Long -> Integer cho userId
     boolean existsByEmailIgnoreCaseAndUserIdNot(String email, Integer userId);
     boolean existsByPhoneAndUserIdNot(String phone, Integer userId);
+    
 }

@@ -64,4 +64,9 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
 
     // [MỚI] Tìm booking theo nhân viên trong ngày (Dùng cho Doctor Dashboard sau này)
     List<Booking> findByAssignedStaffIdAndBookingDate(Integer staffId, LocalDate bookingDate);
+
+    List<Booking> findByCustomerIdOrderByCreatedAtDesc(Integer customerId);
+
+    // Hàm này giúp lấy Booking của bác sĩ theo nhiều trạng thái (VD: CONFIRMED và IN_PROGRESS)
+    List<Booking> findByAssignedStaffIdAndStatusIn(Integer staffId, List<String> statuses);
 }

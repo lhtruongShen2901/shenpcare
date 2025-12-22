@@ -13,11 +13,15 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer productId;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "NVARCHAR(255)")
     private String name;        // Tên thuốc / Vật tư
 
     private String sku;         // Mã Barcode/SKU
 
+    // --- SỬA ĐỔI QUAN TRỌNG TẠI ĐÂY ---
+    // Trước đây bạn dùng @ManyToOne nhưng HTML lại gửi String. 
+    // Chúng ta sửa thành String để khớp với form.
+    @Column(name = "category", length = 50)
     private String category;    // MEDICINE, VACCINE, CONSUMABLE
 
     @Column(columnDefinition = "NVARCHAR(MAX)")
@@ -28,8 +32,9 @@ public class Product {
 
     // --- CÁC TRƯỜNG MỚI THÊM ---
     private String targetSpecies; // DOG, CAT, BOTH
-    private String productForm;   // TABLET (Viên), LIQUID (Lỏng), INJECTION (Tiêm), POWDER (Bột)...
-    private Boolean isPrescription; // True = Thuốc kê đơn (Cần bác sĩ), False = Thuốc không kê đơn
+    private String productForm;   // TABLET, LIQUID...
+    private Boolean isPrescription; // True/False
+    
     // Quản lý Giá & Đơn vị
     private String unit;            // Đơn vị tính
     private BigDecimal importPrice; // Giá nhập vào
@@ -64,7 +69,7 @@ public class Product {
     }
 
     // ==========================================
-    // GETTER & SETTER (Thủ công - Không dùng Lombok)
+    // GETTER & SETTER
     // ==========================================
     public Integer getProductId() {
         return productId;
@@ -90,6 +95,7 @@ public class Product {
         this.sku = sku;
     }
 
+    // --- SỬA LẠI GETTER/SETTER CHO CATEGORY ---
     public String getCategory() {
         return category;
     }
@@ -97,6 +103,7 @@ public class Product {
     public void setCategory(String category) {
         this.category = category;
     }
+    // ------------------------------------------
 
     public String getUsage() {
         return usage;
@@ -210,7 +217,6 @@ public class Product {
         this.updatedAt = updatedAt;
     }
 
-    // --- THÊM GETTER/SETTER CHO TRƯỜNG MỚI ---
     public String getTargetSpecies() {
         return targetSpecies;
     }

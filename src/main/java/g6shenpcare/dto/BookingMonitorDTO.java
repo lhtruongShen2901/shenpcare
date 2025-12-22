@@ -7,42 +7,47 @@ import java.time.format.DateTimeFormatter;
 public class BookingMonitorDTO {
     private Integer bookingId;
     
-    // Khách
+    // Khách & Pet
     private String customerName;
     private String customerPhone;
-    
-    // Pet
     private String petName;
     private String petSpecies;
     private String petBreed;
-    private String serviceType;
     
-    // Service
+    // Dịch vụ
+    private String serviceType; // Khám/Spa
     private String serviceName;
-    private String serviceNote;
-    private boolean isUrgent;
+    private String serviceNote; // Ghi chú của khách
+    private boolean isUrgent;   // Cờ khẩn cấp
     
-    // Time & Status
+    // Thời gian & Trạng thái
     private LocalDate bookingDate;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
-    private String status;
+    private String status;      // PENDING, CONFIRMED...
     
-    // Staff
     private String staffName;
 
     public BookingMonitorDTO() {}
 
-    // Helper hiển thị giờ đẹp (VD: 09:00 - 10:00)
-    public String getTimeSlot() {
-        if (startTime == null) return "Chưa chốt";
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm");
-        String start = startTime.format(dtf);
-        String end = (endTime != null) ? endTime.format(dtf) : "...";
-        return start + " - " + end;
+    // Helper: Hiển thị giờ + Nhãn khẩn cấp (Dùng cho giao diện Admin)
+    public String getTimeSlotDisplay() {
+        String timeStr = "Chưa chốt giờ";
+        if (startTime != null) {
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm");
+            timeStr = startTime.format(dtf);
+            if (endTime != null) {
+                timeStr += " - " + endTime.format(dtf);
+            }
+        }
+        // Nếu khẩn cấp thì thêm nhãn báo động
+        if (isUrgent) {
+            return timeStr + " (🔥 KHẨN CẤP)";
+        }
+        return timeStr;
     }
 
-    // --- Getters & Setters ---
+    // --- GIỮ NGUYÊN GETTER/SETTER CŨ CỦA BẠN ---
     public Integer getBookingId() { return bookingId; }
     public void setBookingId(Integer bookingId) { this.bookingId = bookingId; }
     public String getCustomerName() { return customerName; }

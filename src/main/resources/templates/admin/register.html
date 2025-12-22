@@ -3,197 +3,77 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Tạo tài khoản Admin - Petcare</title>
-
-    <!-- Tailwind CDN -->
+    <title>Khởi tạo Admin - Petcare</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-
-    <!-- Font + màu đồng bộ với login -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap"
-          rel="stylesheet"/>
-
-    <!-- Font Awesome cho icon thông báo (nếu cần) -->
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-          crossorigin="anonymous"
-          referrerpolicy="no-referrer"/>
-
-    <!-- CSS riêng cho trang register -->
-    <link rel="stylesheet" th:href="@{/css/admin-register.css}"/>
-
-    <script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        primary: "#d8e268",
-                        "background-light": "#f8f8f6",
-                        "background-dark": "#1f2012",
-                        "brand-text": "#03594D",
-                        "brand-accent": "#D8E268",
-                        "brand-error": "#FF6B6B",
-                        "brand-placeholder": "#A0A0A0",
-                    },
-                    fontFamily: {
-                        display: ["Plus Jakarta Sans", "Noto Sans", "sans-serif"]
-                    },
-                    borderRadius: {
-                        DEFAULT: "1rem",
-                        lg: "2rem",
-                        xl: "3rem",
-                        full: "9999px"
-                    },
-                },
-            },
-        }
-    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
 </head>
-<body class="font-display">
-<div class="relative flex h-auto min-h-screen w-full flex-col bg-white overflow-x-hidden"
-     style='font-family: "Plus Jakarta Sans", "Noto Sans", sans-serif;'>
-
-    <div class="flex flex-1 items-center justify-center p-4">
-        <div class="w-full max-w-lg space-y-8 rounded-xl bg-white p-8 lg:p-12 border border-brand-text/30">
-
-            <!-- Tiêu đề -->
-            <div class="flex flex-col items-center text-center space-y-1">
-                <h1 class="text-3xl font-bold text-brand-text">
-                    Tạo tài khoản Admin
-                </h1>
-                <p class="text-brand-text/80 text-sm">
-                    Bước này chỉ thực hiện <span class="font-semibold">một lần</span> để khởi tạo hệ thống.
-                </p>
+<body class="font-display bg-[#F0F8F7]">
+    <div class="flex min-h-screen items-center justify-center p-4">
+        <div class="w-full max-w-lg space-y-6 rounded-2xl bg-white p-8 shadow-xl border border-[#03594D]/10">
+            
+            <div class="text-center">
+                <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[#03594D]/10 text-[#03594D] mb-4">
+                    <i class="fa-solid fa-shield-halved text-xl"></i>
+                </div>
+                <h1 class="text-2xl font-bold text-[#03594D]">Khởi tạo Hệ thống</h1>
+                <p class="text-sm text-gray-500 mt-1">Tạo tài khoản Quản trị viên (Super Admin) đầu tiên</p>
             </div>
 
-            <!-- Thông báo lỗi chung -->
-            <div class="space-y-3">
-                <div th:if="${errorMessage}" class="alert-error">
-                    <i class="fa-solid fa-circle-exclamation text-sm"></i>
-                    <p th:text="${errorMessage}"></p>
+            <div class="space-y-2">
+                <div th:if="${usernameError}" class="bg-red-50 text-red-600 p-3 rounded-lg text-sm font-medium border border-red-100 flex gap-2">
+                    <i class="fa-solid fa-circle-xmark mt-0.5"></i> <span th:text="${usernameError}"></span>
                 </div>
-                <div th:if="${passwordError}" class="alert-error">
-                    <i class="fa-solid fa-lock text-sm"></i>
-                    <p th:text="${passwordError}"></p>
-                </div>
-                <div th:if="${usernameError}" class="alert-error">
-                    <i class="fa-solid fa-user text-sm"></i>
-                    <p th:text="${usernameError}"></p>
+                <div th:if="${passwordError}" class="bg-red-50 text-red-600 p-3 rounded-lg text-sm font-medium border border-red-100 flex gap-2">
+                    <i class="fa-solid fa-lock mt-0.5"></i> <span th:text="${passwordError}"></span>
                 </div>
             </div>
 
-            <!-- FORM -->
-            <form th:action="@{/admin/register}" th:object="${form}" method="post" class="space-y-5">
-
-                <!-- Tên đăng nhập -->
-                <label class="flex flex-col flex-1 form-group">
-                    <p class="text-brand-text text-base font-medium leading-normal pb-2">
-                        Tên đăng nhập <span class="text-brand-error">*</span>
-                    </p>
-                    <input th:field="*{username}"
-                           class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg
-                                  text-brand-text focus:outline-0 focus:ring-2 focus:ring-brand-accent/50
-                                  border border-brand-text/50 bg-white h-12 placeholder:text-brand-placeholder
-                                  px-4 text-base font-normal leading-normal"
-                           placeholder="Nhập tên đăng nhập" required/>
-                    <p class="form-error" th:if="${#fields.hasErrors('username')}"
-                       th:errors="*{username}"></p>
-                </label>
-
-                <!-- Họ và tên -->
-                <label class="flex flex-col flex-1 form-group">
-                    <p class="text-brand-text text-base font-medium leading-normal pb-2">
-                        Họ và tên <span class="text-brand-error">*</span>
-                    </p>
-                    <input th:field="*{fullName}"
-                           class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg
-                                  text-brand-text focus:outline-0 focus:ring-2 focus:ring-brand-accent/50
-                                  border border-brand-text/50 bg-white h-12 placeholder:text-brand-placeholder
-                                  px-4 text-base font-normal leading-normal"
-                           placeholder="Nhập họ và tên"/>
-                    <p class="form-error" th:if="${#fields.hasErrors('fullName')}"
-                       th:errors="*{fullName}"></p>
-                </label>
-
-                <!-- Email -->
-                <label class="flex flex-col flex-1 form-group">
-                    <p class="text-brand-text text-base font-medium leading-normal pb-2">Email</p>
-                    <input th:field="*{email}"
-                           class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg
-                                  text-brand-text focus:outline-0 focus:ring-2 focus:ring-brand-accent/50
-                                  border border-brand-text/50 bg-white h-12 placeholder:text-brand-placeholder
-                                  px-4 text-base font-normal leading-normal"
-                           placeholder="Nhập email" type="email"/>
-                    <p class="form-error" th:if="${#fields.hasErrors('email')}"
-                       th:errors="*{email}"></p>
-                </label>
-
-                <!-- Số điện thoại -->
-                <label class="flex flex-col flex-1 form-group">
-                    <p class="text-brand-text text-base font-medium leading-normal pb-2">Số điện thoại</p>
-                    <input th:field="*{phone}"
-                           class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg
-                                  text-brand-text focus:outline-0 focus:ring-2 focus:ring-brand-accent/50
-                                  border border-brand-text/50 bg-white h-12 placeholder:text-brand-placeholder
-                                  px-4 text-base font-normal leading-normal"
-                           placeholder="Nhập số điện thoại" type="tel"/>
-                    <p class="form-error" th:if="${#fields.hasErrors('phone')}"
-                       th:errors="*{phone}"></p>
-                </label>
-
-                <!-- Mật khẩu + Nhập lại -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Password -->
-                    <label class="flex flex-col flex-1 form-group">
-                        <p class="text-brand-text text-base font-medium leading-normal pb-2">
-                            Mật khẩu <span class="text-brand-error">*</span>
-                        </p>
-                        <input th:field="*{password}" type="password"
-                               class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg
-                                      text-brand-text focus:outline-0 focus:ring-2 focus:ring-brand-accent/50
-                                      border border-brand-text/50 bg-white h-12 placeholder:text-brand-placeholder
-                                      px-4 text-base font-normal leading-normal"
-                               placeholder="Ít nhất 6 ký tự"/>
-                        <p class="form-error" th:if="${#fields.hasErrors('password')}"
-                           th:errors="*{password}"></p>
-                    </label>
-
-                    <!-- Confirm password -->
-                    <label class="flex flex-col flex-1 form-group">
-                        <p class="text-brand-text text-base font-medium leading-normal pb-2">
-                            Nhập lại mật khẩu <span class="text-brand-error">*</span>
-                        </p>
-                        <input th:field="*{confirmPassword}" type="password"
-                               class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg
-                                      text-brand-text focus:outline-0 focus:ring-2 focus:ring-brand-accent/50
-                                      border border-brand-text/50 bg-white h-12 placeholder:text-brand-placeholder
-                                      px-4 text-base font-normal leading-normal"
-                               placeholder="Nhập lại mật khẩu"/>
-                        <p class="form-error" th:if="${#fields.hasErrors('confirmPassword')}"
-                           th:errors="*{confirmPassword}"></p>
-                    </label>
+            <form th:action="@{/admin/register}" th:object="${form}" method="post" class="space-y-4">
+                
+                <div>
+                    <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Tên đăng nhập</label>
+                    <input th:field="*{username}" required class="mt-1 w-full rounded-xl border-gray-300 focus:border-[#03594D] focus:ring-[#03594D]" placeholder="admin">
+                    <p class="text-red-500 text-xs mt-1" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></p>
                 </div>
 
-                <!-- Buttons -->
-                <div class="pt-4 space-y-4">
-                    <button type="submit"
-                            class="flex min-w-[84px] w-full cursor-pointer items-center justify-center overflow-hidden
-                                   rounded-full h-14 px-5 bg-brand-accent text-brand-text text-base font-bold leading-normal
-                                   tracking-[0.015em] hover:bg-opacity-90 transition-colors duration-200">
-                        <span class="truncate">Tạo tài khoản Admin</span>
-                    </button>
-
-                    <div class="flex justify-center">
-                        <a th:href="@{/admin/login}"
-                           class="text-brand-text text-sm font-medium hover:underline">
-                            Quay lại trang đăng nhập
-                        </a>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Họ tên</label>
+                        <input th:field="*{fullName}" required class="mt-1 w-full rounded-xl border-gray-300 focus:border-[#03594D] focus:ring-[#03594D]" placeholder="Nguyễn Văn A">
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Số điện thoại</label>
+                        <input th:field="*{phone}" required class="mt-1 w-full rounded-xl border-gray-300 focus:border-[#03594D] focus:ring-[#03594D]" placeholder="09xxxx">
                     </div>
                 </div>
 
+                <div>
+                    <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Email liên hệ</label>
+                    <input th:field="*{email}" type="email" required class="mt-1 w-full rounded-xl border-gray-300 focus:border-[#03594D] focus:ring-[#03594D]" placeholder="admin@system.com">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Mật khẩu</label>
+                        <input th:field="*{password}" type="password" required class="mt-1 w-full rounded-xl border-gray-300 focus:border-[#03594D] focus:ring-[#03594D]" placeholder="******">
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Nhập lại</label>
+                        <input th:field="*{confirmPassword}" type="password" required class="mt-1 w-full rounded-xl border-gray-300 focus:border-[#03594D] focus:ring-[#03594D]" placeholder="******">
+                    </div>
+                </div>
+
+                <div class="pt-4">
+                    <button type="submit" class="w-full bg-[#D8E268] hover:bg-[#cdd858] text-[#03594D] font-bold py-3.5 rounded-xl shadow-md transition transform hover:-translate-y-0.5">
+                        Xác nhận Khởi tạo
+                    </button>
+                </div>
             </form>
+
+            <div class="text-center pt-2">
+                <a th:href="@{/admin/login}" class="text-sm text-gray-500 hover:text-[#03594D] font-medium">← Quay lại đăng nhập</a>
+            </div>
         </div>
     </div>
-</div>
 </body>
 </html>

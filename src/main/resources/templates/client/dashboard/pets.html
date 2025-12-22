@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Thú Cưng Của Tôi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .pet-card { transition: transform 0.2s; }
+        .pet-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .pet-avatar { width: 80px; height: 80px; object-fit: cover; border-radius: 50%; border: 3px solid #eee; }
+    </style>
+</head>
+<body class="bg-light py-5">
+    <div class="container bg-white p-5 rounded-4 shadow-sm" style="max-width: 1000px;">
+        
+        <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+            <div class="btn-group">
+                <a href="/my-account/profile" class="btn btn-outline-secondary"><i class="fa-solid fa-user me-2"></i>Hồ sơ</a>
+                <a href="/my-account/pets" class="btn btn-primary active"><i class="fa-solid fa-paw me-2"></i>Thú cưng</a>
+                <a href="/my-account/history" class="btn btn-outline-secondary"><i class="fa-solid fa-clock-rotate-left me-2"></i>Lịch sử</a>
+            </div>
+            <a href="/" class="text-decoration-none text-muted"><i class="fa-solid fa-arrow-left me-1"></i>Trang chủ</a>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="text-success fw-bold mb-0">Danh sách thú cưng</h4>
+            <button class="btn btn-success btn-sm" onclick="document.getElementById('addPetForm').scrollIntoView({behavior: 'smooth'})">
+                <i class="fa-solid fa-plus me-1"></i> Thêm bé mới
+            </button>
+        </div>
+        
+        <div th:if="${message}" class="alert alert-success"><i class="fa-solid fa-check me-2"></i><span th:text="${message}"></span></div>
+        <div th:if="${error}" class="alert alert-danger"><i class="fa-solid fa-triangle-exclamation me-2"></i><span th:text="${error}"></span></div>
+
+        <div class="row g-3 mb-5">
+            <div class="col-md-6" th:each="p : ${pets}">
+                <div class="card pet-card h-100 border-0 shadow-sm bg-light">
+                    <div class="card-body d-flex align-items-center gap-3">
+                        <img th:src="${p.avatarFileId != null ? '/api/files/' + p.avatarFileId : 'https://cdn-icons-png.flaticon.com/512/616/616408.png'}" 
+                             class="pet-avatar bg-white">
+                        
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between">
+                                <h5 class="fw-bold mb-1" th:text="${p.name}"></h5>
+                                <span class="badge bg-success rounded-pill" th:if="${p.active}">Active</span>
+                            </div>
+                            <p class="mb-1 small text-muted">
+                                <span th:text="${p.species}"></span> | <span th:text="${p.breed}"></span> | <span th:text="${p.gender}"></span>
+                            </p>
+                            <p class="mb-0 small fw-bold text-dark">
+                                <i class="fa-solid fa-weight-scale me-1"></i><span th:text="${p.weightKg} + ' kg'"></span>
+                                <span class="mx-2">•</span>
+                                <i class="fa-solid fa-cake-candles me-1"></i><span th:text="${p.birthDate}"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div th:if="${#lists.isEmpty(pets)}" class="text-center py-4 text-muted col-12">
+                Bạn chưa có thú cưng nào. Hãy thêm hồ sơ cho bé ngay!
+            </div>
+        </div>
+
+        <div id="addPetForm" class="card border border-success-subtle">
+            <div class="card-header bg-success-subtle text-success fw-bold">
+                <i class="fa-solid fa-plus-circle me-2"></i>Thêm Hồ Sơ Thú Cưng Mới
+            </div>
+            <div class="card-body p-4">
+                <form th:action="@{/my-account/pets/add}" method="post" enctype="multipart/form-data" class="row g-3">
+                    
+                    <div class="col-md-3 text-center">
+                        <label class="form-label fw-bold d-block">Ảnh đại diện</label>
+                        <div class="mb-2">
+                            <img id="previewAvatar" src="https://placehold.co/150?text=Upload+Image" 
+                                 class="img-thumbnail rounded-circle" style="width: 120px; height: 120px; object-fit: cover;">
+                        </div>
+                        <input type="file" name="avatarFile" class="form-control form-control-sm" accept="image/*" onchange="previewImage(this)">
+                    </div>
+
+                    <div class="col-md-9">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Tên thú cưng <span class="text-danger">*</span></label>
+                                <input type="text" name="name" class="form-control" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">Loài <span class="text-danger">*</span></label>
+                                <select name="species" class="form-select" required>
+                                    <option value="DOG">Chó</option>
+                                    <option value="CAT">Mèo</option>
+                                    <option value="OTHER">Khác</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">Giới tính</label>
+                                <select name="gender" class="form-select">
+                                    <option value="MALE">Đực</option>
+                                    <option value="FEMALE">Cái</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Giống loài (Breed)</label>
+                                <input type="text" name="breed" class="form-control" placeholder="VD: Poodle">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Màu lông</label>
+                                <input type="text" name="color" class="form-control">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Ngày sinh</label>
+                                <input type="date" name="birthDate" class="form-control">
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Cân nặng (kg) <span class="text-danger">*</span></label>
+                                <input type="number" step="0.1" name="weightKg" class="form-control" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Độ dài lông</label>
+                                <select name="coatLength" class="form-select">
+                                    <option value="SHORT">Ngắn</option>
+                                    <option value="MEDIUM">Vừa</option>
+                                    <option value="LONG">Dài</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="sterilized" id="sterilized">
+                                    <label class="form-check-label" for="sterilized">Đã triệt sản?</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Số Microchip (Nếu có)</label>
+                                <input type="text" name="microchipNumber" class="form-control">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Đặc điểm nhận dạng</label>
+                                <input type="text" name="distinguishingMarks" class="form-control">
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label">Ghi chú thêm (Dị ứng, tính cách...)</label>
+                                <textarea name="notes" class="form-control" rows="2"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 text-end mt-3">
+                        <button type="submit" class="btn btn-success px-4 fw-bold">
+                            <i class="fa-solid fa-save me-2"></i>Lưu Hồ Sơ
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('previewAvatar').src = e.target.result;
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+</body>
+</html>

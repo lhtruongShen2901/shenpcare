@@ -3,6 +3,8 @@ package g6shenpcare.entity;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.ArrayList;
 
 @Entity
 @Table(name = "Orders")
@@ -30,6 +32,24 @@ public class Order {
 
     @Column(name = "Notes", length = 500)
     private String notes;
+    // === THÊM ĐOẠN NÀY VÀO ===
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<OrderItems> orderItems = new ArrayList<>();
+
+    // Getter & Setter cho list
+    public List<OrderItems> getOrderItems() {
+        return orderItems;
+    }
+
+    public void setOrderItems(List<OrderItems> orderItems) {
+        this.orderItems = orderItems;
+    }
+
+    // Hàm helper để thêm item tiện lợi (Optional)
+    public void addOrderItem(OrderItems item) {
+        orderItems.add(item);
+        item.setOrder(this);
+    }
 
     public Order() {
     }
