@@ -1,9 +1,15 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
     <head>
-        <title>Lịch Sử Đặt Lịch</title>
+        <title>Lịch Sử Giao Dịch</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <style>
+            .nav-pills .nav-link.active { background-color: #03594D; }
+            .nav-pills .nav-link { color: #03594D; font-weight: bold; margin-right: 10px; }
+            .btn-momo { background-color: #A50064; color: white; border: none; font-size: 0.8rem; font-weight: bold; }
+            .btn-momo:hover { background-color: #c40076; color: white; }
+        </style>
     </head>
     <body class="bg-light py-5">
         <div class="container bg-white p-5 rounded-4 shadow-sm" style="max-width: 1100px;">
@@ -17,84 +23,133 @@
                 <a href="/" class="text-decoration-none text-muted"><i class="fa-solid fa-arrow-left me-1"></i>Trang chủ</a>
             </div>
 
-            <h4 class="mb-4 text-success fw-bold">Lịch sử sử dụng dịch vụ</h4>
+            <div th:if="${message}" class="alert alert-success d-flex align-items-center mb-4">
+                <i class="fa-solid fa-check-circle me-2"></i> <span th:text="${message}"></span>
+            </div>
+            <div th:if="${error}" class="alert alert-danger d-flex align-items-center mb-4">
+                <i class="fa-solid fa-exclamation-circle me-2"></i> <span th:text="${error}"></span>
+            </div>
 
-            <div class="table-responsive">
-                <table class="table table-hover align-middle border">
-                    <thead class="table-success">
-                        <tr>
-                            <th>Mã đơn</th>
-                            <th>Thú cưng</th>
-                            <th>Dịch vụ</th>
-                            <th>Ngày hẹn</th>
-                            <th>Giờ hẹn</th>
-                            <th>Bác sĩ</th>
-                            <th>Thanh toán</th>
-                            <th>Trạng thái</th>
-                            <th>Hành động</th> </tr>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="b : ${bookings}">
-                            <td><span class="fw-bold text-muted" th:text="'#' + ${b.bookingId}"></span></td>
-                            <td>
-                                <div class="fw-bold" th:text="${b.bookingDate}"></div>
-                                <small class="text-muted" th:if="${b.startTime != null}" 
-                                       th:text="${#temporals.format(b.startTime, 'HH:mm')} + ' - ' + ${#temporals.format(b.endTime, 'HH:mm')}">
-                                </small>
-                            </td>
+            <h4 class="mb-4 text-primary fw-bold">Lịch Sử Giao Dịch</h4>
 
-                            <td>
-                                <span th:text="${b.service != null ? b.service.name : 'N/A'}" class="d-block fw-medium"></span>
-                                <small class="text-muted fst-italic" th:text="${b.notes}"></small>
-                            </td>
-                            <td th:text="${b.pet != null ? b.pet.name : '---'}"></td>
+            <ul class="nav nav-pills mb-4" id="pills-tab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="pills-booking-tab" data-bs-toggle="pill" data-bs-target="#pills-booking" type="button">📅 Lịch Đặt Hẹn</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="pills-order-tab" data-bs-toggle="pill" data-bs-target="#pills-order" type="button">💊 Đơn Thuốc Online</button>
+                </li>
+            </ul>
 
-                            <td>
-                                <span th:if="${b.staff != null}" th:text="${b.staff.fullName}"></span>
-                                <span th:unless="${b.staff != null}" class="text-muted small">Chưa gán</span>
-                            </td>
+            <div class="tab-content" id="pills-tabContent">
+                
+                <div class="tab-pane fade show active" id="pills-booking">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Mã</th>
+                                    <th>Thú cưng</th>
+                                    <th>Dịch vụ</th>
+                                    <th>Ngày hẹn</th>
+                                    <th>Thanh toán</th> 
+                                    <th>Trạng thái</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="b : ${bookings}">
+                                    <td class="fw-bold text-secondary" th:text="'#' + ${b.bookingId}"></td>
+                                    <td th:text="${b.pet != null ? b.pet.name : '-'}"></td>
+                                    <td th:text="${b.service != null ? b.service.name : '-'}"></td>
+                                    <td>
+                                        <span th:text="${b.bookingDate}"></span><br>
+                                        <small class="text-muted" th:text="${b.startTime != null ? #temporals.format(b.startTime, 'HH:mm') : ''}"></small>
+                                    </td>
+                                    
+                                    <td>
+                                        <div th:if="${b.paymentStatus == 'PAID'}">
+                                            <span class="badge bg-success-subtle text-success border border-success">
+                                                <i class="fa-solid fa-check me-1"></i>Đã thanh toán
+                                            </span>
+                                            <div class="small text-muted fst-italic mt-1" th:text="${b.paymentMethod != null ? '(' + b.paymentMethod + ')' : ''}"></div>
+                                        </div>
+                                        
+                                        <div th:unless="${b.paymentStatus == 'PAID'}">
+                                            <div th:if="${b.status == 'COMPLETED'}">
+                                                <span class="text-muted small"><i class="fa-solid fa-store"></i> Trả tại quầy</span>
+                                                <div class="fw-bold text-secondary text-center" style="font-size: 0.7rem;">- HOẶC -</div>
+                                                <a th:href="@{/payment/create(type='BOOKING', id=${b.bookingId})}" class="btn btn-momo btn-sm w-100">
+                                                    <i class="fa-solid fa-wallet me-1"></i> MoMo
+                                                </a>
+                                            </div>
+                                            <div th:unless="${b.status == 'COMPLETED' or b.status == 'CANCELLED'}" class="text-muted small fst-italic">
+                                                Thanh toán sau khi khám
+                                            </div>
+                                            <span th:if="${b.status == 'CANCELLED'}" class="text-muted small">-</span>
+                                        </div>
+                                    </td>
 
-                            <td class="text-success fw-bold" th:text="${#numbers.formatDecimal(b.totalAmount, 0, 'COMMA', 0, 'POINT')} + 'đ'"></td>
-                            <td class="text-center">
-                                <form th:if="${b.status == 'PENDING' or b.status == 'CONFIRMED'}"
-                                      th:action="@{/my-account/booking/cancel}" method="post"
-                                      onsubmit="return confirm('Bạn có chắc chắn muốn hủy lịch hẹn này không?');">
+                                    <td>
+                                        <span th:class="${'badge ' + 
+                                            (b.status == 'CONFIRMED' ? 'bg-primary' : 
+                                            (b.status == 'COMPLETED' ? 'bg-success' : 
+                                            (b.status == 'CANCELLED' ? 'bg-secondary' : 'bg-warning text-dark')))}" 
+                                              th:text="${b.status}">
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <form th:if="${b.status == 'PENDING' or b.status == 'CONFIRMED'}" 
+                                              th:action="@{/my-account/booking/cancel}" method="post" 
+                                              onsubmit="return confirm('Hủy lịch hẹn này?');">
+                                            <input type="hidden" name="bookingId" th:value="${b.bookingId}">
+                                            <button class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-xmark"></i> Hủy</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
-                                    <input type="hidden" name="bookingId" th:value="${b.bookingId}">
-
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Hủy lịch">
-                                        <i class="fa-solid fa-xmark"></i> Hủy
-                                    </button>
-                                </form>
-
-                                <span th:unless="${b.status == 'PENDING' or b.status == 'CONFIRMED'}" class="text-muted">-</span>
-                            </td>
-
-                            <td>
-                                <span th:if="${b.paymentStatus == 'PAID'}" class="badge bg-success-subtle text-success border border-success">Đã thanh toán</span>
-                                <span th:if="${b.paymentStatus == 'UNPAID'}" class="badge bg-danger-subtle text-danger border border-danger">Chưa thanh toán</span>
-                            </td>
-
-                            <td>
-                                <span th:class="${'badge ' + 
-                                      (b.status == 'CONFIRMED' ? 'bg-primary' : 
-                                      (b.status == 'COMPLETED' ? 'bg-success' : 
-                                      (b.status == 'CANCELLED' ? 'bg-danger' : 'bg-warning text-dark')))}" 
-                                      th:text="${b.status}">
-                                </span>
-                            </td>
-                        </tr>
-                        <tr th:if="${#lists.isEmpty(bookings)}">
-                            <td colspan="8" class="text-center py-5">
-                                <img src="https://cdn-icons-png.flaticon.com/512/4076/4076432.png" width="60" class="mb-3 grayscale opacity-50">
-                                <p class="text-muted">Chưa có lịch sử đặt lịch nào.</p>
-                                <a href="/booking" class="btn btn-sm btn-success">Đặt lịch ngay</a>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="tab-pane fade" id="pills-order">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Mã Đơn</th> <th>Ngày đặt</th> <th>Địa chỉ</th> <th>Sản phẩm</th> <th>Tổng tiền</th> <th>Trạng thái</th> <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="o : ${orders}">
+                                    <td class="fw-bold text-primary" th:text="'ORD-' + ${o.orderId}"></td>
+                                    <td th:text="${#temporals.format(o.orderDate, 'dd-MM HH:mm')}"></td>
+                                    <td class="small text-muted" th:text="${o.shippingAddress}"></td>
+                                    <td>
+                                        <div th:each="item : ${o.orderItems}" class="small">
+                                            • <span th:text="${item.product.name}"></span> 
+                                            <span class="fw-bold text-dark">x<span th:text="${item.quantity}"></span></span>
+                                        </div>
+                                    </td>
+                                    <td class="fw-bold text-success" th:text="${#numbers.formatDecimal(o.totalAmount, 0, 'COMMA', 0, 'POINT')} + 'đ'"></td>
+                                    <td>
+                                        <span th:if="${o.status == 'PENDING'}" class="badge bg-warning text-dark">Chờ xác nhận</span>
+                                        <span th:if="${o.status == 'CONFIRMED'}" class="badge bg-primary">Đã xác nhận</span>
+                                        <span th:if="${o.status == 'COMPLETED'}" class="badge bg-success">Hoàn thành</span>
+                                    </td>
+                                    <td>
+                                        <div th:if="${o.status == 'PENDING'}">
+                                            <a th:href="@{/payment/create(type='ORDER', id=${o.orderId})}" class="btn btn-momo btn-sm w-100"><i class="fa-solid fa-wallet"></i> MoMo</a>
+                                        </div>
+                                        <span th:if="${o.status == 'CONFIRMED'}" class="badge bg-success-subtle text-success border border-success"><i class="fa-solid fa-check"></i> Đã chốt</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     </body>
 </html>

@@ -4,7 +4,9 @@ import g6shenpcare.entity.Booking;
 import g6shenpcare.entity.UserAccount;
 import g6shenpcare.repository.BookingRepository;
 import g6shenpcare.service.BookingService;
+import g6shenpcare.service.EmailService; // [NEW] Import EmailService
 import g6shenpcare.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
@@ -19,12 +21,15 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Controller
-@RequestMapping("/admin/bookings") // Số nhiều cho chuẩn REST
+@RequestMapping("/admin/bookings") 
 public class AdminBookingController {
 
     private final BookingService bookingService;
     private final UserService userService;
     private final BookingRepository bookingRepo;
+    
+    @Autowired // Tiêm EmailService
+    private EmailService emailService;
 
     public AdminBookingController(BookingService bookingService, UserService userService, BookingRepository bookingRepo) {
         this.bookingService = bookingService;
@@ -38,7 +43,7 @@ public class AdminBookingController {
         model.addAttribute("activeMenu", activeMenu);
     }
 
-    // --- 1. TRANG DANH SÁCH BOOKING (QUẢN LÝ TẬP TRUNG) ---
+    // --- 1. TRANG DANH SÁCH BOOKING ---
     @GetMapping("/list")
     public String listBookings(
             @RequestParam(name = "date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
@@ -47,10 +52,8 @@ public class AdminBookingController {
             Model model,
             Principal principal) {
 
-        // 1. Lấy dữ liệu thô (Sắp xếp mới nhất)
         List<Booking> bookings = bookingRepo.findAll(Sort.by(Sort.Direction.DESC, "bookingDate", "startTime"));
 
-        // 2. Logic Lọc dữ liệu (Filtering)
         if (date != null) {
             bookings = bookings.stream().filter(b -> b.getBookingDate().equals(date)).collect(Collectors.toList());
         }
@@ -59,23 +62,19 @@ public class AdminBookingController {
         }
         if (!keyword.isEmpty()) {
             String k = keyword.toLowerCase();
-            bookings = bookings.stream().filter(b -> 
-                (b.getCustomer() != null && b.getCustomer().getFullName().toLowerCase().contains(k)) ||
-                (b.getCustomer() != null && b.getCustomer().getPhone().contains(k)) ||
-                (" #" + b.getBookingId()).contains(k)
+            bookings = bookings.stream().filter(b
+                    -> (b.getCustomer() != null && b.getCustomer().getFullName().toLowerCase().contains(k))
+                    || (b.getCustomer() != null && b.getCustomer().getPhone().contains(k))
+                    || (" #" + b.getBookingId()).contains(k)
             ).collect(Collectors.toList());
         }
 
-        // 3. Lấy danh sách Nhân viên (Bác sĩ/Groomer) -> Để hiện trong Modal gán việc
         List<UserAccount> staffList = userService.searchStaff("ALL", "ACTIVE", "");
 
         addCommonAttributes(model, principal, "bookings");
         model.addAttribute("pageTitle", "Quản lý Lịch hẹn");
-        
         model.addAttribute("bookings", bookings);
         model.addAttribute("staffList", staffList);
-        
-        // Truyền lại params bộ lọc
         model.addAttribute("selectedDate", date);
         model.addAttribute("selectedStatus", status);
         model.addAttribute("keyword", keyword);
@@ -83,7 +82,7 @@ public class AdminBookingController {
         return "admin/booking-list";
     }
 
-    // --- 2. API CẬP NHẬT ĐẦY ĐỦ (DÙNG CHO MODAL) ---
+    // --- 2. API CẬP NHẬT ĐẦY ĐỦ ---
     @PostMapping("/update")
     public String updateBookingFull(
             @RequestParam("bookingId") Integer bookingId,
@@ -93,23 +92,63 @@ public class AdminBookingController {
             @RequestParam("newStatus") String newStatus,
             RedirectAttributes ra) {
         try {
-            // 1. Cập nhật thông tin (Ngày, Giờ, Nhân viên)
+            // 1. Cập nhật thông tin
             bookingService.updateBookingDetails(bookingId, newDate, newTime, newStaffId);
-            
+
             // 2. Cập nhật trạng thái
             Booking booking = bookingRepo.findById(bookingId).orElseThrow();
             if (!booking.getStatus().equals(newStatus)) {
                 booking.setStatus(newStatus);
-                // Nếu hoàn thành -> set Payment PAID (Tùy chỉnh theo nghiệp vụ)
                 if ("COMPLETED".equals(newStatus)) {
                     booking.setPaymentStatus("PAID");
                 }
                 bookingRepo.save(booking);
+
+                // [NEW] Gửi Email nếu trạng thái chuyển sang CONFIRMED
+                if ("CONFIRMED".equals(newStatus)) {
+                    try {
+                        if (booking.getCustomer() != null && booking.getCustomer().getEmail() != null) {
+                            String doctorName = "Bác sĩ ShenPCare";
+                            if (booking.getStaff() != null) {
+                                doctorName = booking.getStaff().getFullName();
+                            }
+                            emailService.sendBookingApproved(
+                                booking.getCustomer().getEmail(),
+                                booking.getCustomer().getFullName(),
+                                booking.getBookingDate() + " " + booking.getStartTime(),
+                                doctorName
+                            );
+                        }
+                    } catch (Exception ex) {
+                        System.err.println("Lỗi gửi mail duyệt: " + ex.getMessage());
+                    }
+                }
             }
 
             ra.addFlashAttribute("message", "Cập nhật đơn hàng #" + bookingId + " thành công!");
         } catch (Exception e) {
             ra.addFlashAttribute("error", "Lỗi cập nhật: " + e.getMessage());
+        }
+        return "redirect:/admin/bookings/list";
+    }
+
+    @PostMapping("/confirm-payment")
+    public String confirmPayment(@RequestParam("bookingId") Integer bookingId,
+            @RequestParam("method") String method, 
+            RedirectAttributes ra) {
+        try {
+            Booking booking = bookingRepo.findById(bookingId).orElseThrow();
+            booking.setPaymentStatus("PAID");
+            booking.setPaymentMethod(method); 
+
+            if (!"COMPLETED".equals(booking.getStatus())) {
+                booking.setStatus("COMPLETED");
+            }
+
+            bookingRepo.save(booking);
+            ra.addFlashAttribute("message", "Đã thu tiền thành công (" + method + ")");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "Lỗi: " + e.getMessage());
         }
         return "redirect:/admin/bookings/list";
     }

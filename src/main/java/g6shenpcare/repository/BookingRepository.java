@@ -1,6 +1,7 @@
 package g6shenpcare.repository;
 
 import g6shenpcare.entity.Booking;
+import java.math.BigDecimal;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -69,4 +70,12 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
 
     // Hàm này giúp lấy Booking của bác sĩ theo nhiều trạng thái (VD: CONFIRMED và IN_PROGRESS)
     List<Booking> findByAssignedStaffIdAndStatusIn(Integer staffId, List<String> statuses);
+
+    @Query("SELECT COALESCE(SUM(s.fixedPrice), 0) FROM Booking b "
+            + "JOIN b.service s "
+            + "WHERE b.bookingDate = :today "
+            + "AND b.status = 'COMPLETED' "
+            + // Chỉ tính đơn đã xong
+            "AND s.serviceCategory.categoryType = :type") // Lọc SPA hoặc CLINIC
+    BigDecimal calculateDailyServiceRevenue(@Param("today") LocalDate today, @Param("type") String type);
 }

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html class="light" lang="vi" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="utf-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <title>Nhà Thuốc Thú Cưng Online</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet"/>
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet"/>
+        <style>body { font-family: 'Plus Jakarta Sans', sans-serif; }</style>
+    </head>
+    <body class="bg-gray-50 text-gray-800">
+
+        <nav class="bg-[#03594D] text-white p-4 shadow-md sticky top-0 z-50">
+            <div class="container mx-auto flex justify-between items-center">
+                <a href="/" class="text-xl font-bold flex items-center gap-2 hover:text-[#D8E268] transition">
+                    <i class="fa-solid fa-house"></i> ShenPCare Pharmacy
+                </a>
+                
+                <div class="flex items-center gap-6 text-sm font-medium">
+                    <a href="/cart" class="relative group flex items-center gap-1 hover:text-[#D8E268] transition">
+                        <i class="fa-solid fa-cart-shopping text-xl"></i>
+                        <span class="hidden md:inline">Giỏ hàng</span>
+                        <span class="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-[#03594D]">!</span>
+                    </a>
+
+                    <div class="h-4 w-px bg-white/20"></div>
+
+                    <a href="/my-account/history" class="hover:text-[#D8E268]">Lịch sử mua</a>
+                    
+                    <a th:if="${#authentication.name == 'anonymousUser'}" href="/login" class="bg-[#D8E268] text-[#03594D] font-bold px-4 py-1.5 rounded-full hover:bg-white transition">Đăng nhập</a>
+                    <a th:unless="${#authentication.name == 'anonymousUser'}" href="/my-account/profile" class="hover:text-[#D8E268] flex items-center gap-2">
+                        <i class="fa-regular fa-user-circle text-lg"></i> Tài khoản
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container mx-auto p-6 max-w-6xl">
+            <div th:if="${error}" class="bg-red-100 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6 flex items-center gap-2 shadow-sm">
+                <i class="fa-solid fa-circle-exclamation"></i> <span th:text="${error}"></span>
+            </div>
+            <div th:if="${message}" class="bg-green-100 border border-green-200 text-green-700 px-4 py-3 rounded-xl mb-6 flex items-center gap-2 shadow-sm">
+                <i class="fa-solid fa-circle-check"></i> <span th:text="${message}"></span>
+            </div>
+
+            <div class="bg-white rounded-2xl p-8 mb-8 shadow-sm border border-gray-100 flex items-center justify-between relative overflow-hidden">
+                <div class="relative z-10">
+                    <h1 class="text-3xl font-black text-[#03594D] mb-2">Thuốc & Vật Tư Y Tế</h1>
+                    <p class="text-gray-500 max-w-lg">Sản phẩm chính hãng, được bác sĩ thú y khuyên dùng. Đặt hàng online, giao tận nơi nhanh chóng.</p>
+                </div>
+                <div class="relative z-10 bg-orange-50 w-20 h-20 rounded-full flex items-center justify-center text-[#D8E268]">
+                    <i class="fa-solid fa-kit-medical text-5xl"></i>
+                </div>
+                <div class="absolute right-0 top-0 h-full w-1/3 bg-gradient-to-l from-[#03594D]/5 to-transparent skew-x-12"></div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+
+                <div th:each="p : ${medicines}" class="bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col group">
+                    
+                    <div class="h-48 bg-gray-50 w-full flex items-center justify-center relative overflow-hidden">
+                        <a th:href="@{'/pharmacy/product/' + ${p.productId}}" class="block w-full h-full relative">
+                            <img th:if="${p.imageFileId != null}" th:src="@{'/api/files/' + ${p.imageFileId}}" class="h-full w-full object-cover group-hover:scale-110 transition duration-500">
+                            <div th:unless="${p.imageFileId != null}" class="text-gray-300 flex items-center justify-center h-full w-full">
+                                <i class="fa-solid fa-pills text-5xl opacity-50"></i>
+                            </div>
+
+                            <div th:if="${p.isPrescription == true}" class="absolute inset-0 bg-black/40 flex items-center justify-center backdrop-blur-[1px] z-10">
+                                <div class="bg-red-600 text-white px-3 py-1 rounded-lg font-bold text-xs shadow-lg border border-white transform -rotate-6">
+                                    <i class="fa-solid fa-user-doctor"></i> Cần toa BS
+                                </div>
+                            </div>
+
+                            <div th:class="${'absolute bottom-3 left-3 bg-white/90 backdrop-blur text-sm font-bold px-3 py-1 rounded-lg shadow-sm border border-gray-100 ' + (p.isPrescription == true ? 'text-gray-400' : 'text-[#03594D]')}">
+                                <span th:text="${#numbers.formatDecimal(p.retailPrice, 0, 'COMMA', 0, 'POINT')}"></span>đ
+                                <span class="text-[10px] text-gray-400 font-normal">/ <span th:text="${p.unit}"></span></span>
+                            </div>
+
+                            <div class="absolute top-3 right-3 flex flex-col items-end gap-1 z-20">
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-white bg-black/20 backdrop-blur px-2 py-1 rounded-md" 
+                                      th:text="${p.category}">MEDICINE</span>
+                                <span th:if="${p.isPrescription == true}" class="text-[10px] font-bold bg-red-500 text-white px-2 py-1 rounded-md shadow-sm">RX</span>
+                            </div>
+                        </a>
+                    </div>
+
+                    <div class="p-4 flex-1 flex flex-col">
+                        <a th:href="@{'/pharmacy/product/' + ${p.productId}}">
+                            <h3 class="font-bold text-lg text-gray-800 mb-1 line-clamp-1 hover:text-[#03594D] transition" th:title="${p.name}">
+                                <span th:if="${p.isPrescription == true}" class="text-red-500 mr-1">[Rx]</span>
+                                <span th:text="${p.name}"></span>
+                            </h3>
+                        </a>
+                        
+                        <p class="text-xs text-gray-500 mb-4 line-clamp-2 h-8" th:text="${p.usage} ?: 'Sản phẩm chất lượng cao từ ShenPCare.'">Công dụng...</p>
+
+                        <div class="mb-4 flex items-center justify-between text-xs">
+                            <span th:if="${p.stockQuantity > 0}" class="text-green-600 flex items-center gap-1 font-bold bg-green-50 px-2 py-0.5 rounded">
+                                <i class="fa-solid fa-check-circle"></i> Còn hàng
+                            </span>
+                            <span th:unless="${p.stockQuantity > 0}" class="text-red-500 flex items-center gap-1 font-bold bg-red-50 px-2 py-0.5 rounded">
+                                <i class="fa-solid fa-circle-xmark"></i> Hết hàng
+                            </span>
+                            <span class="text-gray-400">Kho: <span th:text="${p.stockQuantity}"></span></span>
+                        </div>
+
+                        <div class="mt-auto">
+                            <div th:unless="${p.isPrescription == true}" class="grid grid-cols-5 gap-2">
+                                <button type="button" 
+                                        th:onclick="openActionModal('cart', [[${p.productId}]], [[${p.name}]], [[${p.stockQuantity}]], [[${p.retailPrice}]])"
+                                        th:disabled="${p.stockQuantity <= 0}"
+                                        class="col-span-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl py-2 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1"
+                                        title="Thêm vào giỏ">
+                                    <i class="fa-solid fa-cart-plus"></i> <span class="text-xs">Thêm</span>
+                                </button>
+                                
+                                <button type="button" 
+                                        th:onclick="openActionModal('buy', [[${p.productId}]], [[${p.name}]], [[${p.stockQuantity}]], [[${p.retailPrice}]])"
+                                        th:disabled="${p.stockQuantity <= 0}"
+                                        class="col-span-3 bg-[#03594D] hover:bg-[#024037] text-white font-bold rounded-xl py-2 transition shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1">
+                                    <i class="fa-solid fa-bolt"></i> <span class="text-xs">Mua ngay</span>
+                                </button>
+                            </div>
+
+                            <div th:if="${p.isPrescription == true}" class="w-full bg-red-50 border border-red-100 text-red-600 rounded-xl py-2 text-center text-xs font-bold flex items-center justify-center gap-2 cursor-not-allowed opacity-80">
+                                <i class="fa-solid fa-ban"></i> Sản phẩm kê đơn - Chỉ bán tại quầy
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div id="actionModal" class="fixed inset-0 z-50 hidden">
+            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeActionModal()"></div>
+            
+            <div class="absolute inset-0 flex items-center justify-center p-4">
+                <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden transform transition-all scale-100">
+                    
+                    <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                        <h3 class="text-lg font-bold text-[#03594D]" id="modalTitle">Chi tiết sản phẩm</h3>
+                        <button onclick="closeActionModal()" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-200 text-gray-400 transition">&times;</button>
+                    </div>
+
+                    <form id="productForm" method="post" class="p-6">
+                        <input type="hidden" name="productId" id="modalProductId">
+
+                        <div class="flex gap-4 mb-6">
+                            <div class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 shrink-0">
+                                <i class="fa-solid fa-image text-2xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-800 line-clamp-2" id="modalProductName">Tên thuốc...</h4>
+                                <div class="text-[#03594D] font-bold mt-1"><span id="modalProductPrice">0</span>đ</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-6">
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Số lượng mua</label>
+                            <div class="flex items-center gap-4">
+                                <div class="flex items-center border border-gray-300 rounded-lg">
+                                    <button type="button" onclick="adjustQty(-1)" class="px-3 py-2 text-gray-500 hover:bg-gray-100 rounded-l-lg">-</button>
+                                    <input type="number" name="quantity" id="modalQuantity" min="1" value="1" class="w-12 text-center border-none p-0 focus:ring-0 font-bold text-gray-700">
+                                    <button type="button" onclick="adjustQty(1)" class="px-3 py-2 text-gray-500 hover:bg-gray-100 rounded-r-lg">+</button>
+                                </div>
+                                <div class="text-sm text-gray-500">
+                                    Tổng: <span id="modalTotal" class="font-bold text-[#03594D]">0đ</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="directBuyFields" class="space-y-4 border-t border-dashed border-gray-200 pt-4 hidden">
+                            <div class="bg-yellow-50 p-3 rounded-lg border border-yellow-100 text-xs text-yellow-800 mb-2">
+                                <i class="fa-solid fa-truck-fast me-1"></i> Thông tin giao hàng nhanh
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">SĐT người nhận</label>
+                                <input type="text" name="phone" id="fieldPhone" th:value="${userPhone}" 
+                                       class="w-full rounded-lg border-gray-300 focus:ring-[#03594D] focus:border-[#03594D] text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Địa chỉ giao hàng</label>
+                                <textarea name="address" id="fieldAddress" rows="2" th:text="${userAddress}"
+                                          class="w-full rounded-lg border-gray-300 focus:ring-[#03594D] focus:border-[#03594D] text-sm"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Ghi chú</label>
+                                <input type="text" name="notes" placeholder="VD: Giao giờ hành chính..."
+                                       class="w-full rounded-lg border-gray-300 focus:ring-[#03594D] focus:border-[#03594D] text-sm">
+                            </div>
+                        </div>
+
+                        <div class="mt-6 pt-4 border-t border-gray-100 flex gap-3">
+                            <button type="button" onclick="closeActionModal()" class="flex-1 py-3 text-gray-500 font-bold hover:bg-gray-100 rounded-xl transition">Đóng</button>
+                            <button type="submit" id="modalSubmitBtn" class="flex-[2] py-3 bg-[#03594D] text-white font-bold rounded-xl shadow-lg hover:bg-[#024037] transition flex items-center justify-center gap-2">
+                                Xác nhận
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            let currentPrice = 0;
+            let maxStock = 1;
+
+            function openActionModal(mode, id, name, stock, price) {
+                // 1. Reset Form Data
+                document.getElementById('modalProductId').value = id;
+                document.getElementById('modalProductName').innerText = name;
+                document.getElementById('modalProductPrice').innerText = new Intl.NumberFormat().format(price);
+                
+                const qtyInput = document.getElementById('modalQuantity');
+                qtyInput.value = 1;
+                qtyInput.max = stock;
+                maxStock = stock;
+                currentPrice = price;
+                updateTotal();
+
+                const form = document.getElementById('productForm');
+                const btn = document.getElementById('modalSubmitBtn');
+                const directFields = document.getElementById('directBuyFields');
+                const title = document.getElementById('modalTitle');
+                
+                // 2. Cấu hình Modal theo Mode (Cart hay Buy)
+                if (mode === 'cart') {
+                    // Chế độ: Thêm vào giỏ
+                    form.action = '/cart/add'; 
+                    title.innerText = "Thêm vào Giỏ Hàng";
+                    btn.innerHTML = '<i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ';
+                    btn.className = "flex-[2] py-3 bg-white border-2 border-[#03594D] text-[#03594D] font-bold rounded-xl hover:bg-[#03594D] hover:text-white transition flex items-center justify-center gap-2";
+                    
+                    directFields.classList.add('hidden'); // Ẩn địa chỉ
+                    document.getElementById('fieldPhone').removeAttribute('required');
+                    document.getElementById('fieldAddress').removeAttribute('required');
+                } else {
+                    // Chế độ: Mua ngay
+                    form.action = '/pharmacy/buy'; 
+                    title.innerText = "Mua Ngay (Giao Nhanh)";
+                    btn.innerHTML = '<i class="fa-solid fa-bolt"></i> Đặt hàng ngay';
+                    btn.className = "flex-[2] py-3 bg-[#03594D] text-white font-bold rounded-xl shadow-lg hover:bg-[#024037] transition flex items-center justify-center gap-2";
+                    
+                    directFields.classList.remove('hidden'); // Hiện địa chỉ
+                    document.getElementById('fieldPhone').setAttribute('required', '');
+                    document.getElementById('fieldAddress').setAttribute('required', '');
+                }
+
+                // 3. Hiện Modal
+                document.getElementById('actionModal').classList.remove('hidden');
+            }
+
+            function closeActionModal() {
+                document.getElementById('actionModal').classList.add('hidden');
+            }
+
+            function adjustQty(delta) {
+                const input = document.getElementById('modalQuantity');
+                let newVal = parseInt(input.value) + delta;
+                if (newVal < 1) newVal = 1;
+                if (newVal > maxStock) newVal = maxStock;
+                input.value = newVal;
+                updateTotal();
+            }
+
+            function updateTotal() {
+                const qty = document.getElementById('modalQuantity').value;
+                const total = qty * currentPrice;
+                document.getElementById('modalTotal').innerText = new Intl.NumberFormat().format(total) + 'đ';
+            }
+            
+            document.getElementById('modalQuantity').addEventListener('input', function() {
+                let val = parseInt(this.value);
+                if(val > maxStock) this.value = maxStock;
+                if(val < 1) this.value = 1;
+                updateTotal();
+            });
+        </script>
+
+    </body>
+</html>

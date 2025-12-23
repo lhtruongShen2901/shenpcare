@@ -25,11 +25,15 @@ public class OrderItems {
     @Column(name = "Quantity", nullable = false)
     private Integer quantity;
 
+// Sửa "PriceAtPurchase" thành "UnitPrice"
+    // ...
     @Column(name = "PriceAtPurchase", nullable = false, precision = 18, scale = 2)
-    private BigDecimal priceAtPurchase; // Lưu giá tại thời điểm mua
+    private BigDecimal priceAtPurchase;
+// ...
 
     // --- CONSTRUCTORS ---
-    public OrderItems() {}
+    public OrderItems() {
+    }
 
     public OrderItems(Order order, Product product, Integer quantity, BigDecimal priceAtPurchase) {
         this.order = order;
@@ -39,18 +43,43 @@ public class OrderItems {
     }
 
     // --- GETTERS & SETTERS ---
-    public Long getOrderItemId() { return orderItemId; }
-    public void setOrderItemId(Long orderItemId) { this.orderItemId = orderItemId; }
+    public Long getOrderItemId() {
+        return orderItemId;
+    }
 
-    public Order getOrder() { return order; }
-    public void setOrder(Order order) { this.order = order; }
+    public void setOrderItemId(Long orderItemId) {
+        this.orderItemId = orderItemId;
+    }
 
-    public Product getProduct() { return product; }
-    public void setProduct(Product product) { this.product = product; }
+    public Order getOrder() {
+        return order;
+    }
 
-    public Integer getQuantity() { return quantity; }
-    public void setQuantity(Integer quantity) { this.quantity = quantity; }
+    public void setOrder(Order order) {
+        this.order = order;
+    }
 
-    public BigDecimal getPriceAtPurchase() { return priceAtPurchase; }
-    public void setPriceAtPurchase(BigDecimal priceAtPurchase) { this.priceAtPurchase = priceAtPurchase; }
+    public Product getProduct() {
+        return product;
+    }
+
+    public void setProduct(Product product) {
+        this.product = product;
+    }
+
+    public Integer getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
+    }
+
+    public BigDecimal getPriceAtPurchase() {
+        return priceAtPurchase;
+    }
+
+    public void setPriceAtPurchase(BigDecimal priceAtPurchase) {
+        this.priceAtPurchase = priceAtPurchase;
+    }
 }

@@ -32,28 +32,18 @@ public class Order {
 
     @Column(name = "Notes", length = 500)
     private String notes;
-    // === THÊM ĐOẠN NÀY VÀO ===
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<OrderItems> orderItems = new ArrayList<>();
 
-    // Getter & Setter cho list
-    public List<OrderItems> getOrderItems() {
-        return orderItems;
-    }
+    @Column(name = "PaymentMethod")
+    private String paymentMethod; // <-- Biến này chưa có Getter/Setter ở code cũ
 
-    public void setOrderItems(List<OrderItems> orderItems) {
-        this.orderItems = orderItems;
-    }
-
-    // Hàm helper để thêm item tiện lợi (Optional)
-    public void addOrderItem(OrderItems item) {
-        orderItems.add(item);
-        item.setOrder(this);
-    }
-
+    // --- CONSTRUCTORS ---
     public Order() {
     }
 
+    // --- GETTERS & SETTERS (Đã bổ sung đầy đủ) ---
     public Long getOrderId() {
         return orderId;
     }
@@ -108,5 +98,28 @@ public class Order {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+
+    public List<OrderItems> getOrderItems() {
+        return orderItems;
+    }
+
+    public void setOrderItems(List<OrderItems> orderItems) {
+        this.orderItems = orderItems;
+    }
+
+    // [QUAN TRỌNG] Đã thêm Getter/Setter cho PaymentMethod
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    // Helper method
+    public void addOrderItem(OrderItems item) {
+        orderItems.add(item);
+        item.setOrder(this);
     }
 }

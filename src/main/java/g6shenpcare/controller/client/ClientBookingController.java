@@ -6,7 +6,8 @@ import g6shenpcare.entity.Pets;
 import g6shenpcare.repository.PetRepository;
 import g6shenpcare.repository.ServicesRepository;
 import g6shenpcare.service.BookingService;
-import g6shenpcare.service.ClientService; // Import Service
+import g6shenpcare.service.ClientService;
+import g6shenpcare.service.EmailService; // [NEW] Import EmailService
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -24,17 +25,18 @@ public class ClientBookingController {
     @Autowired private BookingService bookingService;
     @Autowired private ServicesRepository servicesRepository;
     @Autowired private PetRepository petRepository;
-    @Autowired private ClientService clientService; // Dùng cái này thay cho User/Profile Repo lẻ
+    @Autowired private ClientService clientService;
+    
+    @Autowired // Tiêm EmailService
+    private EmailService emailService;
 
     @GetMapping
     public String showBookingForm(Model model, Principal principal) {
         if (principal == null) return "redirect:/login";
 
-        // Dùng Service lấy Profile chuẩn (tự tạo nếu chưa có)
         CustomerProfile customer = clientService.getProfileByUsername(principal.getName());
 
         BookingRequestDTO bookingDTO = new BookingRequestDTO();
-        // Pre-fill thông tin
         bookingDTO.setCustomerName(customer.getFullName());
         bookingDTO.setCustomerPhone(customer.getPhone());
         bookingDTO.setCustomerEmail(customer.getEmail());
@@ -42,7 +44,7 @@ public class ClientBookingController {
         bookingDTO.setCustomerAddress(customer.getAddressLine());
 
         model.addAttribute("booking", bookingDTO);
-        model.addAttribute("myPets", clientService.getPetsByCustomer(customer)); // Lấy list pet chuẩn
+        model.addAttribute("myPets", clientService.getPetsByCustomer(customer));
         model.addAttribute("services", servicesRepository.findAll());
 
         return "client/booking";
@@ -55,13 +57,12 @@ public class ClientBookingController {
         try {
             if (principal == null) return "redirect:/login";
 
-            // Lấy profile chuẩn từ Service
             CustomerProfile customer = clientService.getProfileByUsername(principal.getName());
-
-            // Gán ID khách hàng vào DTO
             dto.setCustomerId(Long.valueOf(customer.getCustomerId()));
 
             boolean hasBooking = false;
+            // Biến lưu thời gian để gửi mail (lấy từ vòng lặp cuối hoặc dto gốc)
+            String bookingTimeInfo = dto.getBookingDate() + " " + dto.getTimeSlot();
 
             // TRƯỜNG HỢP 1: Chọn Pet có sẵn
             if (dto.getSelectedPetIds() != null && !dto.getSelectedPetIds().isEmpty()) {
@@ -73,14 +74,11 @@ public class ClientBookingController {
                 hasBooking = true;
             }
 
-            // TRƯỜNG HỢP 2: Tạo Pet mới (Giữ nguyên logic đặc thù này của Booking)
+            // TRƯỜNG HỢP 2: Tạo Pet mới
             if (dto.getPetName() != null && !dto.getPetName().trim().isEmpty()) {
                 Pets newPet = new Pets();
-                // Dùng logic gán tay ở đây vì đây là DTO đặc biệt, 
-                // hoặc gọi clientService.addNewPet(...) nếu muốn refactor sâu hơn.
-                // Ở đây mình giữ nguyên cách set để code booking của bạn chạy ổn định.
                 newPet.setCustomerId(customer.getCustomerId());
-                newPet.setOwnerId(customer.getUserId()); // Fix: Thêm ownerId để không bị lỗi lưu ảo
+                newPet.setOwnerId(customer.getUserId());
                 newPet.setName(dto.getPetName());
                 newPet.setSpecies(dto.getPetSpecies());
                 newPet.setBreed(dto.getPetBreed());
@@ -92,7 +90,6 @@ public class ClientBookingController {
                 newPet.setActive(true);
                 newPet.setCreatedAt(LocalDateTime.now());
                 
-                // Lưu pet
                 Pets savedPet = petRepository.save(newPet);
 
                 BookingRequestDTO newPetBooking = copyBookingInfo(dto);
@@ -106,6 +103,20 @@ public class ClientBookingController {
                 BookingRequestDTO noPetBooking = copyBookingInfo(dto);
                 noPetBooking.setPetId(null);
                 bookingService.createClientBooking(noPetBooking);
+            }
+
+            // [NEW] Gửi Email Xác Nhận (Chạy ngầm)
+            try {
+                if (customer.getEmail() != null && !customer.getEmail().isEmpty()) {
+                    emailService.sendBookingConfirmation(
+                        customer.getEmail(),
+                        customer.getFullName(),
+                        bookingTimeInfo,
+                        "Dịch vụ tại ShenPCare" // Có thể query tên dịch vụ nếu cần
+                    );
+                }
+            } catch (Exception ex) {
+                System.err.println("Không gửi được mail xác nhận: " + ex.getMessage());
             }
 
             ra.addFlashAttribute("message", "Gửi yêu cầu thành công! Chúng tôi sẽ liên hệ sớm.");

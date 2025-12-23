@@ -33,8 +33,8 @@ public class Product {
     // --- CÁC TRƯỜNG MỚI THÊM ---
     private String targetSpecies; // DOG, CAT, BOTH
     private String productForm;   // TABLET, LIQUID...
-    private Boolean isPrescription; // True/False
-    
+    private Boolean isPrescription = false;
+
     // Quản lý Giá & Đơn vị
     private String unit;            // Đơn vị tính
     private BigDecimal importPrice; // Giá nhập vào
@@ -61,6 +61,19 @@ public class Product {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
+        // Kiểm tra an toàn lần cuối trước khi lưu DB
+        if (this.isPrescription == null) {
+            this.isPrescription = false;
+        }
+        if (this.isActive == null) {
+            this.isActive = true;
+        }
+        if (this.isMedicine == null) {
+            this.isMedicine = true;
+        }
+        if (this.stockQuantity == null) {
+            this.stockQuantity = 0;
+        }
     }
 
     @PreUpdate

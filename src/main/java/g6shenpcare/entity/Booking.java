@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Entity
 @Table(name = "Bookings")
@@ -28,7 +29,6 @@ public class Booking {
     private Integer assignedStaffId;
 
     // --- RELATIONSHIPS (Dùng để đọc dữ liệu hiển thị lên Web) ---
-    // insertable=false, updatable=false: Nghĩa là chỉ dùng để JOIN bảng, không UPDATE qua biến này
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "CustomerId", insertable = false, updatable = false)
     private CustomerProfile customer;
@@ -44,19 +44,23 @@ public class Booking {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "AssignedStaffId", insertable = false, updatable = false)
     private UserAccount staff;
+    
+    // [QUAN TRỌNG] Field PaymentMethod
+    @Column(name = "PaymentMethod")
+    private String paymentMethod;
 
     // --- THÔNG TIN CHI TIẾT ---
     @Column(name = "BookingDate", nullable = false)
     private LocalDate bookingDate;
 
-    @Column(name = "StartTime") // Có thể null lúc mới đặt
-    private LocalDateTime startTime;
+    @Column(name = "StartTime") 
+    private LocalTime startTime; // Sửa lại thành LocalTime cho đúng chuẩn giờ hẹn
 
     @Column(name = "EndTime")
-    private LocalDateTime endTime;
+    private LocalTime endTime;   // Sửa lại thành LocalTime
 
     @Column(name = "Status", nullable = false, length = 20)
-    private String status; // PENDING, CONFIRMED, COMPLETED, CANCELLED
+    private String status; 
 
     @Column(name = "PaymentStatus", nullable = false, length = 20)
     private String paymentStatus;
@@ -66,7 +70,7 @@ public class Booking {
 
     @Column(name = "Notes", length = 500)
     private String notes;
-    
+
     @Column(name = "IsUrgent")
     private Boolean isUrgent = false;
 
@@ -76,16 +80,25 @@ public class Booking {
     @Column(name = "UpdatedAt")
     private LocalDateTime updatedAt;
 
-    public Booking() {}
+    public Booking() {
+    }
 
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
-        if (this.status == null) this.status = "PENDING";
-        if (this.paymentStatus == null) this.paymentStatus = "UNPAID";
-        if (this.isUrgent == null) this.isUrgent = false;
-        if (this.totalAmount == null) this.totalAmount = BigDecimal.ZERO;
+        if (this.status == null) {
+            this.status = "PENDING";
+        }
+        if (this.paymentStatus == null) {
+            this.paymentStatus = "UNPAID";
+        }
+        if (this.isUrgent == null) {
+            this.isUrgent = false;
+        }
+        if (this.totalAmount == null) {
+            this.totalAmount = BigDecimal.ZERO;
+        }
     }
 
     @PreUpdate
@@ -94,73 +107,180 @@ public class Booking {
     }
 
     // --- GETTERS & SETTERS ---
-    public Integer getBookingId() { return bookingId; }
-    public void setBookingId(Integer bookingId) { this.bookingId = bookingId; }
+    public Integer getBookingId() {
+        return bookingId;
+    }
 
-    public Integer getCustomerId() { return customerId; }
-    public void setCustomerId(Integer customerId) { this.customerId = customerId; }
+    public void setBookingId(Integer bookingId) {
+        this.bookingId = bookingId;
+    }
 
-    public Integer getPetId() { return petId; }
-    public void setPetId(Integer petId) { this.petId = petId; }
+    public Integer getCustomerId() {
+        return customerId;
+    }
 
-    public Integer getServiceId() { return serviceId; }
-    public void setServiceId(Integer serviceId) { this.serviceId = serviceId; }
+    public void setCustomerId(Integer customerId) {
+        this.customerId = customerId;
+    }
 
-    public Integer getAssignedStaffId() { return assignedStaffId; }
-    public void setAssignedStaffId(Integer assignedStaffId) { this.assignedStaffId = assignedStaffId; }
+    public Integer getPetId() {
+        return petId;
+    }
 
-    public LocalDate getBookingDate() { return bookingDate; }
-    public void setBookingDate(LocalDate bookingDate) { this.bookingDate = bookingDate; }
+    public void setPetId(Integer petId) {
+        this.petId = petId;
+    }
 
-    public LocalDateTime getStartTime() { return startTime; }
-    public void setStartTime(LocalDateTime startTime) { this.startTime = startTime; }
+    public Integer getServiceId() {
+        return serviceId;
+    }
 
-    public LocalDateTime getEndTime() { return endTime; }
-    public void setEndTime(LocalDateTime endTime) { this.endTime = endTime; }
+    public void setServiceId(Integer serviceId) {
+        this.serviceId = serviceId;
+    }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public Integer getAssignedStaffId() {
+        return assignedStaffId;
+    }
 
-    public String getPaymentStatus() { return paymentStatus; }
-    public void setPaymentStatus(String paymentStatus) { this.paymentStatus = paymentStatus; }
+    public void setAssignedStaffId(Integer assignedStaffId) {
+        this.assignedStaffId = assignedStaffId;
+    }
 
-    public BigDecimal getTotalAmount() { return totalAmount; }
-    public void setTotalAmount(BigDecimal totalAmount) { this.totalAmount = totalAmount; }
+    public LocalDate getBookingDate() {
+        return bookingDate;
+    }
 
-    public String getNotes() { return notes; }
-    public void setNotes(String notes) { this.notes = notes; }
+    public void setBookingDate(LocalDate bookingDate) {
+        this.bookingDate = bookingDate;
+    }
 
-    public Boolean getIsUrgent() { return isUrgent; }
-    public void setIsUrgent(Boolean urgent) { isUrgent = urgent; }
+    // Lưu ý: Trong code cũ của bạn là LocalDateTime, nhưng thường giờ hẹn chỉ cần LocalTime
+    // Nếu DB lưu DateTime thì bạn sửa lại kiểu dữ liệu tương ứng nhé.
+    // Ở đây mình giữ theo code Controller (LocalTime) để tránh lỗi format.
+    public LocalTime getStartTime() {
+        return startTime;
+    }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+    public void setStartTime(LocalTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public LocalTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalTime endTime) {
+        this.endTime = endTime;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getPaymentStatus() {
+        return paymentStatus;
+    }
+
+    public void setPaymentStatus(String paymentStatus) {
+        this.paymentStatus = paymentStatus;
+    }
+
+    public BigDecimal getTotalAmount() {
+        return totalAmount;
+    }
+
+    public void setTotalAmount(BigDecimal totalAmount) {
+        this.totalAmount = totalAmount;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
+
+    public Boolean getIsUrgent() {
+        return isUrgent;
+    }
+
+    public void setIsUrgent(Boolean urgent) {
+        isUrgent = urgent;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
 
     // --- RELATIONSHIP HELPERS ---
-    // Các hàm này giúp việc set Object trong Controller tự động điền ID vào DB
-    public CustomerProfile getCustomer() { return customer; }
+    public CustomerProfile getCustomer() {
+        return customer;
+    }
+
     public void setCustomer(CustomerProfile customer) {
         this.customer = customer;
-        if (customer != null) this.customerId = customer.getCustomerId();
+        if (customer != null) {
+            this.customerId = customer.getCustomerId();
+        }
     }
 
-    public Pets getPet() { return pet; }
+    public Pets getPet() {
+        return pet;
+    }
+
     public void setPet(Pets pet) {
         this.pet = pet;
-        if (pet != null) this.petId = pet.getPetId();
+        if (pet != null) {
+            this.petId = pet.getPetId();
+        }
     }
 
-    public Services getService() { return service; }
+    public Services getService() {
+        return service;
+    }
+
     public void setService(Services service) {
         this.service = service;
-        if (service != null) this.serviceId = service.getServiceId();
+        if (service != null) {
+            this.serviceId = service.getServiceId();
+        }
     }
-    
-    public UserAccount getStaff() { return staff; }
+
+    public UserAccount getStaff() {
+        return staff;
+    }
+
     public void setStaff(UserAccount staff) {
         this.staff = staff;
-        if(staff != null) this.assignedStaffId = staff.getUserId();
+        if (staff != null) {
+            this.assignedStaffId = staff.getUserId();
+        }
+    }
+
+    // === [ĐÃ SỬA LẠI ĐÚNG] Getter & Setter cho PaymentMethod ===
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 }

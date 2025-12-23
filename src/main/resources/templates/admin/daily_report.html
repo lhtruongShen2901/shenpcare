@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html class="light" lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="admin/layout :: adminHead">
+    <title>Báo cáo Doanh thu & Hiệu suất</title>
+</head>
+<body class="font-display bg-background-light">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div th:replace="admin/layout :: adminShell(~{::section}, 'reports')">
+    <section>
+        
+        <div class="flex flex-wrap justify-between items-center mb-8 gap-4">
+            <div>
+                <h1 class="text-[#03594D] text-3xl font-black leading-tight">Báo Cáo Hoạt Động</h1>
+                <p class="text-gray-500 mt-1 text-sm">Tổng hợp doanh thu từ Spa, Phòng khám và Bán thuốc Online.</p>
+            </div>
+            
+            <div class="flex items-center gap-3 bg-white px-4 py-2.5 rounded-xl border border-gray-200 shadow-sm">
+                <span class="material-symbols-outlined text-gray-400">calendar_today</span>
+                <span class="font-bold text-[#03594D] text-sm">Hôm nay: <span th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy')}"></span></span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+            
+            <div class="bg-gradient-to-br from-[#03594D] to-[#024037] text-white p-6 rounded-2xl shadow-lg relative overflow-hidden group">
+                <div class="absolute right-0 top-0 opacity-10 transform translate-x-4 -translate-y-4 group-hover:scale-110 transition-transform">
+                    <span class="material-symbols-outlined text-9xl">payments</span>
+                </div>
+                <p class="text-sm font-medium opacity-80 uppercase tracking-wider">Tổng Doanh Thu</p>
+                <h2 class="text-3xl font-black mt-2" th:text="${#numbers.formatDecimal(data.totalRevenueToday, 0, 'COMMA', 0, 'POINT')} + 'đ'">0đ</h2>
+                <div class="mt-4 text-xs opacity-60 font-medium">Cập nhật realtime</div>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-600">
+                        <span class="material-symbols-outlined">spa</span>
+                    </div>
+                    <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">Spa & Grooming</p>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800" th:text="${#numbers.formatDecimal(data.totalSpaRevenue, 0, 'COMMA', 0, 'POINT')} + 'đ'">0đ</h2>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                        <span class="material-symbols-outlined">medical_services</span>
+                    </div>
+                    <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">Khám & Thuốc kê đơn</p>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800" th:text="${#numbers.formatDecimal(data.totalClinicRevenue, 0, 'COMMA', 0, 'POINT')} + 'đ'">0đ</h2>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center text-orange-600">
+                        <span class="material-symbols-outlined">shopping_cart</span>
+                    </div>
+                    <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">Bán Thuốc Online</p>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800" th:text="${#numbers.formatDecimal(data.totalOnlineRevenue, 0, 'COMMA', 0, 'POINT')} + 'đ'">0đ</h2>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            
+            <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
+                <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                    <h3 class="font-bold text-gray-800 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[#03594D]">stethoscope</span>
+                        Hiệu suất Bác sĩ (Hôm nay)
+                    </h3>
+                    <button onclick="window.print()" class="text-xs font-bold text-gray-500 hover:text-[#03594D] flex items-center gap-1 bg-white px-3 py-1.5 rounded border border-gray-200 shadow-sm transition-colors">
+                        <span class="material-symbols-outlined text-sm">print</span> In báo cáo
+                    </button>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-gray-50 text-gray-500 font-bold uppercase text-[11px] tracking-wider">
+                            <tr>
+                                <th class="px-6 py-4">Bác sĩ (ID)</th>
+                                <th class="px-6 py-4 text-center">Số ca khám</th>
+                                <th class="px-6 py-4 text-center">Thuốc kê đơn</th>
+                                <th class="px-6 py-4 text-right">Doanh thu kê đơn</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            <tr th:each="r : ${data.doctorPerformance}" class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 font-bold text-[#03594D]">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-full bg-[#E3E5D2] flex items-center justify-center text-[#03594D] font-bold text-xs">
+                                            DR
+                                        </div>
+                                        <span th:text="'Bác sĩ #' + ${r.doctorId}"></span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    <span class="inline-flex items-center justify-center min-w-[30px] h-[30px] bg-blue-50 text-blue-700 rounded-full font-bold text-xs shadow-sm" th:text="${r.patientCount}">0</span>
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    <span class="text-gray-600 font-medium" th:text="${r.medicineCount} + ' viên'">0</span>
+                                </td>
+                                <td class="px-6 py-4 text-right font-bold text-emerald-600" 
+                                    th:text="${#numbers.formatDecimal(r.estimatedRevenue, 0, 'COMMA', 0, 'POINT')} + 'đ'">0đ</td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(data.doctorPerformance)}">
+                                <td colspan="4" class="px-6 py-12 text-center text-gray-400">
+                                    <div class="flex flex-col items-center">
+                                        <span class="material-symbols-outlined text-5xl mb-3 text-gray-200">bar_chart_off</span>
+                                        <p>Chưa có dữ liệu khám bệnh hôm nay.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col h-full">
+                <h3 class="font-bold text-gray-800 mb-6 text-center">Tỷ trọng Doanh thu</h3>
+                
+                <div class="flex-1 flex items-center justify-center relative min-h-[250px]">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+                
+                <div class="mt-6 p-4 bg-[#F0F8F7] rounded-xl text-xs text-[#03594D] text-center leading-relaxed">
+                    <span class="font-bold block mb-1">💡 Ghi chú:</span>
+                    Biểu đồ thể hiện mức đóng góp doanh thu giữa các bác sĩ dựa trên lượng thuốc đã kê đơn thành công.
+                </div>
+            </div>
+        </div>
+
+        <script th:inline="javascript">
+            document.addEventListener("DOMContentLoaded", function() {
+                /*[[${data.doctorPerformance}]]*/ 
+                const reports = /*[[${data.doctorPerformance}]]*/ []; 
+
+                const ctx = document.getElementById('revenueChart');
+
+                if (reports && reports.length > 0) {
+                    const labels = reports.map(r => 'BS #' + r.doctorId);
+                    const dataValues = reports.map(r => r.estimatedRevenue);
+                    const colors = ['#03594D', '#D8E268', '#FF9124', '#4A90E2', '#FF6B6B', '#8D6E63'];
+
+                    new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                data: dataValues,
+                                backgroundColor: colors,
+                                borderWidth: 2,
+                                borderColor: '#ffffff',
+                                hoverOffset: 4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            cutout: '70%', // Làm vòng tròn mỏng hơn
+                            plugins: {
+                                legend: { 
+                                    position: 'bottom',
+                                    labels: {
+                                        usePointStyle: true,
+                                        padding: 20,
+                                        font: {
+                                            family: "'Plus Jakarta Sans', sans-serif",
+                                            size: 11
+                                        }
+                                    }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            let value = context.raw;
+                                            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
+                                        }
+                                    },
+                                    backgroundColor: '#1e293b',
+                                    padding: 12,
+                                    cornerRadius: 8
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    // Nếu không có dữ liệu, hiện placeholder
+                    ctx.style.display = 'none';
+                    ctx.parentElement.innerHTML = `
+                        <div class="text-center text-gray-300">
+                            <span class="material-symbols-outlined text-6xl block mb-2">pie_chart</span>
+                            <span class="text-sm">Chưa có số liệu</span>
+                        </div>`;
+                }
+            });
+        </script>
+
+    </section>
+</div>
+</body>
+</html>

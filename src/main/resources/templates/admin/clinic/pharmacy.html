@@ -48,7 +48,10 @@
                                     <img th:if="${p.imageFileId == null}" src="https://cdn-icons-png.flaticon.com/512/883/883407.png" class="w-full h-full object-contain p-1 opacity-50">
                                 </div>
                                 <div>
-                                    <div class="font-bold text-[#03594D] text-[15px]" th:text="${p.name}"></div>
+                                    <div class="font-bold text-[#03594D] text-[15px] flex items-center gap-2">
+                                        <span th:text="${p.name}"></span>
+                                        <span th:if="${p.isPrescription}" class="bg-red-100 text-red-600 text-[10px] font-bold px-1.5 py-0.5 rounded border border-red-200" title="Thuốc kê đơn">Rx</span>
+                                    </div>
                                     <div class="text-[11px] text-gray-500 font-mono mt-0.5 flex gap-2">
                                         <span th:if="${p.ingredient}" th:text="'HC: ' + ${p.ingredient}" class="bg-blue-50 text-blue-700 px-1 rounded"></span>
                                         <span th:text="'SKU: ' + ${p.sku}"></span>
@@ -61,8 +64,6 @@
                                 <span th:if="${p.category == 'MEDICINE'}" class="px-2 py-0.5 bg-blue-50 text-blue-700 text-[10px] font-bold rounded border border-blue-100">THUỐC</span>
                                 <span th:if="${p.category == 'VACCINE'}" class="px-2 py-0.5 bg-purple-50 text-purple-700 text-[10px] font-bold rounded border border-purple-100">VACCINE</span>
                                 <span th:if="${p.category == 'CONSUMABLE'}" class="px-2 py-0.5 bg-gray-50 text-gray-600 text-[10px] font-bold rounded border border-gray-200">VẬT TƯ</span>
-                                
-                                <span th:if="${p.isPrescription}" class="px-2 py-0.5 bg-red-50 text-red-600 text-[10px] font-bold rounded border border-red-100">KÊ ĐƠN</span>
                             </div>
                         </td>
                         <td class="px-6 py-4">
@@ -130,7 +131,7 @@
                                     <input type="checkbox" name="isPrescription" id="pIsPrescription" class="w-4 h-4 text-red-600 rounded focus:ring-red-500">
                                     <span class="text-sm font-bold text-red-700">Thuốc Kê Đơn (RX)</span>
                                 </label>
-                                <p class="text-[10px] text-red-500 mt-1 pl-6">Chỉ bán khi có toa bác sĩ.</p>
+                                <p class="text-[10px] text-red-500 mt-1 pl-6">Chỉ bán khi có toa bác sĩ. Không hiển thị nút mua Online.</p>
                             </div>
                         </div>
 
@@ -217,9 +218,9 @@
             function openModalCreate() {
                 document.getElementById('productForm').reset();
                 document.getElementById('pId').value = '';
+                // [RESET Checkbox]
                 document.getElementById('pIsPrescription').checked = false;
                 
-                // Reset ảnh
                 document.getElementById('pPreview').classList.add('hidden');
                 document.getElementById('pPlaceholder').classList.remove('hidden');
 
@@ -231,11 +232,10 @@
                 fetch(`/admin/clinic/api/product/${id}`)
                     .then(res => res.json())
                     .then(data => {
-                        // Map dữ liệu từ API vào Form
                         document.getElementById('pId').value = data.productId;
                         document.getElementById('pName').value = data.name;
                         document.getElementById('pSku').value = data.sku;
-                        document.getElementById('pCategory').value = data.category; // String khớp với value option
+                        document.getElementById('pCategory').value = data.category;
                         document.getElementById('pIngredient').value = data.ingredient;
                         document.getElementById('pUnit').value = data.unit;
                         document.getElementById('pStock').value = data.stockQuantity;
@@ -245,9 +245,10 @@
                         
                         document.getElementById('pSpecies').value = data.targetSpecies || 'BOTH';
                         document.getElementById('pForm').value = data.productForm || 'TABLET';
+                        
+                        // [GÁN Checkbox từ API]
                         document.getElementById('pIsPrescription').checked = data.isPrescription;
 
-                        // Xử lý ảnh
                         const img = document.getElementById('pPreview');
                         const ph = document.getElementById('pPlaceholder');
                         if(data.imageFileId) {

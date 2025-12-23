@@ -7,29 +7,21 @@
 
         <div th:replace="admin/layout :: adminShell(~{::section}, 'bookings')">
             <section>
-
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-6">
                     <form th:action="@{/admin/bookings/list}" method="get" class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div class="relative">
                             <span class="material-symbols-outlined absolute left-3 top-3 text-gray-400">search</span>
-                            <input type="text" name="keyword" th:value="${keyword}" 
-                                   placeholder="Mã đơn, Tên khách, SĐT..." 
-                                   class="w-full pl-10 pr-4 py-2.5 rounded-xl border-gray-200 focus:border-[#03594D] focus:ring-[#03594D]">
+                            <input type="text" name="keyword" th:value="${keyword}" placeholder="Mã đơn, Tên khách..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border-gray-200 focus:border-[#03594D] focus:ring-[#03594D]">
                         </div>
-
-                        <input type="date" name="date" th:value="${selectedDate}" 
-                               class="w-full px-4 py-2.5 rounded-xl border-gray-200 focus:border-[#03594D] focus:ring-[#03594D] text-gray-600">
-
-                        <select name="status" class="w-full px-4 py-2.5 rounded-xl border-gray-200 focus:border-[#03594D] focus:ring-[#03594D] text-gray-600">
+                        <input type="date" name="date" th:value="${selectedDate}" class="w-full px-4 py-2.5 rounded-xl border-gray-200 focus:border-[#03594D] focus:ring-[#03594D]">
+                        <select name="status" class="w-full px-4 py-2.5 rounded-xl border-gray-200 focus:border-[#03594D] focus:ring-[#03594D]">
                             <option value="ALL">Tất cả trạng thái</option>
                             <option value="PENDING" th:selected="${selectedStatus == 'PENDING'}">🕒 Chờ xác nhận</option>
                             <option value="CONFIRMED" th:selected="${selectedStatus == 'CONFIRMED'}">🔵 Đã xác nhận</option>
                             <option value="COMPLETED" th:selected="${selectedStatus == 'COMPLETED'}">✅ Hoàn thành</option>
-                            <option value="CANCELLED" th:selected="${selectedStatus == 'CANCELLED'}">❌ Đã hủy</option>
                         </select>
-
                         <button type="submit" class="w-full bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition flex items-center justify-center gap-2">
-                            <span class="material-symbols-outlined">filter_list</span> Lọc dữ liệu
+                            <span class="material-symbols-outlined">filter_list</span> Lọc
                         </button>
                     </form>
                 </div>
@@ -37,41 +29,30 @@
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm text-left">
-                            <thead class="bg-gray-50 text-gray-500 uppercase text-xs font-bold border-b border-gray-100">
-                            </thead>
+                            <thead class="bg-gray-50 text-gray-500 uppercase text-xs font-bold border-b border-gray-100"></thead>
                             <tbody class="divide-y divide-gray-100">
                                 <tr th:each="b : ${bookings}" class="hover:bg-gray-50 transition group">
                                     <td class="px-6 py-4 font-mono font-bold text-gray-500" th:text="'#' + ${b.bookingId}"></td>
+                                    
                                     <td class="px-6 py-4">
                                         <div class="font-bold text-[#03594D]" th:text="${b.customer != null ? b.customer.fullName : 'Vãng lai'}"></div>
-                                        <div class="text-xs text-gray-500 flex items-center gap-1">
-                                            <span class="material-symbols-outlined text-[12px]">call</span>
-                                            <span th:text="${b.customer != null ? b.customer.phone : '---'}"></span>
-                                        </div>
+                                        <div class="text-xs text-gray-500" th:text="${b.customer != null ? b.customer.phone : '---'}"></div>
                                         <div class="mt-1 inline-flex items-center gap-1 bg-orange-50 text-orange-700 px-2 py-0.5 rounded text-xs border border-orange-100" th:if="${b.pet != null}">
                                             <span class="material-symbols-outlined text-[12px]">pets</span> <span th:text="${b.pet.name}"></span>
                                         </div>
                                     </td>
+                                    
                                     <td class="px-6 py-4">
                                         <div class="font-medium text-gray-800" th:text="${b.service != null ? b.service.name : '---'}"></div>
-                                        <span th:if="${b.isUrgent}" class="text-xs font-bold text-red-600 bg-red-50 px-1 rounded border border-red-100 flex w-fit items-center gap-1 mt-1">
-                                            <span class="material-symbols-outlined text-[12px]">bolt</span> GẤP
-                                        </span>
+                                        <div class="text-xs text-gray-500 mt-1" th:if="${b.service != null and b.service.fixedPrice != null}" 
+                                             th:text="${#numbers.formatDecimal(b.service.fixedPrice, 0, 'COMMA', 0, 'POINT')} + 'đ'"></div>
                                     </td>
+                                    
                                     <td class="px-6 py-4">
                                         <div class="font-bold text-gray-700" th:text="${#temporals.format(b.bookingDate, 'dd/MM/yyyy')}"></div>
-                                        <div class="text-xs text-[#03594D] bg-[#03594D]/10 px-2 py-0.5 rounded w-fit mt-1 font-mono" 
-                                             th:text="${b.startTime != null ? #temporals.format(b.startTime, 'HH:mm') : '--:--'}"></div>
+                                        <div class="text-xs text-[#03594D] bg-[#03594D]/10 px-2 py-0.5 rounded w-fit mt-1 font-mono" th:text="${b.startTime != null ? #temporals.format(b.startTime, 'HH:mm') : '--:--'}"></div>
                                     </td>
-                                    <td class="px-6 py-4">
-                                        <div th:if="${b.staff != null}" class="flex items-center gap-2">
-                                            <div class="w-6 h-6 rounded-full bg-[#D8E268] text-[#03594D] flex items-center justify-center text-xs font-bold">
-                                                <span th:text="${#strings.substring(b.staff.fullName,0,1)}"></span>
-                                            </div>
-                                            <span class="text-sm font-medium" th:text="${b.staff.fullName}"></span>
-                                        </div>
-                                        <span th:unless="${b.staff != null}" class="text-xs text-gray-400 italic bg-gray-100 px-2 py-1 rounded">Chưa gán</span>
-                                    </td>
+                                    
                                     <td class="px-6 py-4 text-center">
                                         <span th:class="${'px-2.5 py-1 rounded-full text-xs font-bold border ' + 
                                               (b.status == 'PENDING' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' : 
@@ -79,19 +60,26 @@
                                               (b.status == 'COMPLETED' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200')))}"
                                               th:text="${b.status}"></span>
                                     </td>
-                                    <td class="px-6 py-4 text-right">
+
+                                    <td class="px-6 py-4 text-right flex items-center justify-end gap-2">
+                                        <button th:if="${b.status == 'COMPLETED' and b.paymentStatus != 'PAID'}"
+                                                type="button"
+                                                th:onclick="'openPaymentModal(' + ${b.bookingId} + ', ' + ${b.service != null ? b.service.fixedPrice : 0} + ')'"
+                                                class="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 border border-green-200 text-xs font-bold transition">
+                                            <span class="material-symbols-outlined text-[16px]">payments</span> Thu tiền
+                                        </button>
+
+                                        <span th:if="${b.paymentStatus == 'PAID'}" 
+                                              class="px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-200 text-gray-500 text-xs font-bold flex items-center gap-1 cursor-default"
+                                              th:title="${b.paymentMethod}">
+                                            <span class="material-symbols-outlined text-[16px] text-green-600">check_circle</span>
+                                            Đã TT (<span th:text="${b.paymentMethod}"></span>)
+                                        </span>
+
                                         <button type="button" 
-                                                th:onclick="openEditModal(
-                                                [[${b.bookingId}]], 
-                                                [[${b.bookingDate}]], 
-                                                [[${b.startTime}]], 
-                                                [[${b.staff != null ? b.staff.userId : ''}]],
-                                                [[${b.status}]]
-                                                )"
-                                                class="inline-flex items-center justify-center px-3 py-1.5 rounded-lg bg-gray-50 text-gray-600 hover:bg-[#D8E268] hover:text-[#03594D] transition shadow-sm border border-gray-200 hover:border-[#D8E268] text-xs font-bold gap-1 ml-auto"
-                                                title="Chỉnh sửa & Phân công">
-                                            <span class="material-symbols-outlined text-[16px]">edit_calendar</span>
-                                            Cập nhật
+                                                th:onclick="openEditModal([[${b.bookingId}]], [[${b.bookingDate}]], [[${b.startTime}]], [[${b.staff != null ? b.staff.userId : ''}]], [[${b.status}]])"
+                                                class="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gray-50 text-gray-600 hover:bg-[#D8E268] hover:text-[#03594D] border border-gray-200 hover:border-[#D8E268] text-xs font-bold transition">
+                                            <span class="material-symbols-outlined text-[16px]">edit</span>
                                         </button>
                                     </td>
                                 </tr>
@@ -102,92 +90,103 @@
 
                 <div id="editModal" class="fixed inset-0 z-50 hidden">
                     <div class="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity" onclick="closeEditModal()"></div>
-
                     <div class="absolute inset-0 flex items-center justify-center p-4">
-                        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg transform transition-all animate-fade-in-up">
-
+                        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
                             <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-2xl">
-                                <div>
-                                    <h3 class="text-lg font-bold text-[#03594D]">Cập nhật Đơn hàng</h3>
-                                    <p class="text-xs text-gray-500">Điều chỉnh thời gian, nhân sự và trạng thái</p>
-                                </div>
-                                <button onclick="closeEditModal()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-50 text-gray-400 hover:text-red-500 transition">
-                                    <span class="material-symbols-outlined">close</span>
-                                </button>
+                                <h3 class="text-lg font-bold text-[#03594D]">Cập nhật Booking</h3>
+                                <button onclick="closeEditModal()" class="text-gray-400 hover:text-red-500"><span class="material-symbols-outlined">close</span></button>
                             </div>
-
-                            <form th:action="@{/admin/bookings/update}" method="post" class="p-6 space-y-5">
+                            <form th:action="@{/admin/bookings/update}" method="post" class="p-6 space-y-4">
                                 <input type="hidden" id="modalBookingId" name="bookingId">
-
                                 <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Ngày hẹn</label>
-                                        <input type="date" id="modalDate" name="newDate" required
-                                               class="w-full rounded-xl border-gray-200 focus:border-[#03594D] focus:ring-[#03594D] bg-gray-50">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Giờ hẹn</label>
-                                        <input type="time" id="modalTime" name="newTime" required
-                                               class="w-full rounded-xl border-gray-200 focus:border-[#03594D] focus:ring-[#03594D] bg-gray-50">
-                                    </div>
+                                    <div><label class="block text-xs font-bold text-gray-500 uppercase">Ngày</label><input type="date" id="modalDate" name="newDate" required class="w-full rounded-xl border-gray-200"></div>
+                                    <div><label class="block text-xs font-bold text-gray-500 uppercase">Giờ</label><input type="time" id="modalTime" name="newTime" required class="w-full rounded-xl border-gray-200"></div>
                                 </div>
-
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Nhân viên phụ trách</label>
-                                    <div class="relative">
-                                        <span class="material-symbols-outlined absolute left-3 top-3 text-gray-400 pointer-events-none">badge</span>
-                                        <select id="modalStaff" name="newStaffId" class="w-full pl-10 pr-4 py-2.5 rounded-xl border-gray-200 focus:border-[#03594D] focus:ring-[#03594D]">
-                                            <option value="">-- Chưa phân công --</option>
-                                            <option th:each="s : ${staffList}" 
-                                                    th:value="${s.userId}" 
-                                                    th:text="${s.fullName} + ' (' + ${s.role} + ')'">
-                                            </option>
-                                        </select>
-                                    </div>
+                                <div><label class="block text-xs font-bold text-gray-500 uppercase">Nhân viên</label>
+                                    <select id="modalStaff" name="newStaffId" class="w-full rounded-xl border-gray-200">
+                                        <option value="">-- Chọn nhân viên --</option>
+                                        <option th:each="s : ${staffList}" th:value="${s.userId}" th:text="${s.fullName}"></option>
+                                    </select>
                                 </div>
-
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Trạng thái xử lý</label>
-                                    <div class="relative">
-                                        <span class="material-symbols-outlined absolute left-3 top-3 text-gray-400 pointer-events-none">flag</span>
-                                        <select id="modalStatus" name="newStatus" class="w-full pl-10 pr-4 py-2.5 rounded-xl border-gray-200 focus:border-[#03594D] focus:ring-[#03594D]">
-                                            <option value="PENDING">🕒 Chờ xác nhận (Mới)</option>
-                                            <option value="CONFIRMED">🔵 Đã xác nhận (Sẵn sàng)</option>
-                                            <option value="COMPLETED">✅ Hoàn thành (Đã xong)</option>
-                                            <option value="CANCELLED">❌ Đã hủy</option>
-                                        </select>
-                                    </div>
+                                <div><label class="block text-xs font-bold text-gray-500 uppercase">Trạng thái</label>
+                                    <select id="modalStatus" name="newStatus" class="w-full rounded-xl border-gray-200">
+                                        <option value="PENDING">🕒 Chờ xác nhận</option>
+                                        <option value="CONFIRMED">🔵 Đã xác nhận</option>
+                                        <option value="COMPLETED">✅ Hoàn thành</option>
+                                        <option value="CANCELLED">❌ Đã hủy</option>
+                                    </select>
                                 </div>
-
-                                <div class="pt-4 flex gap-3">
-                                    <button type="button" onclick="closeEditModal()" class="flex-1 py-3 rounded-xl bg-gray-100 text-gray-600 font-bold hover:bg-gray-200 transition">Hủy bỏ</button>
-                                    <button type="submit" class="flex-1 py-3 rounded-xl bg-[#03594D] text-white font-bold hover:bg-[#024037] transition shadow-lg flex justify-center items-center gap-2">
-                                        <span class="material-symbols-outlined text-[20px]">save</span> Lưu thay đổi
-                                    </button>
-                                </div>
+                                <button type="submit" class="w-full py-3 bg-[#03594D] text-white font-bold rounded-xl hover:bg-[#024037]">Lưu thay đổi</button>
                             </form>
                         </div>
                     </div>
                 </div>
 
+                <div id="paymentModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+                    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closePaymentModal()"></div>
+                    <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl relative z-10 p-6">
+                        <h3 class="text-xl font-bold text-[#03594D] mb-4 flex items-center gap-2">
+                            <span class="material-symbols-outlined">point_of_sale</span> Xác nhận Thu tiền
+                        </h3>
+                        
+                        <form th:action="@{/admin/bookings/confirm-payment}" method="post">
+                            <input type="hidden" name="bookingId" id="payBookingId">
+                            
+                            <div class="mb-4 bg-gray-50 p-4 rounded-xl border border-gray-200 text-center">
+                                <p class="text-gray-500 text-xs uppercase font-bold">Số tiền cần thu</p>
+                                <p class="text-3xl font-black text-[#03594D] mt-1" id="payAmountDisplay">0đ</p>
+                            </div>
+
+                            <p class="text-sm font-bold text-gray-700 mb-2">Hình thức thanh toán:</p>
+                            <div class="grid grid-cols-2 gap-3 mb-6">
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="method" value="CASH" class="peer sr-only" checked>
+                                    <div class="p-3 rounded-xl border-2 border-gray-200 peer-checked:border-[#03594D] peer-checked:bg-[#E3E5D2] hover:bg-gray-50 transition-all flex flex-col items-center gap-1 text-gray-500 peer-checked:text-[#03594D]">
+                                        <span class="material-symbols-outlined text-2xl">attach_money</span>
+                                        <span class="font-bold text-sm">Tiền mặt</span>
+                                    </div>
+                                </label>
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="method" value="BANK_TRANSFER" class="peer sr-only">
+                                    <div class="p-3 rounded-xl border-2 border-gray-200 peer-checked:border-blue-600 peer-checked:bg-blue-50 hover:bg-gray-50 transition-all flex flex-col items-center gap-1 text-gray-500 peer-checked:text-blue-600">
+                                        <span class="material-symbols-outlined text-2xl">qr_code_scanner</span>
+                                        <span class="font-bold text-sm">Chuyển khoản</span>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div class="flex justify-end gap-3 border-t pt-4">
+                                <button type="button" onclick="closePaymentModal()" class="px-4 py-2 text-gray-500 font-bold hover:bg-gray-100 rounded-lg">Hủy</button>
+                                <button type="submit" class="px-6 py-2 bg-[#03594D] text-white font-bold rounded-lg shadow hover:bg-[#024037]">Xác nhận</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
                 <script>
-                   
+                    // Edit Modal Logic
                     function openEditModal(id, date, startTime, staffId, status) {
                         document.getElementById('modalBookingId').value = id;
                         document.getElementById('modalDate').value = date;
                         if (startTime) {
                             let timeVal = startTime.toString();
-                            if (timeVal.length > 5)
-                                timeVal = timeVal.substring(0, 5);
+                            if (timeVal.length > 5) timeVal = timeVal.substring(0, 5);
                             document.getElementById('modalTime').value = timeVal;
                         }
                         document.getElementById('modalStaff').value = staffId || "";
                         document.getElementById('modalStatus').value = status;
                         document.getElementById('editModal').classList.remove('hidden');
                     }
-                    function closeEditModal() {
-                        document.getElementById('editModal').classList.add('hidden');
+                    function closeEditModal() { document.getElementById('editModal').classList.add('hidden'); }
+
+                    // Payment Modal Logic
+                    function openPaymentModal(id, amount) {
+                        document.getElementById('payBookingId').value = id;
+                        const formatted = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+                        document.getElementById('payAmountDisplay').innerText = formatted;
+                        document.getElementById('paymentModal').classList.remove('hidden');
                     }
+                    function closePaymentModal() { document.getElementById('paymentModal').classList.add('hidden'); }
                 </script>
 
             </section>

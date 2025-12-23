@@ -4,160 +4,226 @@
     <title>Thú Cưng Của Tôi</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet"/>
     <style>
-        .pet-card { transition: transform 0.2s; }
-        .pet-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        .pet-avatar { width: 80px; height: 80px; object-fit: cover; border-radius: 50%; border: 3px solid #eee; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8f9fa; }
+        .pet-card { transition: all 0.3s ease; border: 1px solid #eee; }
+        .pet-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.08); border-color: #03594D; }
+        .pet-avatar-container { width: 100px; height: 100px; position: relative; }
+        .pet-avatar { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; border: 4px solid white; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .btn-primary-custom { background-color: #03594D; border-color: #03594D; color: white; }
+        .btn-primary-custom:hover { background-color: #024037; color: white; }
+        .text-primary-custom { color: #03594D; }
+        .badge-species { font-size: 0.7rem; padding: 0.35em 0.65em; }
     </style>
 </head>
-<body class="bg-light py-5">
-    <div class="container bg-white p-5 rounded-4 shadow-sm" style="max-width: 1000px;">
+<body class="py-5">
+    <div class="container bg-white p-5 rounded-4 shadow-sm" style="max-width: 1100px;">
         
-        <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+        <div class="d-flex justify-content-between align-items-center mb-5 pb-3 border-bottom">
             <div class="btn-group">
                 <a href="/my-account/profile" class="btn btn-outline-secondary"><i class="fa-solid fa-user me-2"></i>Hồ sơ</a>
-                <a href="/my-account/pets" class="btn btn-primary active"><i class="fa-solid fa-paw me-2"></i>Thú cưng</a>
+                <a href="/my-account/pets" class="btn btn-primary-custom active"><i class="fa-solid fa-paw me-2"></i>Thú cưng</a>
                 <a href="/my-account/history" class="btn btn-outline-secondary"><i class="fa-solid fa-clock-rotate-left me-2"></i>Lịch sử</a>
             </div>
-            <a href="/" class="text-decoration-none text-muted"><i class="fa-solid fa-arrow-left me-1"></i>Trang chủ</a>
+            <a href="/" class="text-decoration-none text-muted fw-bold"><i class="fa-solid fa-arrow-left me-1"></i>Trang chủ</a>
         </div>
 
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h4 class="text-success fw-bold mb-0">Danh sách thú cưng</h4>
-            <button class="btn btn-success btn-sm" onclick="document.getElementById('addPetForm').scrollIntoView({behavior: 'smooth'})">
-                <i class="fa-solid fa-plus me-1"></i> Thêm bé mới
+            <div>
+                <h3 class="text-primary-custom fw-bold mb-1">Hồ Sơ Thú Cưng</h3>
+                <p class="text-muted small mb-0">Quản lý thông tin các bé cưng của bạn</p>
+            </div>
+            <button class="btn btn-primary-custom shadow-sm rounded-pill px-4" onclick="openAddModal()">
+                <i class="fa-solid fa-plus me-2"></i>Thêm bé mới
             </button>
         </div>
         
-        <div th:if="${message}" class="alert alert-success"><i class="fa-solid fa-check me-2"></i><span th:text="${message}"></span></div>
-        <div th:if="${error}" class="alert alert-danger"><i class="fa-solid fa-triangle-exclamation me-2"></i><span th:text="${error}"></span></div>
-
-        <div class="row g-3 mb-5">
-            <div class="col-md-6" th:each="p : ${pets}">
-                <div class="card pet-card h-100 border-0 shadow-sm bg-light">
-                    <div class="card-body d-flex align-items-center gap-3">
-                        <img th:src="${p.avatarFileId != null ? '/api/files/' + p.avatarFileId : 'https://cdn-icons-png.flaticon.com/512/616/616408.png'}" 
-                             class="pet-avatar bg-white">
-                        
-                        <div class="flex-grow-1">
-                            <div class="d-flex justify-content-between">
-                                <h5 class="fw-bold mb-1" th:text="${p.name}"></h5>
-                                <span class="badge bg-success rounded-pill" th:if="${p.active}">Active</span>
-                            </div>
-                            <p class="mb-1 small text-muted">
-                                <span th:text="${p.species}"></span> | <span th:text="${p.breed}"></span> | <span th:text="${p.gender}"></span>
-                            </p>
-                            <p class="mb-0 small fw-bold text-dark">
-                                <i class="fa-solid fa-weight-scale me-1"></i><span th:text="${p.weightKg} + ' kg'"></span>
-                                <span class="mx-2">•</span>
-                                <i class="fa-solid fa-cake-candles me-1"></i><span th:text="${p.birthDate}"></span>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div th:if="${#lists.isEmpty(pets)}" class="text-center py-4 text-muted col-12">
-                Bạn chưa có thú cưng nào. Hãy thêm hồ sơ cho bé ngay!
-            </div>
+        <div th:if="${message}" class="alert alert-success d-flex align-items-center rounded-3 shadow-sm">
+            <i class="fa-solid fa-check-circle me-3 fs-4"></i> <span th:text="${message}"></span>
+        </div>
+        <div th:if="${error}" class="alert alert-danger d-flex align-items-center rounded-3 shadow-sm">
+            <i class="fa-solid fa-triangle-exclamation me-3 fs-4"></i> <span th:text="${error}"></span>
         </div>
 
-        <div id="addPetForm" class="card border border-success-subtle">
-            <div class="card-header bg-success-subtle text-success fw-bold">
-                <i class="fa-solid fa-plus-circle me-2"></i>Thêm Hồ Sơ Thú Cưng Mới
+        <div class="row g-4">
+            <div th:if="${#lists.isEmpty(pets)}" class="col-12 text-center py-5">
+                <img src="https://cdn-icons-png.flaticon.com/512/7486/7486747.png" width="120" class="mb-3 opacity-50">
+                <h5 class="text-muted fw-bold">Chưa có thú cưng nào</h5>
+                <p class="text-muted small">Hãy thêm hồ sơ để dễ dàng đặt lịch khám nhé!</p>
             </div>
-            <div class="card-body p-4">
-                <form th:action="@{/my-account/pets/add}" method="post" enctype="multipart/form-data" class="row g-3">
-                    
-                    <div class="col-md-3 text-center">
-                        <label class="form-label fw-bold d-block">Ảnh đại diện</label>
-                        <div class="mb-2">
-                            <img id="previewAvatar" src="https://placehold.co/150?text=Upload+Image" 
-                                 class="img-thumbnail rounded-circle" style="width: 120px; height: 120px; object-fit: cover;">
-                        </div>
-                        <input type="file" name="avatarFile" class="form-control form-control-sm" accept="image/*" onchange="previewImage(this)">
-                    </div>
 
-                    <div class="col-md-9">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">Tên thú cưng <span class="text-danger">*</span></label>
-                                <input type="text" name="name" class="form-control" required>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label fw-bold">Loài <span class="text-danger">*</span></label>
-                                <select name="species" class="form-select" required>
-                                    <option value="DOG">Chó</option>
-                                    <option value="CAT">Mèo</option>
-                                    <option value="OTHER">Khác</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label fw-bold">Giới tính</label>
-                                <select name="gender" class="form-select">
-                                    <option value="MALE">Đực</option>
-                                    <option value="FEMALE">Cái</option>
-                                </select>
+            <div class="col-lg-6" th:each="p : ${pets}">
+                <div class="card pet-card h-100 bg-white rounded-4 overflow-hidden position-relative">
+                    <div class="card-body p-4">
+                        <div class="d-flex gap-4">
+                            <div class="pet-avatar-container flex-shrink-0">
+                                <img th:src="${p.avatarFileId != null ? '/api/files/' + p.avatarFileId : 'https://cdn-icons-png.flaticon.com/512/616/616408.png'}" 
+                                     class="pet-avatar">
+                                <span th:if="${p.species == 'DOG'}" class="position-absolute bottom-0 end-0 badge rounded-pill bg-info border border-white"><i class="fa-solid fa-dog"></i></span>
+                                <span th:if="${p.species == 'CAT'}" class="position-absolute bottom-0 end-0 badge rounded-pill bg-warning border border-white"><i class="fa-solid fa-cat"></i></span>
                             </div>
 
-                            <div class="col-md-4">
-                                <label class="form-label">Giống loài (Breed)</label>
-                                <input type="text" name="breed" class="form-control" placeholder="VD: Poodle">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Màu lông</label>
-                                <input type="text" name="color" class="form-control">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Ngày sinh</label>
-                                <input type="date" name="birthDate" class="form-control">
-                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h4 class="fw-bold text-dark mb-1" th:text="${p.name}">Miu Miu</h4>
+                                        <div class="d-flex gap-2 mb-2">
+                                            <span class="badge bg-light text-dark border badge-species" th:text="${p.breed}">Poodle</span>
+                                            <span class="badge bg-light text-dark border badge-species" th:text="${p.gender == 'MALE' ? 'Đực' : 'Cái'}">Cái</span>
+                                        </div>
+                                    </div>
+                                    <span th:class="${'badge rounded-pill ' + (p.active ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary')}" 
+                                          th:text="${p.active ? 'Đang nuôi' : 'Lưu trữ'}">Active</span>
+                                </div>
 
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">Cân nặng (kg) <span class="text-danger">*</span></label>
-                                <input type="number" step="0.1" name="weightKg" class="form-control" required>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Độ dài lông</label>
-                                <select name="coatLength" class="form-select">
-                                    <option value="SHORT">Ngắn</option>
-                                    <option value="MEDIUM">Vừa</option>
-                                    <option value="LONG">Dài</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4 d-flex align-items-end">
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="checkbox" name="sterilized" id="sterilized">
-                                    <label class="form-check-label" for="sterilized">Đã triệt sản?</label>
+                                <div class="row g-2 text-sm mt-2 text-muted small">
+                                    <div class="col-6"><i class="fa-solid fa-weight-scale w-20px text-center"></i> <span th:text="${p.weightKg} + ' kg'">5.2 kg</span></div>
+                                    <div class="col-6"><i class="fa-solid fa-cake-candles w-20px text-center"></i> <span th:text="${#temporals.format(p.birthDate, 'dd/MM/yyyy')}">01/01/2022</span></div>
+                                    <div class="col-12 text-truncate" th:title="${p.notes}">
+                                        <i class="fa-solid fa-note-sticky w-20px text-center"></i> 
+                                        <span th:text="${p.notes != null && p.notes != '' ? p.notes : 'Không có ghi chú'}">...</span>
+                                    </div>
                                 </div>
                             </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label">Số Microchip (Nếu có)</label>
-                                <input type="text" name="microchipNumber" class="form-control">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Đặc điểm nhận dạng</label>
-                                <input type="text" name="distinguishingMarks" class="form-control">
-                            </div>
-
-                            <div class="col-12">
-                                <label class="form-label">Ghi chú thêm (Dị ứng, tính cách...)</label>
-                                <textarea name="notes" class="form-control" rows="2"></textarea>
-                            </div>
                         </div>
                     </div>
-
-                    <div class="col-12 text-end mt-3">
-                        <button type="submit" class="btn btn-success px-4 fw-bold">
-                            <i class="fa-solid fa-save me-2"></i>Lưu Hồ Sơ
+                    
+                    <div class="card-footer bg-light border-top-0 p-3 d-flex justify-content-end gap-2">
+                        <button class="btn btn-sm btn-white border hover-shadow" 
+                                th:onclick="openEditModal(
+                                    [[${p.petId}]], [[${p.name}]], [[${p.species}]], [[${p.gender}]], 
+                                    [[${p.breed}]], [[${p.birthDate}]], [[${p.weightKg}]], [[${p.color}]], 
+                                    [[${p.sterilized}]], [[${p.microchipNumber}]], [[${p.notes}]]
+                                )">
+                            <i class="fa-solid fa-pen text-primary"></i> Sửa
+                        </button>
+                        <button class="btn btn-sm btn-white border hover-shadow text-danger" 
+                                th:onclick="confirmDelete([[${p.petId}]], [[${p.name}]])">
+                            <i class="fa-solid fa-trash"></i> Xóa
                         </button>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
     </div>
 
+    <div class="modal fade" id="petModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0">
+                <div class="modal-header bg-success-subtle text-success">
+                    <h5 class="modal-title fw-bold" id="modalTitle"><i class="fa-solid fa-paw me-2"></i>Thêm Thú Cưng</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="petForm" th:action="@{/my-account/pets/save}" method="post" enctype="multipart/form-data" class="row g-3">
+                        <input type="hidden" name="petId" id="fieldPetId">
+
+                        <div class="col-md-4 text-center border-end">
+                            <label class="form-label fw-bold d-block mb-3">Ảnh đại diện</label>
+                            <div class="position-relative d-inline-block">
+                                <img id="previewAvatar" src="https://placehold.co/150?text=Upload" 
+                                     class="rounded-circle shadow-sm border" style="width: 140px; height: 140px; object-fit: cover;">
+                                <label for="avatarInput" class="position-absolute bottom-0 end-0 btn btn-sm btn-primary-custom rounded-circle" style="width: 32px; height: 32px; padding: 4px;">
+                                    <i class="fa-solid fa-camera"></i>
+                                </label>
+                            </div>
+                            <input type="file" id="avatarInput" name="avatarFile" class="d-none" accept="image/*" onchange="previewImage(this)">
+                            <p class="small text-muted mt-2">Nhấn vào icon máy ảnh để chọn hình</p>
+                        </div>
+
+                        <div class="col-md-8">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-uppercase text-muted">Tên bé <span class="text-danger">*</span></label>
+                                    <input type="text" name="name" id="fieldName" class="form-control" required>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label small fw-bold text-uppercase text-muted">Loài</label>
+                                    <select name="species" id="fieldSpecies" class="form-select">
+                                        <option value="DOG">Chó</option>
+                                        <option value="CAT">Mèo</option>
+                                        <option value="OTHER">Khác</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label small fw-bold text-uppercase text-muted">Giới tính</label>
+                                    <select name="gender" id="fieldGender" class="form-select">
+                                        <option value="MALE">Đực</option>
+                                        <option value="FEMALE">Cái</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-uppercase text-muted">Giống (Breed)</label>
+                                    <input type="text" name="breed" id="fieldBreed" class="form-control" placeholder="VD: Poodle">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-uppercase text-muted">Cân nặng (kg)</label>
+                                    <input type="number" step="0.1" name="weightKg" id="fieldWeight" class="form-control" required>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-uppercase text-muted">Ngày sinh</label>
+                                    <input type="date" name="birthDate" id="fieldBirthDate" class="form-control">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-uppercase text-muted">Màu lông</label>
+                                    <input type="text" name="color" id="fieldColor" class="form-control">
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-uppercase text-muted">Microchip</label>
+                                    <input type="text" name="microchipNumber" id="fieldMicrochip" class="form-control">
+                                </div>
+                                <div class="col-md-6 d-flex align-items-end">
+                                    <div class="form-check form-switch pb-2">
+                                        <input class="form-check-input" type="checkbox" name="sterilized" id="fieldSterilized">
+                                        <label class="form-check-label" for="fieldSterilized">Đã triệt sản?</label>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label small fw-bold text-uppercase text-muted">Ghi chú</label>
+                                    <textarea name="notes" id="fieldNotes" class="form-control" rows="2" placeholder="Dị ứng, tính cách..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" onclick="document.getElementById('petForm').submit()" class="btn btn-primary-custom px-4">Lưu thông tin</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content rounded-4">
+                <div class="modal-body text-center p-4">
+                    <div class="text-danger mb-3"><i class="fa-solid fa-circle-exclamation fa-3x"></i></div>
+                    <h5 class="fw-bold">Xác nhận xóa?</h5>
+                    <p class="text-muted small">Bạn có chắc muốn xóa hồ sơ bé <strong id="deletePetName"></strong> không?</p>
+                    <form th:action="@{/my-account/pets/delete}" method="post">
+                        <input type="hidden" name="petId" id="deletePetId">
+                        <div class="d-flex justify-content-center gap-2 mt-4">
+                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Không</button>
+                            <button type="submit" class="btn btn-danger">Xóa luôn</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        const petModal = new bootstrap.Modal(document.getElementById('petModal'));
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+
+        // Preview Image
         function previewImage(input) {
             if (input.files && input.files[0]) {
                 var reader = new FileReader();
@@ -166,6 +232,43 @@
                 }
                 reader.readAsDataURL(input.files[0]);
             }
+        }
+
+        // Open Add Modal (Clear form)
+        function openAddModal() {
+            document.getElementById('petForm').reset();
+            document.getElementById('fieldPetId').value = '';
+            document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-plus-circle me-2"></i>Thêm Thú Cưng';
+            document.getElementById('previewAvatar').src = 'https://placehold.co/150?text=Upload';
+            petModal.show();
+        }
+
+        // Open Edit Modal (Fill form)
+        function openEditModal(id, name, species, gender, breed, birth, weight, color, sterilized, chip, notes) {
+            document.getElementById('fieldPetId').value = id;
+            document.getElementById('fieldName').value = name;
+            document.getElementById('fieldSpecies').value = species;
+            document.getElementById('fieldGender').value = gender;
+            document.getElementById('fieldBreed').value = breed || '';
+            document.getElementById('fieldBirthDate').value = birth || '';
+            document.getElementById('fieldWeight').value = weight;
+            document.getElementById('fieldColor').value = color || '';
+            document.getElementById('fieldMicrochip').value = chip || '';
+            document.getElementById('fieldNotes').value = notes || '';
+            document.getElementById('fieldSterilized').checked = sterilized === true || sterilized === 'true'; // Handle boolean/string
+
+            // Update UI
+            document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-pen-to-square me-2"></i>Cập Nhật Hồ Sơ';
+            // Note: Avatar preview cannot be set from server path easily without fetching, so keep generic or leave current
+            
+            petModal.show();
+        }
+
+        // Open Delete Modal
+        function confirmDelete(id, name) {
+            document.getElementById('deletePetId').value = id;
+            document.getElementById('deletePetName').innerText = name;
+            deleteModal.show();
         }
     </script>
 </body>

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html class="light" lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="${p.name} + ' - ShenPCare Pharmacy'">Chi tiết sản phẩm</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+    <style>body { font-family: 'Plus Jakarta Sans', sans-serif; }</style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <nav class="bg-[#03594D] text-white p-4 shadow-md sticky top-0 z-50">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="/pharmacy" class="text-lg font-bold flex items-center gap-2 hover:text-[#D8E268] transition">
+                <i class="fa-solid fa-arrow-left"></i> Quay lại Nhà thuốc
+            </a>
+            <div class="flex items-center gap-6 text-sm font-medium">
+                <a href="/cart" class="relative group flex items-center gap-1 hover:text-[#D8E268] transition">
+                    <i class="fa-solid fa-cart-shopping text-xl"></i> <span class="hidden md:inline">Giỏ hàng</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="bg-white border-b border-gray-100">
+        <div class="container mx-auto px-6 py-3 text-sm text-gray-500">
+            <a href="/" class="hover:text-[#03594D]">Trang chủ</a> <i class="fa-solid fa-chevron-right text-xs mx-2"></i>
+            <a href="/pharmacy" class="hover:text-[#03594D]">Nhà thuốc</a> <i class="fa-solid fa-chevron-right text-xs mx-2"></i>
+            <span class="text-gray-800 font-bold" th:text="${p.name}">Tên thuốc</span>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-6 py-8 max-w-6xl">
+        <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-10">
+            
+            <div class="relative">
+                <div class="aspect-square bg-gray-50 rounded-2xl flex items-center justify-center overflow-hidden border border-gray-100 group">
+                    <img th:if="${p.imageFileId != null}" th:src="@{'/api/files/' + ${p.imageFileId}}" class="w-full h-full object-contain p-4 group-hover:scale-105 transition duration-500">
+                    <div th:unless="${p.imageFileId != null}" class="text-gray-300 flex flex-col items-center">
+                        <i class="fa-solid fa-pills text-8xl opacity-30 mb-4"></i>
+                        <span class="text-sm">Chưa có ảnh</span>
+                    </div>
+                    
+                    <span th:if="${p.isPrescription}" class="absolute top-4 left-4 bg-red-600 text-white px-3 py-1 rounded-lg font-bold shadow-lg flex items-center gap-2">
+                        <i class="fa-solid fa-user-doctor"></i> Thuốc Kê Đơn (Rx)
+                    </span>
+                </div>
+            </div>
+
+            <div>
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="bg-[#E3E5D2] text-[#03594D] text-xs font-bold px-2 py-1 rounded uppercase tracking-wider" th:text="${p.category}">CATEGORY</span>
+                    <span class="text-gray-400 text-xs">SKU: <span th:text="${p.sku}"></span></span>
+                </div>
+
+                <h1 class="text-3xl font-black text-[#03594D] mb-2 leading-tight" th:text="${p.name}">Tên sản phẩm</h1>
+                <p class="text-gray-500 text-sm mb-4" th:text="${p.usage}">Mô tả ngắn...</p>
+
+                <div class="flex items-end gap-2 mb-6 border-b border-dashed border-gray-200 pb-6">
+                    <span class="text-4xl font-black text-[#03594D]" th:text="${#numbers.formatDecimal(p.retailPrice, 0, 'COMMA', 0, 'POINT')} + 'đ'"></span>
+                    <span class="text-gray-500 font-medium mb-1">/ <span th:text="${p.unit}">Hộp</span></span>
+                </div>
+
+                <div th:unless="${p.isPrescription}">
+                    <form id="addToCartForm" action="/cart/add" method="post" class="mb-6">
+                        <input type="hidden" name="productId" th:value="${p.productId}">
+                        
+                        <div class="flex items-center gap-4 mb-6">
+                            <label class="font-bold text-gray-700">Số lượng:</label>
+                            <div class="flex items-center border border-gray-300 rounded-xl overflow-hidden w-fit">
+                                <button type="button" onclick="adjustQty(-1)" class="w-10 h-10 bg-gray-50 hover:bg-gray-100 text-gray-600 font-bold">-</button>
+                                <input type="number" name="quantity" id="qtyInput" value="1" min="1" th:max="${p.stockQuantity}" class="w-14 text-center border-none focus:ring-0 font-bold text-lg">
+                                <button type="button" onclick="adjustQty(1)" class="w-10 h-10 bg-gray-50 hover:bg-gray-100 text-gray-600 font-bold">+</button>
+                            </div>
+                            <span class="text-sm text-gray-500">
+                                (Còn <span th:text="${p.stockQuantity}" class="font-bold text-gray-800"></span> sản phẩm)
+                            </span>
+                        </div>
+
+                        <div class="flex gap-3">
+                            <button type="submit" class="flex-1 bg-white border-2 border-[#03594D] text-[#03594D] font-bold py-3.5 rounded-xl hover:bg-gray-50 transition flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ
+                            </button>
+                            <button type="button" onclick="buyNow()" class="flex-1 bg-[#03594D] text-white font-bold py-3.5 rounded-xl shadow-lg hover:bg-[#024037] transition flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-bolt"></i> Mua ngay
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div th:if="${p.isPrescription}" class="bg-red-50 border border-red-100 rounded-2xl p-6 text-center">
+                    <i class="fa-solid fa-file-prescription text-4xl text-red-300 mb-3"></i>
+                    <h3 class="text-red-700 font-bold text-lg">Sản phẩm kê đơn</h3>
+                    <p class="text-red-600 text-sm mt-1">Thuốc này chỉ được bán tại quầy khi có chỉ định của Bác sĩ thú y. Vui lòng liên hệ để được tư vấn.</p>
+                    <a href="/booking" class="inline-block mt-4 bg-red-600 text-white font-bold px-6 py-2 rounded-full hover:bg-red-700 transition">Đặt lịch tư vấn</a>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mt-6">
+                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                        <i class="fa-solid fa-shield-halved text-[#D8E268] text-xl"></i>
+                        <span class="text-xs font-bold text-gray-600">100% Chính hãng</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                        <i class="fa-solid fa-truck-fast text-[#D8E268] text-xl"></i>
+                        <span class="text-xs font-bold text-gray-600">Giao hàng 2h</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-8 bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
+            <h3 class="text-xl font-bold text-[#03594D] mb-6 border-b border-gray-100 pb-2">Thông tin chi tiết</h3>
+            
+            <div class="space-y-6">
+                <div th:if="${p.ingredient}">
+                    <h4 class="font-bold text-gray-800 mb-2 flex items-center gap-2"><i class="fa-solid fa-flask text-[#D8E268]"></i> Thành phần / Hoạt chất</h4>
+                    <p class="text-gray-600 bg-gray-50 p-4 rounded-xl border border-gray-100" th:text="${p.ingredient}"></p>
+                </div>
+
+                <div th:if="${p.usage}">
+                    <h4 class="font-bold text-gray-800 mb-2 flex items-center gap-2"><i class="fa-solid fa-circle-info text-[#D8E268]"></i> Công dụng & Chỉ định</h4>
+                    <p class="text-gray-600 leading-relaxed" th:text="${p.usage}"></p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                    <div>
+                        <h4 class="font-bold text-gray-800 mb-2 text-sm uppercase">Đối tượng sử dụng</h4>
+                        <div class="flex gap-2">
+                            <span th:if="${p.targetSpecies == 'DOG' || p.targetSpecies == 'BOTH'}" class="bg-orange-100 text-orange-700 px-3 py-1 rounded-lg font-bold text-sm flex items-center gap-1"><i class="fa-solid fa-dog"></i> Chó</span>
+                            <span th:if="${p.targetSpecies == 'CAT' || p.targetSpecies == 'BOTH'}" class="bg-blue-100 text-blue-700 px-3 py-1 rounded-lg font-bold text-sm flex items-center gap-1"><i class="fa-solid fa-cat"></i> Mèo</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-gray-800 mb-2 text-sm uppercase">Dạng bào chế</h4>
+                        <span class="bg-gray-100 text-gray-600 px-3 py-1 rounded-lg font-bold text-sm" th:text="${p.productForm}"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-12 mb-12" th:if="${not #lists.isEmpty(relatedProducts)}">
+            <h3 class="text-2xl font-black text-[#03594D] mb-6">Sản phẩm tương tự</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                <div th:each="rp : ${relatedProducts}" class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-lg transition group">
+                    <a th:href="@{'/pharmacy/product/' + ${rp.productId}}" class="block">
+                        <div class="aspect-square bg-gray-50 rounded-xl mb-4 flex items-center justify-center overflow-hidden">
+                            <img th:if="${rp.imageFileId != null}" th:src="@{'/api/files/' + ${rp.imageFileId}}" class="w-full h-full object-contain p-2 group-hover:scale-110 transition">
+                            <i th:unless="${rp.imageFileId != null}" class="fa-solid fa-pills text-4xl text-gray-300"></i>
+                        </div>
+                        <h4 class="font-bold text-gray-800 line-clamp-1 group-hover:text-[#03594D] transition" th:text="${rp.name}">Tên</h4>
+                        <div class="text-[#03594D] font-bold mt-1" th:text="${#numbers.formatDecimal(rp.retailPrice, 0, 'COMMA', 0, 'POINT')} + 'đ'"></div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <form id="buyNowForm" action="/pharmacy/buy" method="post" class="hidden">
+        <input type="hidden" name="productId" th:value="${p.productId}">
+        <input type="hidden" name="quantity" id="buyNowQty">
+        </form>
+
+    <script>
+        const maxStock = [[${p.stockQuantity}]];
+
+        function adjustQty(delta) {
+            const input = document.getElementById('qtyInput');
+            let val = parseInt(input.value) + delta;
+            if (val < 1) val = 1;
+            if (val > maxStock) val = maxStock;
+            input.value = val;
+        }
+
+        function buyNow() {
+            // Logic Mua ngay: Chuyển hướng sang trang nhập thông tin (hoặc dùng Modal như cũ)
+            // Ở đây đơn giản nhất là gọi modal "Mua ngay" mà bạn đã làm ở pharmacy.html
+            // Nhưng vì đây là trang riêng, ta nên submit sang 1 trang checkout đơn giản.
+            // Cách nhanh nhất: Tái sử dụng Modal của pharmacy.html? Không, ở đây nên submit form.
+            
+            // Nếu bạn muốn dùng lại Modal "Mua ngay" xịn xò của pharmacy.html, bạn cần copy modal đó qua đây.
+            // Tuy nhiên, để đơn giản, ta sẽ cho "Mua ngay" hoạt động như "Thêm vào giỏ" rồi chuyển hướng đến giỏ hàng.
+            
+            const qty = document.getElementById('qtyInput').value;
+            // Cách 1: Thêm vào giỏ rồi đi tới giỏ hàng
+            const form = document.getElementById('addToCartForm');
+            form.submit();
+            // (Thực tế nên dùng AJAX để thêm, sau đó window.location.href = '/cart')
+        }
+    </script>
+
+</body>
+</html>

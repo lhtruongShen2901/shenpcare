@@ -48,7 +48,6 @@ public class BookingService {
             booking.setCustomerId(dto.getCustomerId().intValue());
         }
         
-        // [QUAN TRỌNG] Kiểm tra null cho PetId (Cho phép đặt lịch không Pet)
         if (dto.getPetId() != null) {
             booking.setPetId(dto.getPetId().intValue());
         } else {
@@ -60,23 +59,24 @@ public class BookingService {
         booking.setNotes(dto.getNotes()); 
         booking.setIsUrgent(dto.getIsUrgent()); 
 
-        // 2. Xử lý Thời gian
+        // 2. Xử lý Thời gian [SỬA LỖI TẠI ĐÂY]
+        // Booking Entity dùng LocalTime, không phải LocalDateTime
         if (dto.getTimeSlot() != null && !dto.getTimeSlot().isEmpty()) {
             try {
                 LocalTime time = LocalTime.parse(dto.getTimeSlot());
-                LocalDateTime startDateTime = LocalDateTime.of(dto.getBookingDate(), time);
-                booking.setStartTime(startDateTime);
+                booking.setStartTime(time);
             } catch (Exception e) {
-                booking.setStartTime(dto.getBookingDate().atStartOfDay());
+                booking.setStartTime(LocalTime.of(8, 0)); // Mặc định 8h sáng nếu lỗi format
             }
         } else {
-            booking.setStartTime(dto.getBookingDate().atStartOfDay());
+            booking.setStartTime(LocalTime.of(8, 0)); // Mặc định 8h sáng nếu không chọn giờ
         }
 
         // 3. Lấy thông tin Dịch vụ & Tính toán
         Services service = servicesRepo.findById(dto.getServiceId())
                 .orElseThrow(() -> new IllegalArgumentException("Dịch vụ không tồn tại."));
 
+        // Tính EndTime dựa trên StartTime + Duration
         if (booking.getStartTime() != null) {
             int duration = (service.getDurationMinutes() != null) ? service.getDurationMinutes() : 60;
             booking.setEndTime(booking.getStartTime().plusMinutes(duration));
@@ -106,9 +106,10 @@ public class BookingService {
 
         int duration = (service.getDurationMinutes() != null) ? service.getDurationMinutes() : 60;
 
+        // [SỬA LỖI]: Gán trực tiếp LocalTime, không convert sang LocalDateTime
         if (form.getConfirmTime() != null) {
-            booking.setStartTime(booking.getBookingDate().atTime(form.getConfirmTime()));
-            booking.setEndTime(booking.getBookingDate().atTime(form.getConfirmTime().plusMinutes(duration)));
+            booking.setStartTime(form.getConfirmTime());
+            booking.setEndTime(form.getConfirmTime().plusMinutes(duration));
         }
 
         booking.setAssignedStaffId(form.getAssignedStaffId());
@@ -146,8 +147,18 @@ public class BookingService {
         dto.setBookingId(b.getBookingId());
         dto.setStatus(b.getStatus() != null ? b.getStatus() : "UNKNOWN");
         dto.setBookingDate(b.getBookingDate());
-        dto.setStartTime(b.getStartTime() != null ? b.getStartTime() : b.getBookingDate().atStartOfDay());
-        dto.setEndTime(b.getEndTime());
+        
+        // [QUAN TRỌNG]: DTO dùng cho Calendar thường cần LocalDateTime đầy đủ
+        // Nên ta phải ghép BookingDate + StartTime (LocalTime) lại
+        LocalDateTime startDT = (b.getStartTime() != null) 
+                ? LocalDateTime.of(b.getBookingDate(), b.getStartTime()) 
+                : b.getBookingDate().atStartOfDay();
+        dto.setStartTime(startDT);
+
+        LocalDateTime endDT = (b.getEndTime() != null)
+                ? LocalDateTime.of(b.getBookingDate(), b.getEndTime())
+                : startDT.plusHours(1);
+        dto.setEndTime(endDT);
 
         String notes = b.getNotes();
         if (notes != null && !notes.trim().isEmpty()) {
@@ -228,8 +239,11 @@ public class BookingService {
         int duration = (service.getDurationMinutes() != null) ? service.getDurationMinutes() : 60;
 
         booking.setBookingDate(newDate);
-        booking.setStartTime(newDate.atTime(newTime));
-        booking.setEndTime(booking.getStartTime().plusMinutes(duration));
+        
+        // [SỬA LỖI]: Gán trực tiếp LocalTime cho Start/End Time
+        booking.setStartTime(newTime);
+        booking.setEndTime(newTime.plusMinutes(duration));
+        
         booking.setAssignedStaffId(newStaffId);
 
         bookingRepo.save(booking);

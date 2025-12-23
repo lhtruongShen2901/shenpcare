@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html class="light" lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Giỏ hàng - ShenPCare</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet"/>
+    <style>body { font-family: 'Plus Jakarta Sans', sans-serif; }</style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <nav class="bg-[#03594D] text-white p-4 shadow-md sticky top-0 z-50">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="/" class="text-xl font-bold flex items-center gap-2">
+                <i class="fa-solid fa-house"></i> ShenPCare
+            </a>
+            <a href="/pharmacy" class="text-sm hover:text-[#D8E268]"><i class="fa-solid fa-arrow-left"></i> Tiếp tục mua sắm</a>
+        </div>
+    </nav>
+
+    <div class="container mx-auto p-6 max-w-5xl">
+        <h1 class="text-3xl font-black text-[#03594D] mb-6 flex items-center gap-3">
+            <span class="material-symbols-outlined">shopping_cart</span> Giỏ hàng của bạn
+        </h1>
+
+        <div th:if="${message}" class="bg-green-100 text-green-700 p-3 rounded mb-4" th:text="${message}"></div>
+        <div th:if="${error}" class="bg-red-100 text-red-700 p-3 rounded mb-4" th:text="${error}"></div>
+
+        <div th:if="${#lists.isEmpty(cart.items)}" class="text-center py-12 bg-white rounded-2xl shadow-sm">
+            <i class="fa-solid fa-basket-shopping text-6xl text-gray-200 mb-4"></i>
+            <p class="text-gray-500 mb-4">Giỏ hàng đang trống</p>
+            <a href="/pharmacy" class="px-6 py-2 bg-[#D8E268] text-[#03594D] font-bold rounded-full">Mua thuốc ngay</a>
+        </div>
+
+        <div th:unless="${#lists.isEmpty(cart.items)}" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <div class="lg:col-span-2 space-y-4">
+                <div th:each="item : ${cart.items}" class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+                    <div class="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center shrink-0">
+                         <img th:if="${item.product.imageFileId != null}" th:src="@{'/api/files/' + ${item.product.imageFileId}}" class="w-full h-full object-cover rounded-lg">
+                         <i th:unless="${item.product.imageFileId != null}" class="fa-solid fa-pills text-gray-300 text-2xl"></i>
+                    </div>
+                    
+                    <div class="flex-1">
+                        <h3 class="font-bold text-gray-800" th:text="${item.product.name}">Tên thuốc</h3>
+                        <p class="text-xs text-gray-500 mb-1" th:text="${#numbers.formatDecimal(item.unitPrice, 0, 'COMMA', 0, 'POINT')} + 'đ / ' + ${item.product.unit}"></p>
+                        <p class="text-sm font-bold text-[#03594D]">
+                            Tổng: <span th:text="${#numbers.formatDecimal(item.totalPrice, 0, 'COMMA', 0, 'POINT')}"></span>đ
+                        </p>
+                    </div>
+
+                    <div class="flex items-center gap-4">
+                        <span class="bg-gray-100 px-3 py-1 rounded-lg font-bold text-sm">x<span th:text="${item.quantity}"></span></span>
+                        
+                        <form action="/cart/remove" method="post">
+                            <input type="hidden" name="productId" th:value="${item.product.productId}">
+                            <button type="submit" class="text-gray-400 hover:text-red-500 transition">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-fit sticky top-24">
+                <h3 class="font-bold text-lg mb-4 text-[#03594D]">Tổng thanh toán</h3>
+                <div class="flex justify-between items-center mb-6 pb-6 border-b border-gray-100">
+                    <span class="text-gray-500">Tạm tính:</span>
+                    <span class="text-2xl font-black text-[#03594D]" th:text="${#numbers.formatDecimal(totalAmount, 0, 'COMMA', 0, 'POINT')} + 'đ'"></span>
+                </div>
+
+                <form action="/cart/checkout" method="post" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">SĐT người nhận</label>
+                        <input type="text" name="phone" required th:value="${userPhone}" class="w-full rounded-lg border-gray-200">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Địa chỉ giao hàng</label>
+                        <textarea name="address" required rows="2" class="w-full rounded-lg border-gray-200" th:text="${userAddress}"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Ghi chú</label>
+                        <input type="text" name="notes" class="w-full rounded-lg border-gray-200">
+                    </div>
+
+                    <button type="submit" class="w-full py-3 bg-[#03594D] text-white font-bold rounded-xl hover:bg-[#024037] shadow-lg transition">
+                        Xác nhận đặt hàng
+                    </button>
+                    <p class="text-xs text-center text-gray-400 mt-2">Thanh toán MoMo khả dụng ở bước sau</p>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
