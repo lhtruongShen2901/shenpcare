@@ -1,15 +1,19 @@
 package g6shenpcare.entity;
 
+import g6shenpcare.models.entity.OrderItem;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Table(name = "Orders")
 public class Order {
 
@@ -18,7 +22,6 @@ public class Order {
     @Column(name = "OrderId")
     private Long orderId;
 
-    // change to Long to match typical ID types Integer
     @Column(name = "CustomerId", nullable = false)
     private Integer customerId;
 
@@ -26,7 +29,7 @@ public class Order {
     private LocalDateTime orderDate;
 
     @Column(name = "Status", nullable = false, length = 20)
-    private String status;   // PENDING, CONFIRMED, ...
+    private String status; // PENDING, CONFIRMED, ...
 
     @Column(name = "ShippingAddress", length = 255)
     private String shippingAddress;
@@ -37,8 +40,8 @@ public class Order {
     @Column(name = "Notes", length = 500)
     private String notes;
 
-    public Order() {
-    }
-
+    // === Quan hệ với OrderItem ===
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderItem> items;
 
 }

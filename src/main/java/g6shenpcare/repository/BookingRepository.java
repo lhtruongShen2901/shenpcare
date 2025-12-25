@@ -1,6 +1,8 @@
 package g6shenpcare.repository;
 
 import g6shenpcare.entity.Booking;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -8,7 +10,9 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Integer> {
@@ -62,4 +66,64 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
 
     // [MỚI] Tìm booking theo nhân viên trong ngày (Dùng cho Doctor Dashboard sau này)
     List<Booking> findByAssignedStaffIdAndBookingDate(Integer staffId, LocalDate bookingDate);
+
+
+    List<Booking> findByCustomerIdOrderByStartTimeDesc(Integer customerId);
+    List<Booking> findByPetIdOrderByStartTimeDesc(Integer petId);
+
+    @Query("SELECT b FROM Booking b " +
+            "WHERE b.assignedStaffId = :staffId " +
+            "AND b.startTime >= :startDateTime " +
+            "AND b.startTime <= :endDateTime " +
+            "ORDER BY b.startTime ASC")
+    List<Booking> findByAssignedStaffIdAndDateRange(
+            @Param("staffId") Integer staffId,
+            @Param("startDateTime") LocalDateTime startDateTime,
+            @Param("endDateTime") LocalDateTime endDateTime
+    );
+
+
+    Page<Booking> findByAssignedStaffId(Integer staffId, Pageable pageable);
+
+    Page<Booking> findByAssignedStaffIdAndStatus(Integer staffId, String status, Pageable pageable);
+
+    List<Booking> findByPetIdAndBookingIdNotAndStatusOrderByStartTimeDesc(
+            Integer petId, Integer excludeBookingId, String status);
+
+
+    List<Booking> findByCustomer_CustomerIdOrderByBookingDateDesc(Integer customerId);
+
+
+    List<Booking> findTop5ByPetIdOrderByBookingDateDesc(Integer petId);
+
+
+    List<Booking> findByCustomerIdOrderByBookingDateDesc(Integer customerId);
+
+    List<Booking> findByPetIdOrderByBookingDateDesc(Integer petId);
+
+    Optional<Booking> findTopByPetIdOrderByBookingDateDesc(Integer petId);
+
+    int countByPetIdAndStatusIn(Integer petId, List<String> statuses);
+
+    @Query("SELECT COUNT(b) FROM Booking b WHERE b.bookingDate = :date " +
+            "AND b.startTime >= :startTime AND b.startTime < :endTime " +
+            "AND b.staff.userId = :staffId " +
+            "AND b.status NOT IN ('CANCELLED')")
+    int countByBookingDateAndTimeRange(
+            @Param("date") LocalDate date,
+            @Param("startTime") LocalDateTime startTime,
+            @Param("endTime") LocalDateTime endTime,
+            @Param("staffId") Integer staffId
+    );
+
+    @Query("SELECT b FROM Booking b WHERE b.staff.userId = :staffId " +
+            "AND b.bookingDate = :date " +
+            "AND b.startTime >= :startTime AND b.startTime < :endTime " +
+            "AND b.status NOT IN ('CANCELLED')")
+    List<Booking> findByStaffAndDateTimeRange(
+            @Param("staffId") Integer staffId,
+            @Param("date") LocalDate date,
+            @Param("startTime") LocalDateTime startTime,
+            @Param("endTime") LocalDateTime endTime
+    );
 }

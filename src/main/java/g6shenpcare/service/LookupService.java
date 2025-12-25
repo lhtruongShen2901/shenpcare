@@ -5,10 +5,8 @@ import g6shenpcare.entity.Booking;
 import g6shenpcare.entity.CustomerProfile;
 import g6shenpcare.entity.Order;
 import g6shenpcare.entity.Pets;
-import g6shenpcare.models.dto.BookingDetailDTO;
-import g6shenpcare.models.dto.LookupResultDTO;
-import g6shenpcare.models.dto.OrderDetailDTO;
-import g6shenpcare.models.dto.TicketDetailDTO;
+import g6shenpcare.models.dto.*;
+import g6shenpcare.models.entity.PetMedicalRecord;
 import g6shenpcare.models.entity.Ticket;
 import g6shenpcare.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +28,8 @@ public class LookupService {
     private final BookingRepository bookingRepository;
     private final OrderRepository orderRepository;
     private final TicketRepository ticketRepository;
-//    private final PetMedicalRecordRepository medicalRecordRepository;
+    private final PetMedicalRecordRepository medicalRecordRepository;
+    private final PrescriptionRepository prescriptionRepository;
 
 
     public LookupResultDTO search(String searchType, String keyword) {
@@ -53,7 +52,7 @@ public class LookupService {
                 searchByTicket(keyword, result);
                 break;
             default:
-                throw new IllegalArgumentException(STR."Loại tìm kiếm không hợp lệ: \{searchType}");
+                throw new IllegalArgumentException("Loại tìm kiếm không hợp lệ: " + searchType);
         }
 
         return result;
@@ -173,14 +172,15 @@ public class LookupService {
         result.setPets(pets);
 
         // Load medical records for all pets
-//        List<PetMedicalRecord> allRecords = new ArrayList<>();
-//        for (Pets pet : pets) {
-//            List<PetMedicalRecord> records = medicalRecordRepository.findByPetIdOrderByVisitDateDesc(pet.getPetId());
-//            allRecords.addAll(records);
-//        }
-//        result.setMedicalRecords(allRecords);
+        List<PetMedicalRecord> allRecords = new ArrayList<>();
+        for (Pets pet : pets) {
+            List<PetMedicalRecord> records = medicalRecordRepository.findByPet_PetIdOrderByVisitDateDesc(pet.getPetId());
 
-        // Load bookings
+            allRecords.addAll(records);
+        }
+        result.setMedicalRecords(allRecords);
+
+//         Load bookings
         List<Booking> bookings = bookingRepository.findByCustomerIdOrderByStartTimeDesc(customerId);
         result.setBookings(bookings);
 
@@ -194,22 +194,7 @@ public class LookupService {
     }
 
 
-//    public PetMedicalHistoryDTO getPetMedicalHistory(Integer petId) {
-//        Pets pet = petRepository.findById(petId)
-//                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy thú cưng"));
-//
-//        CustomerProfile customer = customerRepository.findById(pet.getCustomerId())
-//                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy chủ sở hữu"));
-//
-//        List<PetMedicalRecord> records = medicalRecordRepository.findByPetIdOrderByVisitDateDesc(petId);
-//
-//        PetMedicalHistoryDTO dto = new PetMedicalHistoryDTO();
-//        dto.setPet(pet);
-//        dto.setCustomer(customer);
-//        dto.setMedicalRecords(records);
-//
-//        return dto;
-//    }
+
 
 
     public BookingDetailDTO getBookingDetail(Integer bookingId) {
@@ -220,13 +205,13 @@ public class LookupService {
         Pets pet = petRepository.findById(booking.getPetId()).orElse(null);
 
         // Try to get medical record if exists
-//        PetMedicalRecord medicalRecord = medicalRecordRepository.findByBookingId(bookingId).orElse(null);
+        PetMedicalRecord medicalRecord = medicalRecordRepository.findByBooking_BookingId(bookingId).orElse(null);
 
         BookingDetailDTO dto = new BookingDetailDTO();
         dto.setBooking(booking);
         dto.setCustomer(customer);
         dto.setPet(pet);
-//        dto.setMedicalRecord(medicalRecord);
+        dto.setMedicalRecord(medicalRecord);
 
         return dto;
     }
@@ -256,7 +241,7 @@ public class LookupService {
         TicketDetailDTO dto = new TicketDetailDTO();
         dto.setTicket(ticket);
         dto.setCustomer(customer);
-//        dto.setMessages(ticket.getMessages());
+        dto.setMessages(ticket.getSession().getMessages());
 
         return dto;
     }

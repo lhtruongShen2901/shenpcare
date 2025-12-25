@@ -20,4 +20,7 @@ public interface PetRepository extends JpaRepository<Pets, Integer> { // Integer
     Optional<Pets> findByPetCode(String petCode);
     List<Pets> findByNameContainingIgnoreCase(String name);
     List<Pets> findByCustomerId(Integer customerId);
+
+
+    List<Pets> findByCustomerIdAndActiveTrue(Integer customerId);
 }

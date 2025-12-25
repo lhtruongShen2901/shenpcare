@@ -5,6 +5,7 @@ import g6shenpcare.dto.BookingMonitorDTO; // [MỚI] Đảm bảo đã tạo cla
 import g6shenpcare.entity.Booking;
 import g6shenpcare.entity.DailyServiceLimit;
 import g6shenpcare.entity.Services;
+import g6shenpcare.models.dto.BookingHistoryDTO;
 import g6shenpcare.repository.BookingRepository;
 import g6shenpcare.repository.DailyServiceLimitRepository;
 import g6shenpcare.repository.ServicesRepository;
@@ -270,5 +271,28 @@ public class BookingService {
         // Lưu xuống Database
         // (@PreUpdate trong Entity sẽ tự động cập nhật cột UpdatedAt)
         bookingRepo.save(booking);
+    }
+
+
+
+    @Transactional
+    public List<BookingHistoryDTO> getBookingHistoryByCustomer(Integer customerId) {
+
+        return bookingRepo
+                .findByCustomer_CustomerIdOrderByBookingDateDesc(customerId)
+                .stream()
+                .map(this::toHistoryDTO)
+                .toList();
+    }
+
+    private BookingHistoryDTO toHistoryDTO(Booking b) {
+        return new BookingHistoryDTO(
+                b.getBookingId(),
+                b.getBookingDate(),
+                b.getStatus(),
+                b.getTotalAmount(),
+                b.getService() != null ? b.getService().getName() : null,
+                b.getPet() != null ? b.getPet().getName() : null
+        );
     }
 }

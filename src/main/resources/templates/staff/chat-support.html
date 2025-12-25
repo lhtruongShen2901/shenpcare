@@ -201,6 +201,7 @@
                              th:data-customer-phone="${chatSession.customer.phone}"
                              th:data-customer-email="${chatSession.customer.email}"
                              th:data-customer-username="${chatSession.customer.username}"
+                             th:data-customer-id="${chatSession.customer.userId}"
                              class="p-4 border-b border-[#E3E5D2] hover:bg-[#F8F9FA] cursor-pointer"
                              th:classappend="
        (${iterStat.first} ? ' border-l-4 border-l-[#D8E268] bg-[#F8F9FA]' : '')
@@ -485,11 +486,12 @@
                         <span class="material-symbols-outlined text-[18px]">bolt</span>
                         Thao tác nhanh
                     </h3>
-                    <div class="grid grid-cols-2 gap-2">
+                    <div class="grid grid-cols-2 gap-2"  id="quickActionsContainer">
                         <button class="border border-[#E3E5D2] rounded-lg py-2.5 text-sm hover:bg-[#D8E268] hover:text-[#03594D] hover:border-[#D8E268] transition-all font-bold text-gray-600 flex items-center justify-center gap-1">
                             <span class="material-symbols-outlined text-[16px]">payments</span>
                             Báo giá
                         </button>
+                        <button class="border border-[#E3E5D2] rounded-lg py-2.5 text-sm hover:bg-[#D8E268] hover:text-[#03594D] hover:border-[#D8E268] transition-all font-bold text-gray-600 flex items-center justify-center gap-1">
                         <button class="border border-[#E3E5D2] rounded-lg py-2.5 text-sm hover:bg-[#D8E268] hover:text-[#03594D] hover:border-[#D8E268] transition-all font-bold text-gray-600 flex items-center justify-center gap-1">
                             <span class="material-symbols-outlined text-[16px]">calendar_month</span>
                             Đặt lịch
@@ -517,7 +519,7 @@
                 <div class="p-5">
                     <h3 class="font-black text-[#03594D] mb-3 flex items-center gap-2 text-sm uppercase">
                         <span class="material-symbols-outlined text-[18px]">history</span>
-                        Lịch sử
+                        Lịch sử booking
                     </h3>
                     <div id="customerHistory" class="space-y-2">
                         <div class="text-center text-gray-400 py-5 text-sm">
@@ -707,6 +709,299 @@
     </div>
 </div>
 
+
+<!-- MODAL BÁO GIÁ  -->
+<div id="pricingModal" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-slideIn">
+        <div class="bg-gradient-to-r from-emerald-600 to-teal-600 p-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-lg">
+                        <span class="text-3xl">💰</span>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-black text-white">Báo Giá Dịch Vụ</h2>
+                        <p class="text-xs text-white/80 font-medium">Tra cứu và gửi báo giá nhanh</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('pricingModal')" class="text-white/80 hover:text-white transition-colors">
+                    <span class="material-symbols-outlined text-3xl">close</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-6">
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                    <label class="block font-bold text-sm text-[#03594D] mb-2">Thú cưng</label>
+                    <select id="pricingPetSelect" onchange="loadServicePricing()"
+                            class="w-full p-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none">
+                        <option value="">-- Tất cả thú cưng --</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-bold text-sm text-[#03594D] mb-2">Loại dịch vụ</label>
+                    <select id="pricingServiceType"
+                            onchange="loadServicePricing()"
+                            class="w-full p-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none">
+                        <option value="">-- Tất cả --</option>
+                    </select>
+
+                </div>
+            </div>
+
+            <div id="pricingResults" class="grid grid-cols-2 gap-4">
+                <div class="col-span-2 text-center text-gray-400 py-10">
+                    Chọn thú cưng và loại dịch vụ để xem bảng giá
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL ĐẶT LỊCH -->
+<div id="bookingModal" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-slideIn">
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-600 p-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-lg">
+                        <span class="text-3xl">📅</span>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-black text-white">Đặt Lịch Nhanh</h2>
+                        <p class="text-xs text-white/80 font-medium">Chốt lịch trực tiếp trong chat</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('bookingModal')" class="text-white/80 hover:text-white transition-colors">
+                    <span class="material-symbols-outlined text-3xl">close</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-6">
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                    <label class="block font-bold text-sm text-[#03594D] mb-2">Thú cưng <span class="text-red-500">*</span></label>
+                    <select id="bookingPetSelect" required
+                            class="w-full p-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                        <option value="">-- Chọn thú cưng --</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-bold text-sm text-[#03594D] mb-2">Dịch vụ <span class="text-red-500">*</span></label>
+                    <select id="bookingServiceSelect" required onchange="loadAvailableSlots()"
+                            class="w-full p-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                        <option value="">-- Chọn dịch vụ --</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <label class="block font-bold text-sm text-[#03594D] mb-2">Ngày <span class="text-red-500">*</span></label>
+                <input type="date" id="bookingDateInput" required onchange="loadAvailableSlots()"
+                       class="w-full p-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+            </div>
+
+            <div class="mb-6">
+                <label class="block font-bold text-sm text-[#03594D] mb-3">Chọn khung giờ</label>
+                <div id="bookingSlotsContainer" class="grid grid-cols-3 gap-3 max-h-60 overflow-y-auto">
+                    <div class="col-span-3 text-center text-gray-400 py-6 text-sm">
+                        Chọn dịch vụ và ngày để xem slot trống
+                    </div>
+                </div>
+                <input type="hidden" id="selectedSlotData">
+            </div>
+
+            <div class="mb-6">
+                <label class="block font-bold text-sm text-[#03594D] mb-2">Ghi chú</label>
+                <textarea id="bookingNotes" rows="2"
+                          class="w-full p-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
+                          placeholder="Yêu cầu đặc biệt..."></textarea>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="closeModal('bookingModal')"
+                        class="flex-1 p-3 rounded-lg bg-white border-2 border-gray-200 hover:bg-gray-50 font-bold text-gray-700 transition-all">
+                    Hủy bỏ
+                </button>
+                <button onclick="confirmQuickBooking()"
+                        class="flex-1 p-3 rounded-lg text-white font-bold bg-gradient-to-r from-blue-600 to-indigo-600 hover:shadow-xl hover:-translate-y-0.5 transition-all">
+                    ✅ Xác nhận đặt lịch
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL ĐƠN HÀNG -->
+<div id="orderModal" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-slideIn">
+        <div class="bg-gradient-to-r from-purple-600 to-pink-600 p-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-lg">
+                        <span class="text-3xl">🛍️</span>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-black text-white">Lịch Sử Đơn Hàng</h2>
+                        <p class="text-xs text-white/80 font-medium">Xem và tra cứu đơn hàng</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('orderModal')" class="text-white/80 hover:text-white transition-colors">
+                    <span class="material-symbols-outlined text-3xl">close</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-6">
+            <div id="orderListContainer" class="space-y-3">
+                <div class="text-center text-gray-400 py-10">
+                    Đang tải...
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL LỊCH LÀM VIỆC  -->
+<div id="scheduleModal" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-slideIn">
+        <div class="bg-gradient-to-r from-orange-600 to-red-600 p-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-lg">
+                        <span class="text-3xl">📆</span>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-black text-white">Lịch Làm Việc</h2>
+                        <p class="text-xs text-white/80 font-medium">Xem lịch nhân viên và slot trống</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('scheduleModal')" class="text-white/80 hover:text-white transition-colors">
+                    <span class="material-symbols-outlined text-3xl">close</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="p-6 border-b">
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block font-bold text-sm text-[#03594D] mb-2">Ngày</label>
+                    <input type="date" id="scheduleDate" onchange="loadStaffSchedule()"
+                           class="w-full p-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none">
+                </div>
+                <div>
+                    <label class="block font-bold text-sm text-[#03594D] mb-2">Loại nhân viên</label>
+                    <select id="scheduleStaffType"
+                            onchange="loadStaffSchedule()"
+                            class="w-full p-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none">
+                        <option value="">-- Tất cả --</option>
+                    </select>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-6">
+            <div id="scheduleContainer">
+                <div class="text-center text-gray-400 py-10">
+                    Chọn ngày để xem lịch làm việc
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--  MODAL THÚ CƯNG -->
+<div id="petModal" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-slideIn">
+        <div class="bg-gradient-to-r from-pink-600 to-rose-600 p-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-lg">
+                        <span class="text-3xl">🐾</span>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-black text-white">Thông Tin Thú Cưng</h2>
+                        <p class="text-xs text-white/80 font-medium">Xem chi tiết và lịch sử thú cưng</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('petModal')" class="text-white/80 hover:text-white transition-colors">
+                    <span class="material-symbols-outlined text-3xl">close</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-6">
+            <div id="petListContainer" class="grid grid-cols-2 gap-4">
+                <div class="col-span-2 text-center text-gray-400 py-10">
+                    Đang tải...
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--  MODAL GHI CHÚ -->
+<div id="noteModal" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-slideIn">
+        <div class="bg-gradient-to-r from-cyan-600 to-blue-600 p-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-lg">
+                        <span class="text-3xl">📝</span>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-black text-white">Ghi Chú Khách Hàng</h2>
+                        <p class="text-xs text-white/80 font-medium">Lưu thông tin quan trọng</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('noteModal')" class="text-white/80 hover:text-white transition-colors">
+                    <span class="material-symbols-outlined text-3xl">close</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-6">
+            <div class="mb-6">
+                <label class="block font-bold text-sm text-[#03594D] mb-2">Loại ghi chú</label>
+                <select id="noteType"
+                        class="w-full p-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none">
+                    <option value="INFO">ℹ️ Thông tin chung</option>
+                    <option value="PREFERENCE">⭐ Sở thích / Yêu cầu</option>
+                    <option value="WARNING">⚠️ Cảnh báo</option>
+                </select>
+            </div>
+
+            <div class="mb-6">
+                <label class="block font-bold text-sm text-[#03594D] mb-2">Nội dung ghi chú</label>
+                <textarea id="noteText" rows="4" required
+                          class="w-full p-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none resize-none"
+                          placeholder="Nhập ghi chú về khách hàng..."></textarea>
+            </div>
+
+            <button onclick="saveCustomerNote()"
+                    class="w-full p-3 rounded-lg text-white font-bold bg-gradient-to-r from-cyan-600 to-blue-600 hover:shadow-xl hover:-translate-y-0.5 transition-all mb-6">
+                💾 Lưu ghi chú
+            </button>
+
+            <div class="border-t pt-6">
+                <h3 class="font-bold text-[#03594D] mb-3 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-lg">history</span>
+                    Ghi chú trước đó
+                </h3>
+                <div id="noteListContainer" class="space-y-2 max-h-60 overflow-y-auto">
+                    <div class="text-center text-gray-400 py-6 text-sm">
+                        Đang tải...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
 <script th:inline="javascript">
@@ -717,6 +1012,900 @@
     let currentCustomer = null;
     let displayedMessageIds = new Set();
     let currentSubscription = null;
+
+    let currentQuickActionCustomerId = null;
+    let currentQuickActionSessionId = null;
+
+
+    function renderPriorityBadge(priority) {
+        if (priority === 'HIGH') {
+            return `<span class="text-[10px] px-2 py-0.5 rounded font-bold bg-red-100 text-red-700">HIGH</span>`;
+        }
+        if (priority === 'MEDIUM') {
+            return `<span class="text-[10px] px-2 py-0.5 rounded font-bold bg-orange-100 text-orange-700">MEDIUM</span>`;
+        }
+        return `<span class="text-[10px] px-2 py-0.5 rounded font-bold bg-gray-100 text-gray-600">LOW</span>`;
+    }
+
+
+    function renderTicketCard(ticket) {
+        return `
+        <div id="ticket-${ticket.id}"
+             onclick="window.location.href='/support/tickets/${ticket.id}'"
+             class="bg-white border border-blue-200 rounded-lg p-3 hover:shadow-md transition cursor-pointer">
+
+            <div class="flex justify-between items-center mb-1">
+                <div class="font-bold text-sm text-[#03594D]">
+                    ${ticket.subject}
+                </div>
+                ${renderPriorityBadge(ticket.priority)}
+            </div>
+
+            <div class="text-xs text-gray-500 truncate">
+                ${ticket.description || ''}
+            </div>
+
+            <div class="flex justify-between items-center mt-2 text-xs text-gray-400 font-mono">
+                <span>${ticket.customer?.fullName || ''}</span>
+                <span>${ticket.createdAt?.substring(11, 16) || ''}</span>
+            </div>
+        </div>
+    `;
+    }
+
+
+    function updateTicketInUI(ticket) {
+        const ticketEl = document.getElementById(`ticket-${ticket.id}`);
+
+        if (ticket.status === 'CLOSED' || ticket.status === 'RESOLVED') {
+            moveTicketOut(ticket.id);
+            return;
+        }
+
+        if (ticketEl) {
+            ticketEl.outerHTML = renderTicketCard(ticket);
+            return;
+        }
+
+        const container = ticket.assignedTo?.isMe
+            ? document.getElementById('assignedTicketsContent')
+            : document.getElementById('ticketsContent');
+
+        container.insertAdjacentHTML('afterbegin', renderTicketCard(ticket));
+
+        updateTicketCounts();
+    }
+
+
+    function moveTicketOut(ticketId) {
+        const el = document.getElementById(`ticket-${ticketId}`);
+        if (!el) return;
+
+        el.remove();
+        updateTicketCounts();
+
+    }
+
+
+    function updateTicketCounts() {
+        const openCount = document.querySelectorAll('#ticketsContent > div[id^="ticket-"]').length;
+        const assignedCount = document.querySelectorAll('#assignedTicketsContent > div[id^="ticket-"]').length;
+
+        document.getElementById('openTicketsCount').innerText = openCount;
+        document.getElementById('assignedTicketsCount').innerText = assignedCount;
+    }
+
+
+
+
+
+
+
+
+
+    async function loadStaffRoles() {
+        try {
+            const res = await fetch('/support/api/quick-actions/staff-roles');
+            const roles = await res.json();
+
+            const select = document.getElementById('scheduleStaffType');
+            select.innerHTML = '<option value="">-- Tất cả --</option>';
+
+            roles.forEach(role => {
+                const option = document.createElement('option');
+                option.value = role;
+                option.textContent = role;
+                select.appendChild(option);
+            });
+        } catch (e) {
+            console.error('Không load được staff roles', e);
+        }
+    }
+
+
+
+    async function loadServiceCategories() {
+        try {
+            const res = await fetch('/support/api/quick-actions/pricing/service-categories');
+            const categories = await res.json();
+
+            const select = document.getElementById('pricingServiceType');
+
+            categories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat.categoryType;   // SPA, MEDICAL, BOARDING
+                option.textContent = cat.name;     // Spa & Grooming
+                select.appendChild(option);
+            });
+
+        } catch (e) {
+            console.error('Load service categories failed', e);
+        }
+    }
+
+
+    function openPricingQuote() {
+        if (!currentSessionId) {
+            alert('⚠️ Vui lòng chọn chat trước!');
+            return;
+        }
+
+        const sessionEl = document.getElementById('session-' + currentSessionId);
+
+        currentQuickActionCustomerId = sessionEl.dataset.customerId;
+        currentQuickActionSessionId = currentSessionId;
+
+        document.getElementById('pricingModal').classList.remove('hidden');
+        loadServiceCategories();
+        loadCustomerPets(currentQuickActionCustomerId, 'pricingPetSelect');
+    }
+
+    async function loadServicePricing() {
+        const petId = document.getElementById('pricingPetSelect').value;
+        const serviceType = document.getElementById('pricingServiceType').value;
+
+        try {
+            const res = await fetch(`/support/api/quick-actions/pricing?petId=${petId || ''}`);
+            const services = await res.json();
+
+            const container = document.getElementById('pricingResults');
+            container.innerHTML = '';
+
+            const filtered = serviceType ? services.filter(s => s.category === serviceType) : services;
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-400 py-8">Không có dịch vụ phù hợp</div>';
+                return;
+            }
+
+            filtered.forEach(service => {
+                const card = createServicePricingCard(service);
+                container.appendChild(card);
+            });
+        } catch (err) {
+            console.error(err);
+            alert('Không thể tải bảng giá');
+        }
+    }
+
+    function createServicePricingCard(service) {
+        const div = document.createElement('div');
+        div.className = 'border-2 border-gray-200 rounded-lg p-4 hover:border-emerald-500 transition-all cursor-pointer';
+
+        const discount = service.discountPercent ?
+            `<span class="text-xs bg-red-100 text-red-600 px-2 py-1 rounded font-bold">-${service.discountPercent}%</span>` : '';
+
+        const priceDisplay = service.priceModel === 'FIXED' ?
+            `<div class="text-2xl font-black text-emerald-600">${formatMoney(service.discountedPrice || service.basePrice)}</div>` :
+            `<div class="text-sm text-gray-500">Giá theo cân nặng</div>`;
+
+        div.innerHTML = `
+        <div class="flex justify-between items-start mb-3">
+            <div>
+                <div class="font-bold text-[#03594D]">${service.serviceName}</div>
+                <div class="text-xs text-gray-500">${service.durationMinutes} phút</div>
+            </div>
+            ${discount}
+        </div>
+
+        ${priceDisplay}
+
+        ${service.discountPercent ?
+            `<div class="text-xs text-gray-400 line-through">${formatMoney(service.basePrice)}</div>` : ''}
+
+        <div class="mt-3 flex gap-2">
+            <button onclick="sendPricingToChat(${service.serviceId})"
+                    class="flex-1 py-2 bg-emerald-500 text-white rounded font-bold text-sm hover:bg-emerald-600">
+                📤 Gửi vào chat
+            </button>
+            <button onclick="createBookingFromPricing(${service.serviceId})"
+                    class="px-3 py-2 border-2 border-emerald-500 text-emerald-600 rounded font-bold text-sm hover:bg-emerald-50">
+                📅
+            </button>
+        </div>
+    `;
+
+        return div;
+    }
+
+    async function sendPricingToChat(serviceId) {
+        const petId = document.getElementById('pricingPetSelect').value;
+
+        try {
+            const res = await fetch(`/support/api/quick-actions/pricing/send-to-chat?sessionId=${currentQuickActionSessionId}&serviceId=${serviceId}&petId=${petId || ''}`, {
+                method: 'POST'
+            });
+
+            if (res.ok) {
+                document.getElementById('pricingModal').classList.add('hidden');
+                alert('✅ Đã gửi báo giá vào chat');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Không thể gửi báo giá');
+        }
+    }
+
+    // ĐẶT LỊCH
+    function openQuickBooking(preSelectedServiceId = null) {
+
+        if (!currentSessionId) {
+            alert('⚠️ Vui lòng chọn chat trước!');
+            return;
+        }
+
+        const sessionEl = document.getElementById('session-' + currentSessionId);
+
+        currentQuickActionCustomerId = sessionEl.dataset.customerId;
+        currentQuickActionSessionId = currentSessionId;
+
+        document.getElementById('bookingModal').classList.remove('hidden');
+
+        loadCustomerPets(currentQuickActionCustomerId, 'bookingPetSelect');
+        loadBookingServices();
+
+        if (preSelectedServiceId) {
+            setTimeout(() => {
+                document.getElementById('bookingServiceSelect').value = preSelectedServiceId;
+                loadAvailableSlots();
+            }, 500);
+        }
+    }
+
+    function createBookingFromPricing(serviceId) {
+        document.getElementById('pricingModal').classList.add('hidden');
+        openQuickBooking(serviceId);
+    }
+
+    async function loadBookingServices() {
+
+        try {
+            const res = await fetch('/support/api/quick-actions/all');
+            const services = await res.json();
+
+            const select = document.getElementById('bookingServiceSelect');
+            select.innerHTML = '<option value="">-- Chọn dịch vụ --</option>';
+
+            services.forEach(s => {
+                select.innerHTML += `<option value="${s.serviceId}">${s.serviceName} - ${formatMoney(s.fixedPrice)}</option>`;
+            });
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    async function loadAvailableSlots() {
+        const serviceId = document.getElementById('bookingServiceSelect').value;
+        const date = document.getElementById('bookingDateInput').value;
+
+        if (!serviceId || !date) return;
+
+        try {
+            const res = await fetch(`/support/api/quick-actions/booking/available-slots?serviceId=${serviceId}&date=${date}`);
+            const slots = await res.json();
+
+            const container = document.getElementById('bookingSlotsContainer');
+            container.innerHTML = '';
+
+            if (slots.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-400 py-6">Không có slot trống</div>';
+                return;
+            }
+
+            slots.forEach(slot => {
+                const div = document.createElement('div');
+                div.className = slot.available ?
+                    'border-2 border-emerald-200 bg-emerald-50 rounded-lg p-3 cursor-pointer hover:border-emerald-500' :
+                    'border border-gray-200 bg-gray-50 rounded-lg p-3 opacity-50 cursor-not-allowed';
+
+                div.innerHTML = `
+                <div class="flex justify-between items-center">
+                    <div class="font-bold text-[#03594D]">${slot.startTime.slice(0, 5)} - ${slot.endTime.slice(0, 5)}</div>
+                    <div class="text-xs ${slot.available ? 'text-emerald-600' : 'text-red-600'}">
+                        ${slot.currentBookings}/${slot.maxBookings}
+                    </div>
+                </div>
+                ${slot.staffName ? `<div class="text-xs text-gray-500 mt-1">👤 ${slot.staffName}</div>` : ''}
+            `;
+
+                if (slot.available) {
+                    div.onclick = () => selectBookingSlot(slot);
+                }
+
+                container.appendChild(div);
+            });
+        } catch (err) {
+            console.error(err);
+            alert('Không thể tải slot');
+        }
+    }
+
+    function selectBookingSlot(slot) {
+        document.querySelectorAll('#bookingSlotsContainer > div').forEach(el => {
+            el.classList.remove('ring-2', 'ring-emerald-500');
+        });
+
+        event.target.closest('div').classList.add('ring-2', 'ring-emerald-500');
+
+        document.getElementById('selectedSlotData').value = JSON.stringify(slot);
+    }
+
+    async function confirmQuickBooking() {
+        const petId = document.getElementById('bookingPetSelect').value;
+        const serviceId = document.getElementById('bookingServiceSelect').value;
+        const date = document.getElementById('bookingDateInput').value;
+        const slotData = document.getElementById('selectedSlotData').value;
+        const notes = document.getElementById('bookingNotes').value;
+
+        if (!petId || !serviceId || !date || !slotData) {
+            alert('⚠️ Vui lòng điền đầy đủ thông tin');
+            return;
+        }
+
+        const slot = JSON.parse(slotData);
+
+        const request = {
+            sessionId: currentQuickActionSessionId,
+            customerId: currentQuickActionCustomerId,
+            petId: parseInt(petId),
+            serviceId: parseInt(serviceId),
+            bookingDate: date,
+            startTime: slot.startTime,
+            staffId: slot.staffId,
+            notes: notes
+        };
+
+        try {
+            const res = await fetch('/support/api/quick-actions/booking/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(request)
+            });
+
+            if (res.ok) {
+                const booking = await res.json();
+                document.getElementById('bookingModal').classList.add('hidden');
+                alert(`✅ Đặt lịch thành công!\n\nMã booking: #${booking.bookingId}\nNgày: ${date}\nGiờ: ${slot.startTime}`);
+            } else {
+                alert('Không thể đặt lịch');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Lỗi khi đặt lịch');
+        }
+    }
+
+    // ĐƠN HÀNG
+
+    async function openOrderHistory() {
+        if (!currentSessionId) {
+            alert('⚠️ Vui lòng chọn chat trước!');
+            return;
+        }
+
+        let  customerId ;
+
+        const sessionEl = document.getElementById('session-' + currentSessionId);
+
+        customerId = sessionEl.dataset.customerId;
+
+
+        document.getElementById('orderModal').classList.remove('hidden');
+
+        try {
+            const res = await fetch(`/support/api/quick-actions/orders?customerId=${customerId}`);
+            const orders = await res.json();
+
+            const container = document.getElementById('orderListContainer');
+            container.innerHTML = '';
+
+            if (orders.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-400 py-8">Chưa có đơn hàng nào</div>';
+                return;
+            }
+
+            orders.forEach(order => {
+                const div = document.createElement('div');
+                div.className = 'border-2 border-gray-200 rounded-lg p-4 hover:border-blue-500 transition cursor-pointer';
+                div.onclick = () => showOrderDetail(order.orderId);
+
+                const statusClass = {
+                    'PENDING': 'bg-yellow-100 text-yellow-700',
+                    'PROCESSING': 'bg-blue-100 text-blue-700',
+                    'COMPLETED': 'bg-green-100 text-green-700',
+                    'CANCELLED': 'bg-red-100 text-red-700'
+                }[order.status] || 'bg-gray-100 text-gray-700';
+
+                div.innerHTML = `
+                <div class="flex justify-between items-start mb-2">
+                    <div class="font-bold text-[#03594D]">Đơn hàng #${order.orderId}</div>
+                    <span class="text-xs px-2 py-1 rounded font-bold ${statusClass}">
+                        ${order.status}
+                    </span>
+                </div>
+                <div class="text-sm text-gray-600 mb-2">${order.itemCount} sản phẩm</div>
+                <div class="flex justify-between items-center">
+                    <div class="text-lg font-black text-emerald-600">${formatMoney(order.totalAmount)}</div>
+                    <div class="text-xs text-gray-400">${formatDateTime(order.orderDate)}</div>
+                </div>
+            `;
+
+                container.appendChild(div);
+            });
+        } catch (err) {
+            console.error(err);
+            alert('Không thể tải lịch sử đơn hàng');
+        }
+    }
+
+    async function showOrderDetail(orderId) {
+        try {
+            const res = await fetch(`/support/api/quick-actions/orders/${orderId}`);
+            const detail = await res.json();
+
+            let itemsHtml = '';
+            detail.items.forEach(item => {
+                itemsHtml += `
+                <div class="flex justify-between py-2 border-b">
+                    <div>
+                        <div class="font-bold text-sm">${item.productName}</div>
+                        <div class="text-xs text-gray-500">SL: ${item.quantity} x ${formatMoney(item.unitPrice)}</div>
+                    </div>
+                    <div class="font-bold text-emerald-600">${formatMoney(item.lineTotal)}</div>
+                </div>
+            `;
+            });
+
+            alert(`📦 CHI TIẾT ĐƠN HÀNG #${orderId}\n\n${itemsHtml}\n\nTổng: ${formatMoney(detail.totalAmount)}\nĐịa chỉ: ${detail.shippingAddress}`);
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    //  LỊCH LÀM VIỆC
+    async function openStaffSchedule() {
+        document.getElementById('scheduleModal').classList.remove('hidden');
+
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('scheduleDate').value = today;
+
+        await loadStaffRoles();
+        loadStaffSchedule();
+    }
+
+    async function loadStaffSchedule() {
+        const date = document.getElementById('scheduleDate').value;
+        const staffType = document.getElementById('scheduleStaffType').value;
+
+        try {
+            const res = await fetch(`/support/api/quick-actions/schedule?date=${date}&staffType=${staffType}`);
+            const scheduleMap = await res.json();
+
+            const container = document.getElementById('scheduleContainer');
+            container.innerHTML = '';
+
+            Object.entries(scheduleMap).forEach(([staffName, slots]) => {
+                const staffSection = document.createElement('div');
+                staffSection.className = 'mb-6';
+
+                staffSection.innerHTML = `
+                <h3 class="font-bold text-[#03594D] mb-3 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-lg">person</span>
+                    ${staffName}
+                </h3>
+                <div class="grid grid-cols-4 gap-2" id="slots-${staffName}"></div>
+            `;
+
+                container.appendChild(staffSection);
+
+                const slotContainer = document.getElementById(`slots-${staffName}`);
+                slots.forEach(slot => {
+                    const div = document.createElement('div');
+
+                    div.className = `
+                        rounded-lg p-3 text-center transition
+                        ${slot.available
+                                        ? 'bg-emerald-50 border border-emerald-300 hover:bg-emerald-100'
+                                        : 'bg-gray-100 border border-gray-300 opacity-60'}
+                    `;
+
+                                    div.innerHTML = `
+                        <div class="text-sm font-semibold text-gray-800 mb-1">
+                            ${slot.startTime.slice(0, 5)}
+                        </div>
+
+                        <div class="text-xs flex items-center justify-center gap-1
+                            ${slot.available ? 'text-emerald-700' : 'text-red-600'}">
+                            <span class="material-symbols-outlined text-sm">
+                                ${slot.available ? 'check_circle' : 'block'}
+                            </span>
+                            ${slot.currentBookings}/${slot.maxBookings}
+                        </div>
+                    `;
+
+                    slotContainer.appendChild(div);
+                });
+
+            });
+        } catch (err) {
+            console.error(err);
+            alert('Không thể tải lịch làm việc');
+        }
+    }
+
+
+
+
+
+
+    // THÚ CƯNG
+    async function openPetInfo() {
+        if (!currentSessionId) {
+            alert('⚠️ Vui lòng chọn chat trước!');
+            return;
+        }
+
+        let  customerId;
+        const sessionEl = document.getElementById('session-' + currentSessionId);
+
+        customerId = sessionEl.dataset.customerId;
+
+        document.getElementById('petModal').classList.remove('hidden');
+
+        try {
+            const res = await fetch(`/support/api/quick-actions/pets?customerId=${customerId}`);
+            const pets = await res.json();
+
+            const container = document.getElementById('petListContainer');
+            container.innerHTML = '';
+
+            if (pets.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-400 py-8">Chưa có thú cưng nào</div>';
+                return;
+            }
+
+            pets.forEach(pet => {
+                const card = createPetCard(pet);
+                container.appendChild(card);
+            });
+        } catch (err) {
+            console.error(err);
+            alert('Không thể tải thông tin thú cưng');
+        }
+    }
+
+    function createPetCard(pet) {
+        const div = document.createElement('div');
+        div.className = 'border-2 border-gray-200 rounded-lg p-4 hover:border-[#D8E268] transition cursor-pointer';
+        div.onclick = () => showPetDetail(pet.petId);
+
+        div.innerHTML = `
+        <div class="flex items-start gap-3">
+            <div class="w-12 h-12 bg-gradient-to-br from-orange-400 to-pink-400 rounded-full flex items-center justify-center text-white text-2xl">
+                🐾
+            </div>
+            <div class="flex-1">
+                <div class="font-bold text-[#03594D]">${pet.name}</div>
+                <div class="text-sm text-gray-600">${pet.species} • ${pet.breed}</div>
+                <div class="text-xs text-gray-400 mt-1">
+                    ${pet.weightKg ? pet.weightKg + 'kg' : ''} •
+                    ${pet.gender === 'MALE' ? '♂️ Đực' : '♀️ Cái'}
+                </div>
+                <div class="text-xs text-emerald-600 mt-2 font-bold">
+                    ${pet.totalVisits || 0} lần sử dụng dịch vụ
+                </div>
+            </div>
+        </div>
+    `;
+
+        return div;
+    }
+
+    async function showPetDetail(petId) {
+        try {
+            const res = await fetch(`/support/api/quick-actions/pets/${petId}/history`);
+            const data = await res.json();
+
+            let historyHtml = '';
+            data.serviceHistory.forEach(h => {
+                historyHtml += `• ${h.serviceName} - ${h.bookingDate} (${h.status})\n`;
+            });
+
+            alert(`🐾 ${data.pet.name}\n\nGiống: ${data.pet.breed}\nCân nặng: ${data.pet.weightKg}kg\nGhi chú: ${data.pet.notes || 'Không có'}\n\nLịch sử:\n${historyHtml}`);
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    // GHI CHÚ
+    function openNoteModal() {
+        if (!currentSessionId) {
+            alert('⚠️ Vui lòng chọn chat trước!');
+            return;
+        }
+
+        let  customerId;
+        const sessionEl = document.getElementById('session-' + currentSessionId);
+
+        customerId = sessionEl.dataset.customerId;
+
+        document.getElementById('noteModal').classList.remove('hidden');
+        loadCustomerNotes(customerId);
+    }
+
+    async function loadCustomerNotes(customerId) {
+        try {
+            const res = await fetch(`/support/api/quick-actions/notes?customerId=${customerId}`);
+            const notes = await res.json();
+
+            const container = document.getElementById('noteListContainer');
+            container.innerHTML = '';
+
+            if (notes.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-400 py-6 text-sm">Chưa có ghi chú nào</div>';
+                return;
+            }
+
+            notes.forEach(note => {
+                const div = document.createElement('div');
+                div.className = 'border-l-4 border-blue-500 bg-blue-50 rounded p-3 mb-2';
+
+                const typeIcon = {
+                    'PREFERENCE': '⭐',
+                    'WARNING': '⚠️',
+                    'INFO': 'ℹ️'
+                }[note.noteType] || '📝';
+
+                div.innerHTML = `
+                <div class="flex items-start gap-2">
+                    <span class="text-lg">${typeIcon}</span>
+                    <div class="flex-1">
+                        <div class="text-sm font-medium text-gray-800">${note.noteText}</div>
+                        <div class="text-xs text-gray-500 mt-1">
+                            ${note.createdBy} • ${formatDateTime(note.createdAt)}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+                container.appendChild(div);
+            });
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    async function saveCustomerNote() {
+        let  customerId;
+        const sessionEl = document.getElementById('session-' + currentSessionId);
+
+        customerId = sessionEl.dataset.customerId;
+        const noteText = document.getElementById('noteText').value;
+        const noteType = document.getElementById('noteType').value;
+
+        if (!noteText.trim()) {
+            alert('⚠️ Vui lòng nhập nội dung ghi chú');
+            return;
+        }
+
+        const request = {
+            customerId: parseInt(customerId),
+            sessionId: currentSessionId,
+            noteText: noteText,
+            noteType: noteType
+        };
+
+        try {
+            const res = await fetch('/support/api/quick-actions/notes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(request)
+            });
+
+            if (res.ok) {
+                document.getElementById('noteText').value = '';
+                loadCustomerNotes(customerId);
+                alert('✅ Đã lưu ghi chú');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Không thể lưu ghi chú');
+        }
+    }
+
+
+    async function loadCustomerPets(customerId, selectId) {
+        try {
+            const res = await fetch(`/support/api/quick-actions/pets?customerId=${customerId}`);
+            const pets = await res.json();
+
+            const select = document.getElementById(selectId);
+            select.innerHTML = '<option value="">-- Tất cả thú cưng --</option>';
+
+            pets.forEach(pet => {
+                select.innerHTML += `<option value="${pet.petId}">${pet.name} (${pet.species})</option>`;
+            });
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    function formatMoney(amount) {
+        if (!amount) return '0₫';
+        return Number(amount).toLocaleString('vi-VN') + '₫';
+    }
+
+
+    function formatDateTime(dateTimeStr) {
+        if (!dateTimeStr) return '';
+        const dt = new Date(dateTimeStr);
+        return dt.toLocaleDateString('vi-VN') + ' ' + dt.toLocaleTimeString('vi-VN', {hour: '2-digit', minute: '2-digit'});
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).classList.add('hidden');
+    }
+
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const container = document.getElementById('quickActionsContainer');
+        if (!container) return;
+
+        container.innerHTML = `
+        <button onclick="openPricingQuote()" class="border border-[#E3E5D2] rounded-lg py-2.5 text-sm hover:bg-[#D8E268] hover:text-[#03594D] hover:border-[#D8E268] transition-all font-bold text-gray-600 flex items-center justify-center gap-1">
+            <span class="material-symbols-outlined text-[16px]">payments</span>
+            Báo giá
+        </button>
+
+        <button onclick="openQuickBooking()" class="border border-[#E3E5D2] rounded-lg py-2.5 text-sm hover:bg-[#D8E268] hover:text-[#03594D] hover:border-[#D8E268] transition-all font-bold text-gray-600 flex items-center justify-center gap-1">
+            <span class="material-symbols-outlined text-[16px]">calendar_month</span>
+            Đặt lịch
+        </button>
+
+        <button onclick="openOrderHistory()" class="border border-[#E3E5D2] rounded-lg py-2.5 text-sm hover:bg-[#D8E268] hover:text-[#03594D] hover:border-[#D8E268] transition-all font-bold text-gray-600 flex items-center justify-center gap-1">
+            <span class="material-symbols-outlined text-[16px]">shopping_bag</span>
+            Đơn hàng
+        </button>
+
+        <button onclick="openStaffSchedule()" class="border border-[#E3E5D2] rounded-lg py-2.5 text-sm hover:bg-[#D8E268] hover:text-[#03594D] hover:border-[#D8E268] transition-all font-bold text-gray-600 flex items-center justify-center gap-1">
+            <span class="material-symbols-outlined text-[16px]">event</span>
+            Lịch làm việc
+        </button>
+
+        <button onclick="openPetInfo()" class="border border-[#E3E5D2] rounded-lg py-2.5 text-sm hover:bg-[#D8E268] hover:text-[#03594D] hover:border-[#D8E268] transition-all font-bold text-gray-600 flex items-center justify-center gap-1">
+            <span class="material-symbols-outlined text-[16px]">pets</span>
+            Thú cưng
+        </button>
+
+        <button onclick="openNoteModal()" class="border border-[#E3E5D2] rounded-lg py-2.5 text-sm hover:bg-[#D8E268] hover:text-[#03594D] hover:border-[#D8E268] transition-all font-bold text-gray-600 flex items-center justify-center gap-1">
+            <span class="material-symbols-outlined text-[16px]">note_add</span>
+            Ghi chú
+        </button>
+    `;
+    });
+
+    async function loadCustomerBookingHistory(customerId) {
+        const historyEl = document.getElementById("customerHistory");
+
+        // UI loading
+        historyEl.innerHTML = `
+        <div class="text-center text-gray-400 py-4 text-sm">
+            Đang tải lịch sử đặt lịch...
+        </div>
+    `;
+
+        try {
+            const res = await fetch(`/support/api/bookings/customer/${customerId}`);
+            if (!res.ok) throw new Error("Fetch failed");
+
+            const bookings = await res.json();
+
+            if (!bookings || bookings.length === 0) {
+                historyEl.innerHTML = `
+                <div class="text-center text-gray-400 py-4 text-sm">
+                    Khách hàng chưa có lịch đặt nào
+                </div>
+            `;
+                return;
+            }
+
+            historyEl.innerHTML = "";
+
+            bookings.forEach(b => {
+                const item = document.createElement("div");
+                item.className =
+                    "border rounded-lg p-3 text-sm bg-white hover:bg-gray-50 transition";
+
+                item.innerHTML = `
+                <div class="flex justify-between items-center">
+                    <div class="font-semibold text-[#03594D]">
+                        ${b.serviceName || "Dịch vụ"}
+                    </div>
+                    <span class="px-2 py-0.5 rounded text-xs font-medium
+                        ${statusClass(b.status)}">
+                        ${formatStatus(b.status)}
+                    </span>
+                </div>
+
+                <div class="text-gray-500 mt-1">
+                    🐾 ${b.petName || "Thú cưng"} · 📅 ${formatDate(b.bookingDate)}
+                </div>
+
+
+<div class="flex items-center justify-between">
+                     <div class="text-gray-400 text-xs mt-1">
+                    Tổng tiền: ${formatMoney(b.totalAmount)}
+                </div>
+                <div class="text-gray-400 text-xs mt-1">
+                    Code: ${b.bookingId}
+                </div>
+                </div>
+
+            `;
+
+                historyEl.appendChild(item);
+            });
+
+        } catch (err) {
+            console.error(err);
+            historyEl.innerHTML = `
+            <div class="text-center text-red-400 py-4 text-sm">
+                Không thể tải lịch sử
+            </div>
+        `;
+        }
+    }
+
+
+    function formatDate(dateStr) {
+        if (!dateStr) return "";
+        return new Date(dateStr).toLocaleDateString("vi-VN");
+    }
+
+
+    function formatStatus(status) {
+        const map = {
+            PENDING_CONFIRMATION: "Chờ xác nhận",
+            CONFIRMED: "Đã xác nhận",
+            IN_PROGRESS: "Đang thực hiện",
+            COMPLETED: "Hoàn thành",
+            CANCELLED: "Đã hủy"
+        };
+        return map[status] || status;
+    }
+
+    function statusClass(status) {
+        switch (status) {
+            case "COMPLETED":
+                return "bg-green-100 text-green-700";
+            case "CONFIRMED":
+                return "bg-blue-100 text-blue-700";
+            case "CANCELLED":
+                return "bg-red-100 text-red-700";
+            default:
+                return "bg-yellow-100 text-yellow-700";
+        }
+    }
 
 
     function updateSessionPreview(message) {
@@ -806,9 +1995,6 @@
 
         waitingDiv.style.animation = 'fadeIn 0.4s ease-out, float 3s ease-in-out infinite';
 
-        // Optional: Notification sound và browser notification
-        // playNotificationSound();
-        // showBrowserNotification(session);
     }
 
 
@@ -928,6 +2114,17 @@
                 console.log('🗑️ Received ticket removed:', ticketId);
                 removeTicketFromAllLists(ticketId);
             });
+
+            stompClient.subscribe('/user/queue/tickets/updated', (msg) => {
+                const ticket = JSON.parse(msg.body);
+
+                updateTicketInUI(ticket);
+
+                if (ticket.status === 'CLOSED' || ticket.status === 'RESOLVED') {
+                    moveTicketOut(ticket.id);
+                }
+            });
+
 
             function addOrUpdateTicket(ticket) {
                 const isCreator = ticket.createdBy && ticket.createdBy.userId === staffId;
@@ -1153,12 +2350,13 @@
         const customerPhone = el.dataset.customerPhone;
         const customerEmail = el.dataset.customerEmail;
         const customerUsername = el.dataset.customerUsername;
+        const customerId = el.dataset.customerId;
 
-        loadSession(sessionId, customerFullName, customerPhone, customerEmail, customerUsername);
+        loadSession(sessionId, customerFullName, customerPhone, customerEmail, customerUsername,customerId);
     }
 
 
-    function loadSession(sessionId, customerFullName, customerPhone, customerEmail, customerUsername) {
+    function loadSession(sessionId, customerFullName, customerPhone, customerEmail, customerUsername,customerId) {
 
         document.getElementById('selectChatBanner').classList.add('hidden');
         document.getElementById('chatPanel').classList.remove('hidden');
@@ -1181,6 +2379,7 @@
                 displayChatWindow(messages);
 
                 subscribeToSession(sessionId);
+                loadCustomerBookingHistory(customerId);
 
             })
             .catch(error => {
@@ -1315,6 +2514,7 @@
             .then(session => {
                 currentCustomer = session.customer;
                 updateCustomerDisplay(session.customer);
+
             })
             .catch(error => {
                 console.error('Error loading customer info:', error);
@@ -1536,6 +2736,8 @@ Ticket sẽ được xử lý trong thời gian sớm nhất.`);
             closeTicketPopup();
         }
     });
+
+
 
 
     /*]]>*/

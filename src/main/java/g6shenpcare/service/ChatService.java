@@ -104,7 +104,8 @@ public class ChatService {
 
         // 2️ Gửi status cho customer (header đổi realtime)
         messagingTemplate.convertAndSend(
-                STR."/topic/session/\{sessionId}/status",
+                "/topic/session/" + sessionId + "/status"
+                ,
                 Map.of(
                         "status", "ACTIVE",
                         "staffName", staff.getFullName()
@@ -115,7 +116,8 @@ public class ChatService {
         systemMsg.setSession(savedSession);
         systemMsg.setSender(staff);
         systemMsg.setMessageText(
-                STR."Nhân viên \{staff.getFullName()} đã tham gia hỗ trợ"
+                "Nhân viên " + staff.getFullName() + " đã tham gia hỗ trợ"
+
         );
         systemMsg.setSentAt(LocalDateTime.now());
         systemMsg.setIsRead(true);
@@ -123,7 +125,7 @@ public class ChatService {
         Message savedSystemMsg = messageRepository.save(systemMsg);
 
         messagingTemplate.convertAndSend(
-                STR."/topic/session/\{sessionId}/messages",
+                "/topic/session/" + sessionId + "/messages",
                 messageMapper.toDto(savedSystemMsg)
         );
 
@@ -147,7 +149,7 @@ public class ChatService {
 
 
     private String shorten(String text) {
-        return text.length() > 40 ? STR."\{text.substring(0, 40)}…" : text;
+        return text.length() > 40 ? text.substring(0, 40) + "…" : text;
     }
 
 
@@ -172,9 +174,9 @@ public class ChatService {
             if (lastMessage == null) {
                 preview = "Chưa có tin nhắn";
             } else if (lastMessage.getSender().getUserId().equals(staffId)) {
-                preview = STR."Bạn: \{ shorten(lastMessage.getMessageText())}";
+                preview = "Bạn: " + shorten(lastMessage.getMessageText());
             } else {
-                preview = STR."\{lastMessage.getSender().getUsername()}: \{ shorten(lastMessage.getMessageText())}";
+                preview = lastMessage.getSender().getUsername() + ": " + shorten(lastMessage.getMessageText());
             }
 
             return new ChatSessionSummaryDTO(
@@ -209,14 +211,15 @@ public class ChatService {
         MessageDTO dto = messageMapper.toDto(saved);
 
         messagingTemplate.convertAndSend(
-                STR."/topic/session/\{sessionId}/messages",
+                "/topic/session/" + sessionId + "/messages",
                 dto
         );
 
         if (session.getSupportStaff() != null) {
             Integer staffId = session.getSupportStaff().getUserId();
             messagingTemplate.convertAndSend(
-                    STR."/topic/staff/\{staffId}/session-messages",
+                    "/topic/staff/" + staffId + "/session-messages"
+                    ,
                     dto
             );
         }

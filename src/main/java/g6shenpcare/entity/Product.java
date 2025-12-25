@@ -1,237 +1,93 @@
 package g6shenpcare.entity;
 
+import g6shenpcare.models.entity.ProductCategory;
 import jakarta.persistence.*;
+import lombok.*;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+
 @Entity
 @Table(name = "Products")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Product {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "ProductId")
     private Integer productId;
 
-    @Column(nullable = false)
-    private String name;        // Tên thuốc / Vật tư
 
-    private String sku;         // Mã Barcode/SKU
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ProductCategoryId", nullable = false)
+    private ProductCategory category;
 
-    private String category;    // MEDICINE, VACCINE, CONSUMABLE
+    @Column(name = "Name", length = 255)
+    private String name;
 
-    @Column(columnDefinition = "NVARCHAR(MAX)")
-    private String usage;       // Công dụng / Chỉ định 
+    @Column(name = "Description", length = 500)
+    private String description;
 
-    @Column(columnDefinition = "NVARCHAR(MAX)")
-    private String ingredient;  // Hoạt chất chính
+    @Column(name = "UnitPrice", precision = 38, scale = 2)
+    private BigDecimal unitPrice;
 
-    // --- CÁC TRƯỜNG MỚI THÊM ---
-    private String targetSpecies; // DOG, CAT, BOTH
-    private String productForm;   // TABLET (Viên), LIQUID (Lỏng), INJECTION (Tiêm), POWDER (Bột)...
-    private Boolean isPrescription; // True = Thuốc kê đơn (Cần bác sĩ), False = Thuốc không kê đơn
-    // Quản lý Giá & Đơn vị
-    private String unit;            // Đơn vị tính
-    private BigDecimal importPrice; // Giá nhập vào
-    private BigDecimal retailPrice; // Giá bán lẻ 
+    @Column(name = "Unit", length = 255)
+    private String unit;
 
-    // Quản lý Kho trực tiếp
-    private Integer stockQuantity = 0;
-    private Integer alertThreshold = 10;
+    @Column(name = "IsMedicine", nullable = false)
+    private Boolean isMedicine;
+
+    @Column(name = "IsActive", nullable = false)
+    private Boolean isActive;
+
+    @Column(name = "CreatedAt", nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "AlertThreshold")
+    private Integer alertThreshold;
+
+    @Column(name = "ExpiryDate")
     private LocalDate expiryDate;
 
-    // Hình ảnh minh họa
-    private String imageUrl;
+    @Column(name = "ImageFileId")
     private Long imageFileId;
 
-    // Trạng thái
-    private Boolean isActive = true;
-    private Boolean isMedicine = true;
+    @Column(name = "ImageUrl", length = 255)
+    private String imageUrl;
 
-    // Audit
-    private LocalDateTime createdAt = LocalDateTime.now();
-    private LocalDateTime updatedAt = LocalDateTime.now();
+    @Column(name = "ImportPrice", precision = 38, scale = 2)
+    private BigDecimal importPrice;
 
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
+    @Column(name = "Ingredient", columnDefinition = "nvarchar(max)")
+    private String ingredient;
 
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
+    @Column(name = "RetailPrice", precision = 38, scale = 2)
+    private BigDecimal retailPrice;
 
-    // ==========================================
-    // GETTER & SETTER (Thủ công - Không dùng Lombok)
-    // ==========================================
-    public Integer getProductId() {
-        return productId;
-    }
+    @Column(name = "Sku", length = 255)
+    private String sku;
 
-    public void setProductId(Integer productId) {
-        this.productId = productId;
-    }
+    @Column(name = "StockQuantity")
+    private Integer stockQuantity;
 
-    public String getName() {
-        return name;
-    }
+    @Column(name = "UpdatedAt")
+    private LocalDateTime updatedAt;
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    @Column(name = "Usage", columnDefinition = "nvarchar(max)")
+    private String usage;
 
-    public String getSku() {
-        return sku;
-    }
+    @Column(name = "IsPrescription")
+    private Boolean isPrescription;
 
-    public void setSku(String sku) {
-        this.sku = sku;
-    }
+    @Column(name = "ProductForm", length = 255)
+    private String productForm;
 
-    public String getCategory() {
-        return category;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
-    }
-
-    public String getUsage() {
-        return usage;
-    }
-
-    public void setUsage(String usage) {
-        this.usage = usage;
-    }
-
-    public String getIngredient() {
-        return ingredient;
-    }
-
-    public void setIngredient(String ingredient) {
-        this.ingredient = ingredient;
-    }
-
-    public String getUnit() {
-        return unit;
-    }
-
-    public void setUnit(String unit) {
-        this.unit = unit;
-    }
-
-    public BigDecimal getImportPrice() {
-        return importPrice;
-    }
-
-    public void setImportPrice(BigDecimal importPrice) {
-        this.importPrice = importPrice;
-    }
-
-    public BigDecimal getRetailPrice() {
-        return retailPrice;
-    }
-
-    public void setRetailPrice(BigDecimal retailPrice) {
-        this.retailPrice = retailPrice;
-    }
-
-    public Integer getStockQuantity() {
-        return stockQuantity;
-    }
-
-    public void setStockQuantity(Integer stockQuantity) {
-        this.stockQuantity = stockQuantity;
-    }
-
-    public Integer getAlertThreshold() {
-        return alertThreshold;
-    }
-
-    public void setAlertThreshold(Integer alertThreshold) {
-        this.alertThreshold = alertThreshold;
-    }
-
-    public LocalDate getExpiryDate() {
-        return expiryDate;
-    }
-
-    public void setExpiryDate(LocalDate expiryDate) {
-        this.expiryDate = expiryDate;
-    }
-
-    public String getImageUrl() {
-        return imageUrl;
-    }
-
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
-    }
-
-    public Long getImageFileId() {
-        return imageFileId;
-    }
-
-    public void setImageFileId(Long imageFileId) {
-        this.imageFileId = imageFileId;
-    }
-
-    public Boolean getIsActive() {
-        return isActive;
-    }
-
-    public void setIsActive(Boolean isActive) {
-        this.isActive = isActive;
-    }
-
-    public Boolean getIsMedicine() {
-        return isMedicine;
-    }
-
-    public void setIsMedicine(Boolean isMedicine) {
-        this.isMedicine = isMedicine;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    // --- THÊM GETTER/SETTER CHO TRƯỜNG MỚI ---
-    public String getTargetSpecies() {
-        return targetSpecies;
-    }
-
-    public void setTargetSpecies(String targetSpecies) {
-        this.targetSpecies = targetSpecies;
-    }
-
-    public String getProductForm() {
-        return productForm;
-    }
-
-    public void setProductForm(String productForm) {
-        this.productForm = productForm;
-    }
-
-    public Boolean getIsPrescription() {
-        return isPrescription;
-    }
-
-    public void setIsPrescription(Boolean isPrescription) {
-        this.isPrescription = isPrescription;
-    }
+    @Column(name = "TargetSpecies", length = 255)
+    private String targetSpecies;
 }

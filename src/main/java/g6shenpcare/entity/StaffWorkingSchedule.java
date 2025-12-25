@@ -1,11 +1,21 @@
 package g6shenpcare.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Entity
 @Table(name = "StaffWorkingSchedule")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class StaffWorkingSchedule {
 
     @Id
@@ -16,17 +26,16 @@ public class StaffWorkingSchedule {
     @Column(name = "StaffId")
     private Integer staffId;
 
-    // Join để lấy tên nhân viên (Optional - dùng khi hiển thị)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "StaffId", insertable = false, updatable = false)
     private UserAccount staff;
 
     @Column(name = "WorkDate")
-    private LocalDate workDate; // Lưu ngày cụ thể: 2025-12-04
+    private LocalDate workDate;
 
     @Column(name = "DayOfWeek")
-    private Integer dayOfWeek; // Vẫn giữ để filter nhanh nếu cần (1=Mo
-    
+    private Integer dayOfWeek;
+
     @Column(name = "StartTime", nullable = false)
     private LocalTime startTime;
 
@@ -34,86 +43,17 @@ public class StaffWorkingSchedule {
     private LocalTime endTime;
 
     @Column(name = "MaxDailyBookings")
-    private Integer maxDailyBookings; // Có thể null nếu quản lý theo thời gian
+    private Integer maxDailyBookings;
 
     @Column(name = "IsActive")
     private boolean active = true;
 
-    public StaffWorkingSchedule() {
-    }
+    @Column(name = "CreatedAt", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
-    // --- Getter & Setter ---
-    // --- Getter & Setter ---
-    // (Bổ sung getter/setter cho workDate, các trường khác giữ nguyên)
-    public LocalDate getWorkDate() {
-        return workDate;
-    }
-
-    public void setWorkDate(LocalDate workDate) {
-        this.workDate = workDate;
-    }
-
-    public Integer getScheduleId() {
-        return scheduleId;
-    }
-
-    public void setScheduleId(Integer scheduleId) {
-        this.scheduleId = scheduleId;
-    }
-
-    public Integer getStaffId() {
-        return staffId;
-    }
-
-    public void setStaffId(Integer staffId) {
-        this.staffId = staffId;
-    }
-
-    public UserAccount getStaff() {
-        return staff;
-    }
-
-    public void setStaff(UserAccount staff) {
-        this.staff = staff;
-    }
-
-    public Integer getDayOfWeek() {
-        return dayOfWeek;
-    }
-
-    public void setDayOfWeek(Integer dayOfWeek) {
-        this.dayOfWeek = dayOfWeek;
-    }
-
-    public LocalTime getStartTime() {
-        return startTime;
-    }
-
-    public void setStartTime(LocalTime startTime) {
-        this.startTime = startTime;
-    }
-
-    public LocalTime getEndTime() {
-        return endTime;
-    }
-
-    public void setEndTime(LocalTime endTime) {
-        this.endTime = endTime;
-    }
-
-    public Integer getMaxDailyBookings() {
-        return maxDailyBookings;
-    }
-
-    public void setMaxDailyBookings(Integer maxDailyBookings) {
-        this.maxDailyBookings = maxDailyBookings;
-    }
-
-    public boolean isActive() {
-        return active;
-    }
-
-    public void setActive(boolean active) {
-        this.active = active;
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
     }
 }
+

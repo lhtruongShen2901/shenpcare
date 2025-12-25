@@ -1,21 +1,34 @@
 package g6shenpcare.entity;
 
 import jakarta.persistence.*;
+import lombok.*;
+
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "StaffProfile")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class StaffProfile {
-
     @Id
     @Column(name = "StaffId")
-    private Integer staffId;   // Maps with Users.UserId
+    private Integer staffId;
 
-    @Column(name = "StaffCode", length = 50, nullable = false)
+    @OneToOne
+    @JoinColumn(name = "UserId", unique = true)
+    private UserAccount user;
+
+    @Column(name = "StaffCode", nullable = false, length = 50)
     private String staffCode;
 
     @Column(name = "StaffType", length = 50)
-    private String staffType;    // ADMIN / DOCTOR / GROOMER / ...
+    private String staffType;
+
+    @Column(name = "Position", length = 100)
+    private String position;
 
     @Column(name = "LicenseNumber", length = 100)
     private String licenseNumber;
@@ -24,35 +37,20 @@ public class StaffProfile {
     private String specialization;
 
     @Column(name = "HireDate")
-    private LocalDate hireDate;
+    private java.time.LocalDate hireDate;
 
-    // [MỚI] Hạn mức phép năm (Mặc định 12 ngày)
-    @Column(name = "AnnualLeaveQuota")
+    @Column(name = "BranchId")
+    private Integer branchId;
+
+    @Column(name = "Email", length = 100)
+    private String email;
+
+    @Column(name = "Phone", length = 20)
+    private String phone;
+
+    @Column(name = "Notes", length = 500)
+    private String notes;
+
+    @Column(name = "AnnualLeaveQuota", nullable = false)
     private Integer annualLeaveQuota = 12;
-
-    public StaffProfile() {
-    }
-
-    // --- Getter & Setter ---
-
-    public Integer getStaffId() { return staffId; }
-    public void setStaffId(Integer staffId) { this.staffId = staffId; }
-
-    public String getStaffCode() { return staffCode; }
-    public void setStaffCode(String staffCode) { this.staffCode = staffCode; }
-
-    public String getStaffType() { return staffType; }
-    public void setStaffType(String staffType) { this.staffType = staffType; }
-
-    public String getLicenseNumber() { return licenseNumber; }
-    public void setLicenseNumber(String licenseNumber) { this.licenseNumber = licenseNumber; }
-
-    public String getSpecialization() { return specialization; }
-    public void setSpecialization(String specialization) { this.specialization = specialization; }
-
-    public LocalDate getHireDate() { return hireDate; }
-    public void setHireDate(LocalDate hireDate) { this.hireDate = hireDate; }
-
-    public Integer getAnnualLeaveQuota() { return annualLeaveQuota; }
-    public void setAnnualLeaveQuota(Integer annualLeaveQuota) { this.annualLeaveQuota = annualLeaveQuota; }
 }

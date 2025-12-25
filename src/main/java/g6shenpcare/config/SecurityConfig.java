@@ -2,6 +2,7 @@ package g6shenpcare.config;
 
 import g6shenpcare.repository.UserAccountRepository;
 import g6shenpcare.entity.UserAccount;
+import g6shenpcare.utils.CustomAuthenticationSuccessHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.LockedException;
@@ -49,15 +50,16 @@ public class SecurityConfig {
                 // 2. ĐẶT /admin/login, /admin/register TRƯỚC /admin/**
                 .requestMatchers("/admin/login", "/admin/register").permitAll()
                 // 3. Khu admin nội bộ (Admin + Staff)
-                .requestMatchers("/admin/**").hasAnyRole("ADMIN","DOCTOR","GROOMER","SUPPORT","STORE")
+                .requestMatchers("/admin/**").hasAnyRole("ADMIN","DOCTOR","STORE")
                 .requestMatchers("/support/**").hasAnyRole("SUPPORT", "ADMIN")
+                .requestMatchers("/groomer/**").hasAnyRole("GROOMER", "ADMIN")
                 // 4. Mọi request khác
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
                 .loginPage("/admin/login")
                 .loginProcessingUrl("/admin/login")
-                .defaultSuccessUrl("/admin/dashboard", true)
+                .successHandler(new CustomAuthenticationSuccessHandler())
                 .failureUrl("/admin/login?error=true")
                 .permitAll()
             )

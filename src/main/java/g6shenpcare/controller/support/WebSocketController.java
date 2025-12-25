@@ -1,4 +1,4 @@
-package g6shenpcare.controller.staff;
+package g6shenpcare.controller.support;
 
 import g6shenpcare.models.dto.ChatMessageDTO;
 import g6shenpcare.models.dto.TypingDTO;
@@ -28,7 +28,7 @@ public class WebSocketController {
         );
 
         messagingTemplate.convertAndSend(
-                STR."/topic/session/\{dto.getSessionId()}/messages",
+                "/topic/session/" + dto.getSessionId() + "/messages",
                 savedMessage
         );
     }
@@ -38,7 +38,7 @@ public class WebSocketController {
         if (dto.getSessionId() == null) return;
 
         messagingTemplate.convertAndSend(
-                STR."/topic/session/\{dto.getSessionId()}/typing",
+                "/topic/session/" + dto.getSessionId() + "/typing",
                 dto
         );
     }
@@ -49,7 +49,7 @@ public class WebSocketController {
         Map<String, Object> status = chatService.getSessionStatus(sessionId);
 
         messagingTemplate.convertAndSend(
-                STR."/topic/session/\{sessionId}/status",
+                "/topic/session/" + sessionId + "/status",
                 status
         );
     }

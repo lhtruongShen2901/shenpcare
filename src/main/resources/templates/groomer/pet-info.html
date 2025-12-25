@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông Tin Thú Cưng - Groomer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+</head>
+<body class="bg-[#F8F9FA]">
+<!-- Header -->
+<header class="bg-white shadow-sm border-b border-[#E3E5D2]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <a href="/groomer/schedule" class="w-10 h-10 flex items-center justify-center bg-gray-100 hover:bg-[#D8E268] rounded-lg transition-all">
+                    <span class="material-symbols-outlined text-[20px]">arrow_back</span>
+                </a>
+                <div>
+                    <h1 class="text-[#03594D] text-3xl font-black leading-tight tracking-tight">Thông Tin Thú Cưng</h1>
+                    <p class="text-sm text-gray-500 mt-0.5">Chi tiết booking và tiến độ thực hiện</p>
+                </div>
+            </div>
+            <div class="flex flex-col items-center space-y-1 justify-center">
+                <h2 class="text-xl font-black text-[#03594D] mb-1">🐾 ShenPCare</h2>
+                <div class="p-3 bg-black text-white rounded-full h-10 text-center w-10 flex justify-center items-center font-bold" th:text="${staffName.charAt(0)}"></div>
+                <div class="text-sm font-bold text-gray-600" th:text="${staffName}"></div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <!-- Flash Messages -->
+    <div th:if="${successMessage}" class="mb-4 bg-emerald-50 border-l-4 border-emerald-400 p-4 rounded-r-xl">
+        <div class="flex items-center">
+            <span class="material-symbols-outlined text-emerald-500 text-xl mr-3">check_circle</span>
+            <p class="text-sm text-emerald-700 font-semibold" th:text="${successMessage}"></p>
+        </div>
+    </div>
+
+    <div th:if="${errorMessage}" class="mb-4 bg-red-50 border-l-4 border-red-400 p-4 rounded-r-xl">
+        <div class="flex items-center">
+            <span class="material-symbols-outlined text-red-500 text-xl mr-3">error</span>
+            <p class="text-sm text-red-700 font-semibold" th:text="${errorMessage}"></p>
+        </div>
+    </div>
+
+    <!-- Booking Status Banner -->
+    <div class="bg-blue-50 border-l-4 border-blue-400 p-5 mb-6 rounded-r-xl shadow-sm">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center">
+                <span class="material-symbols-outlined text-blue-500 text-2xl mr-3">calendar_month</span>
+                <div>
+                    <p class="text-sm text-blue-700 font-bold">Booking ID: <span class="font-mono" th:text="${booking.bookingId}">#12345</span></p>
+                    <p class="text-sm text-blue-600 font-semibold mt-0.5">Ngày hẹn: <span th:text="${#temporals.format(booking.startTime, 'dd/MM/yyyy HH:mm')}">20/12/2025 10:00</span></p>
+                </div>
+            </div>
+            <span class="px-4 py-2 text-xs font-bold rounded-full bg-blue-100 text-blue-800 border border-blue-200"
+                  th:text="${booking.status}">CONFIRMED</span>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Left Column: Pet Info -->
+        <div class="lg:col-span-1 space-y-6">
+            <!-- Pet Basic Info Card -->
+            <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-[#E3E5D2]">
+                <div class="bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-4">
+                    <h2 class="text-lg font-black text-white flex items-center">
+                        <span class="material-symbols-outlined mr-2">pets</span>
+                        Thông Tin Thú Cưng
+                    </h2>
+                </div>
+                <div class="p-6">
+                    <!-- Pet Avatar -->
+                    <div class="flex justify-center mb-5">
+                        <div class="relative">
+                            <img th:if="${pet.avatarFileId != null}"
+                                 th:src="@{/api/files/{id}(id=${pet.avatarFileId})}"
+                                 alt="Pet Avatar"
+                                 class="w-32 h-32 rounded-full object-cover border-4 border-purple-200 shadow-lg">
+                            <div th:unless="${pet.avatarFileId != null}"
+                                 class="w-32 h-32 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center border-4 border-purple-200 shadow-lg">
+                                <span class="material-symbols-outlined text-white text-5xl">pets</span>
+                            </div>
+                            <span class="absolute bottom-0 right-0 px-3 py-1 bg-purple-500 text-white text-xs font-black rounded-full border-2 border-white shadow-md"
+                                  th:text="${pet.species}">Chó</span>
+                        </div>
+                    </div>
+
+                    <!-- Pet Details -->
+                    <div class="text-center mb-5">
+                        <h3 class="text-2xl font-black text-[#03594D]" th:text="${pet.name}">Milo</h3>
+                        <p class="text-xs text-gray-400 font-mono mt-1" th:text="${pet.petCode}">PET-001</p>
+                    </div>
+
+                    <div class="space-y-3 border-t border-gray-100 pt-4">
+                        <div class="flex items-center justify-between py-2">
+                            <span class="text-sm text-gray-600 font-semibold flex items-center gap-2">
+                                <span class="material-symbols-outlined text-[18px] text-gray-400">wc</span>
+                                Giới tính
+                            </span>
+                            <span class="text-sm font-bold text-[#03594D]" th:text="${pet.gender}">Đực</span>
+                        </div>
+                        <div class="flex items-center justify-between py-2">
+                            <span class="text-sm text-gray-600 font-semibold flex items-center gap-2">
+                                <span class="material-symbols-outlined text-[18px] text-gray-400">category</span>
+                                Giống
+                            </span>
+                            <span class="text-sm font-bold text-[#03594D]" th:text="${pet.breed}">Golden Retriever</span>
+                        </div>
+                        <div class="flex items-center justify-between py-2">
+                            <span class="text-sm text-gray-600 font-semibold flex items-center gap-2">
+                                <span class="material-symbols-outlined text-[18px] text-gray-400">scale</span>
+                                Cân nặng
+                            </span>
+                            <span class="text-sm font-bold text-[#03594D]">
+                                <span th:text="${pet.weightKg}">25</span> kg
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between py-2">
+                            <span class="text-sm text-gray-600 font-semibold flex items-center gap-2">
+                                <span class="material-symbols-outlined text-[18px] text-gray-400">cake</span>
+                                Tuổi
+                            </span>
+                            <span class="text-sm font-bold text-[#03594D]" th:text="${petAge}">3 tuổi</span>
+                        </div>
+                        <div class="flex items-center justify-between py-2">
+                            <span class="text-sm text-gray-600 font-semibold flex items-center gap-2">
+                                <span class="material-symbols-outlined text-[18px] text-gray-400">palette</span>
+                                Màu sắc
+                            </span>
+                            <span class="text-sm font-bold text-[#03594D]" th:text="${pet.color}">Vàng</span>
+                        </div>
+                        <div th:if="${pet.coatLength}" class="flex items-center justify-between py-2">
+                            <span class="text-sm text-gray-600 font-semibold flex items-center gap-2">
+                                <span class="material-symbols-outlined text-[18px] text-gray-400">straighten</span>
+                                Độ dài lông
+                            </span>
+                            <span class="text-sm font-bold text-[#03594D]" th:text="${pet.coatLength}">Dài</span>
+                        </div>
+                        <div class="flex items-center justify-between py-2">
+                            <span class="text-sm text-gray-600 font-semibold flex items-center gap-2">
+                                <span class="material-symbols-outlined text-[18px] text-gray-400">health_and_safety</span>
+                                Triệt sản
+                            </span>
+                            <span class="text-sm font-bold flex items-center gap-1" th:classappend="${pet.isSterilized ? 'text-emerald-600' : 'text-gray-500'}">
+                                <span class="material-symbols-outlined text-[18px]" th:text="${pet.isSterilized ? 'check_circle' : 'cancel'}">check_circle</span>
+                                <span th:text="${pet.isSterilized ? 'Đã triệt sản' : 'Chưa triệt sản'}">Đã triệt sản</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Special Notes Card -->
+            <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-[#E3E5D2]" th:if="${pet.notes}">
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <span class="material-symbols-outlined text-yellow-500 text-xl">warning</span>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-black text-yellow-800 uppercase tracking-wide">Lưu ý đặc biệt</h3>
+                            <div class="mt-2 text-sm text-yellow-700 font-semibold">
+                                <p th:text="${pet.notes}">Chó rất sợ tiếng ồn, cần nhẹ nhàng khi xử lý.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Owner Info Card -->
+            <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-[#E3E5D2]">
+                <div class="bg-gradient-to-r from-blue-500 to-cyan-500 px-6 py-4">
+                    <h2 class="text-lg font-black text-white flex items-center">
+                        <span class="material-symbols-outlined mr-2">person</span>
+                        Thông Tin Chủ Nuôi
+                    </h2>
+                </div>
+                <div class="p-6 space-y-3">
+                    <div class="flex items-center justify-between py-2">
+                        <span class="text-sm text-gray-600 font-semibold flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[18px] text-gray-400">account_circle</span>
+                            Họ tên
+                        </span>
+                        <span class="text-sm font-bold text-[#03594D]" th:text="${customer.fullName}">Trần Văn B</span>
+                    </div>
+                    <div class="flex items-center justify-between py-2">
+                        <span class="text-sm text-gray-600 font-semibold flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[18px] text-gray-400">phone</span>
+                            Điện thoại
+                        </span>
+                        <a th:href="'tel:' + ${customer.phone}" class="text-sm font-bold text-blue-600 hover:underline" th:text="${customer.phone}">0912345678</a>
+                    </div>
+                    <div th:if="${customer.email}" class="flex items-center justify-between py-2">
+                        <span class="text-sm text-gray-600 font-semibold flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[18px] text-gray-400">mail</span>
+                            Email
+                        </span>
+                        <a th:href="'mailto:' + ${customer.email}" class="text-sm font-bold text-blue-600 hover:underline" th:text="${customer.email}">customer@email.com</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Service Details & Progress -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Service Information Card -->
+            <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-[#E3E5D2]">
+                <div class="bg-gradient-to-r from-green-500 to-emerald-500 px-6 py-4">
+                    <h2 class="text-lg font-black text-white flex items-center">
+                        <span class="material-symbols-outlined mr-2">content_cut</span>
+                        Dịch Vụ Đặt Lịch
+                    </h2>
+                </div>
+                <div class="p-6">
+                    <div class="flex items-start justify-between mb-4">
+                        <div>
+                            <h3 class="text-xl font-black text-[#03594D]" th:text="${service.name}">Tắm + Cắt Tỉa + Vệ Sinh</h3>
+                            <p class="text-sm text-gray-600 mt-2 font-semibold" th:text="${service.description}">Dịch vụ tắm, cắt tỉa lông và vệ sinh toàn diện cho thú cưng</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-2xl font-black text-emerald-600">
+                                <span th:text="${#numbers.formatDecimal(booking.totalAmount, 0, 'COMMA', 0, 'POINT')}">500,000</span>đ
+                            </div>
+                            <div class="text-xs text-gray-500 mt-1 font-semibold flex items-center gap-1 justify-end">
+                                <span class="material-symbols-outlined text-[14px]">schedule</span>
+                                <span th:text="${service.durationMinutes}">120</span> phút
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-gray-100 pt-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                                <span class="text-xs text-gray-500 uppercase font-bold tracking-wide">Loại dịch vụ</span>
+                                <p class="text-sm font-black text-[#03594D] mt-1" th:text="${service.serviceType}">GROOMING</p>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                                <span class="text-xs text-gray-500 uppercase font-bold tracking-wide">Đối tượng</span>
+                                <p class="text-sm font-black text-[#03594D] mt-1" th:text="${service.targetSpecies}">Chó & Mèo</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customer Instructions Card -->
+            <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-[#E3E5D2]" th:if="${booking.notes}">
+                <div class="bg-gradient-to-r from-orange-500 to-red-500 px-6 py-4">
+                    <h2 class="text-lg font-black text-white flex items-center">
+                        <span class="material-symbols-outlined mr-2">assignment</span>
+                        Yêu Cầu Của Khách Hàng
+                    </h2>
+                </div>
+                <div class="p-6">
+                    <div class="bg-orange-50 border-l-4 border-orange-400 p-4 rounded-r-xl">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <span class="material-symbols-outlined text-orange-500 text-xl">chat</span>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm text-gray-700 whitespace-pre-wrap font-semibold" th:text="${booking.notes}">
+                                    - Cắt tỉa kiểu Teddy Bear
+                                    - Sử dụng sữa tắm dành cho da nhạy cảm
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress History Card -->
+            <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-[#E3E5D2]" th:if="${progressHistory != null and !#lists.isEmpty(progressHistory)}">
+                <div class="bg-gradient-to-r from-cyan-500 to-blue-500 px-6 py-4">
+                    <h2 class="text-lg font-black text-white flex items-center">
+                        <span class="material-symbols-outlined mr-2">history</span>
+                        Lịch Sử Cập Nhật Tiến Độ
+                    </h2>
+                </div>
+                <div class="p-6">
+                    <div class="space-y-4 max-h-96 overflow-y-auto">
+                        <div th:each="progress, iterStat : ${progressHistory}"
+                             class="flex gap-3 pb-4"
+                             th:classappend="${!iterStat.last ? 'border-b border-gray-100' : ''}">
+                            <!-- Timeline dot -->
+                            <div class="flex flex-col items-center">
+                                <div class="w-3 h-3 rounded-full bg-blue-500 mt-1 shadow-sm"></div>
+                                <div th:unless="${iterStat.last}" class="w-0.5 h-full bg-gray-200 mt-2"></div>
+                            </div>
+
+                            <!-- Content -->
+                            <div class="flex-1">
+                                <div class="flex items-start justify-between mb-2">
+                                    <div class="flex items-center gap-2">
+                                        <span class="px-3 py-1 text-xs font-black rounded-full border"
+                                              th:classappend="${progress.status == 'COMPLETED' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' :
+                                                             progress.status == 'IN_PROGRESS' ? 'bg-blue-100 text-blue-800 border-blue-200' :
+                                                             'bg-gray-100 text-gray-800 border-gray-200'}"
+                                              th:text="${progress.status}">IN_PROGRESS</span>
+                                        <span class="text-xs text-gray-600 font-semibold"
+                                              th:if="${progress.updatedBy != null}"
+                                              th:text="${progress.updatedBy.user.fullName}">Nguyễn Văn A</span>
+                                    </div>
+                                    <span class="text-xs text-gray-500 font-mono"
+                                          th:text="${#temporals.format(progress.updatedAt, 'dd/MM/yyyy HH:mm')}">21/12/2025 10:30</span>
+                                </div>
+
+                                <div th:if="${progress.notes != null and !#strings.isEmpty(progress.notes)}"
+                                     class="mt-2 bg-gray-50 rounded-lg p-3 border border-gray-100">
+                                    <p class="text-sm text-gray-700 whitespace-pre-wrap font-semibold" th:text="${progress.notes}">
+                                        Đã hoàn thành bước tắm và sấy khô. Thú cưng khá ngoan.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Update Progress Form -->
+            <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-[#E3E5D2]">
+                <div class="bg-gradient-to-r from-indigo-500 to-purple-500 px-6 py-4">
+                    <h2 class="text-lg font-black text-white flex items-center">
+                        <span class="material-symbols-outlined mr-2">task</span>
+                        Cập Nhật Tiến Độ
+                    </h2>
+                </div>
+                <div class="p-6">
+                    <form th:action="@{/groomer/{id}/progress(id=${booking.bookingId})}" method="post" id="progressForm">
+                        <!-- Progress Notes -->
+                        <div class="mt-2">
+                            <label for="progressNotes" class="block text-sm font-black text-gray-700 mb-2 uppercase tracking-wide">
+                                <span class="material-symbols-outlined text-[16px] align-middle mr-1">note_add</span>
+                                Ghi chú quá trình <span class="text-red-500">*</span>
+                            </label>
+                            <textarea id="progressNotes" name="notes" rows="4" required
+                                      class="w-full px-4 py-3 border border-[#E3E5D2] rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 font-semibold"
+                                      placeholder="Ghi chú về tình trạng thú cưng, các vấn đề phát sinh, hoặc điểm cần lưu ý..."></textarea>
+                            <p class="mt-2 text-xs text-gray-500 font-semibold flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[14px]">info</span>
+                                Vui lòng nhập ghi chú để cập nhật tiến độ
+                            </p>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="mt-6 grid grid-cols-2 gap-3">
+                            <button type="submit" name="action" value="update_progress"
+                                    class="flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg font-black hover:-translate-y-0.5 transition-all shadow-md">
+                                <span class="material-symbols-outlined text-[20px]">save</span>
+                                Cập Nhật Tiến Độ
+                            </button>
+                            <button type="submit" name="action" value="complete"
+                                    class="flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-green-600 text-white px-6 py-3 rounded-lg font-black hover:-translate-y-0.5 transition-all shadow-md">
+                                <span class="material-symbols-outlined text-[20px]">check_circle</span>
+                                Hoàn Thành
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Previous Visit History -->
+            <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-[#E3E5D2]" th:if="${previousVisits != null and !#lists.isEmpty(previousVisits)}">
+                <div class="bg-gradient-to-r from-gray-600 to-gray-700 px-6 py-4">
+                    <h2 class="text-lg font-black text-white flex items-center">
+                        <span class="material-symbols-outlined mr-2">history</span>
+                        Lịch Sử Grooming Trước Đây
+                    </h2>
+                </div>
+                <div class="p-6">
+                    <div class="space-y-3">
+                        <div th:each="visit : ${previousVisits}"
+                             class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-100 hover:bg-gray-100 transition-all">
+                            <div>
+                                <p class="text-sm font-black text-[#03594D]" th:text="${#temporals.format(visit.startTime, 'dd/MM/yyyy')}">15/11/2025</p>
+                                <p class="text-xs text-gray-600 font-semibold mt-1" th:text="${visit.serviceName}">Tắm + Cắt Tỉa</p>
+                            </div>
+                            <span class="px-3 py-1 text-xs font-black rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                Hoàn thành
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('progressForm');
+        const notesTextarea = document.getElementById('progressNotes');
+
+        form.addEventListener('submit', function(e) {
+            const action = document.activeElement.value;
+            const notes = notesTextarea.value.trim();
+
+
+            if (!notes) {
+                e.preventDefault();
+                alert('Vui lòng nhập ghi chú tiến độ trước khi cập nhật!');
+                notesTextarea.focus();
+                notesTextarea.classList.add('border-red-500');
+                return false;
+            }
+
+            notesTextarea.classList.remove('border-red-500');
+
+            if (action === 'complete') {
+                if (!confirm('Xác nhận đã hoàn thành tất cả các bước grooming?')) {
+                    e.preventDefault();
+                    return false;
+                }
+            }
+        });
+
+        notesTextarea.addEventListener('input', function() {
+            if (this.value.trim()) {
+                this.classList.remove('border-red-500');
+            }
+        });
+    });
+</script>
+</body>
+</html>

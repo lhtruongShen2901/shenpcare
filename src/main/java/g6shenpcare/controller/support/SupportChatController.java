@@ -1,18 +1,14 @@
-package g6shenpcare.controller.staff;
+package g6shenpcare.controller.support;
 
 
-import g6shenpcare.entity.Order;
-import g6shenpcare.entity.Pets;
-import g6shenpcare.entity.Services;
-import g6shenpcare.entity.UserAccount;
+import g6shenpcare.entity.*;
+import g6shenpcare.models.dto.BookingHistoryDTO;
 import g6shenpcare.models.dto.ChatSessionSummaryDTO;
 import g6shenpcare.models.entity.ChatSession;
 import g6shenpcare.models.entity.Message;
 import g6shenpcare.models.entity.Ticket;
-import g6shenpcare.repository.OrderRepository;
-import g6shenpcare.repository.PetRepository;
-import g6shenpcare.repository.ServicesRepository;
-import g6shenpcare.repository.UserAccountRepository;
+import g6shenpcare.repository.*;
+import g6shenpcare.service.BookingService;
 import g6shenpcare.service.ChatService;
 import g6shenpcare.service.TicketService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +42,10 @@ public class SupportChatController {
     @Autowired
     private PetRepository petRepository;
 
+
+    @Autowired
+    private BookingService bookingService;
+
     @GetMapping("/chat")
     public String dashboard(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         UserAccount staff = userRepository.findByUsername(userDetails.getUsername())
@@ -72,6 +72,14 @@ public class SupportChatController {
 
         return "staff/chat-support";
     }
+
+        @GetMapping("/api/bookings/customer/{customerId}")
+        @ResponseBody
+        public List<BookingHistoryDTO> getBookingHistoryByCustomer(
+                @PathVariable Integer customerId
+        ) {
+            return bookingService.getBookingHistoryByCustomer(customerId);
+        }
 
     @PostMapping("/api/sessions/{sessionId}/accept")
     @ResponseBody
@@ -180,19 +188,5 @@ public class SupportChatController {
         return ResponseEntity.ok().build();
     }
 
-//    @GetMapping("/api/stats")
-////    @ResponseBody
-////    public ResponseEntity<DashboardStats> getDashboardStats(@AuthenticationPrincipal UserDetails userDetails) {
-////        UserAccount staff = userRepository.findByUsername(userDetails.getUsername())
-////                .orElseThrow(() -> new RuntimeException("User not found"));
-////
-////        DashboardStats stats = new DashboardStats();
-////        stats.setMyActiveSessions(chatService.getActiveSessionsForStaff(staff.getUserId()).size());
-////        stats.setWaitingCustomers(chatService.getWaitingSessions().size());
-////        stats.setOpenTickets(ticketService.getOpenTickets().size());
-////        stats.setMyTickets(ticketService.getTicketsAssignedToUser(staff.getUserId()).size());
-////
-////        return ResponseEntity.ok(stats);
-////    }
 
 }

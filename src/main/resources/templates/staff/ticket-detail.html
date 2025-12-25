@@ -129,22 +129,20 @@
     <!-- Main Container -->
     <div class="min-h-screen max-h-screen overflow-y-auto">
         <!-- Header -->
-        <div class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-10">
-            <div class="bg-white border-b border-[#E3E5D2] px-8 py-6 flex justify-start items-center shadow-sm">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-4">
-                        <button onclick="window.history.back()"
-                                class="p-2 hover:bg-gray-100 rounded-lg transition">
-                            <span class="material-symbols-outlined">arrow_back</span>
-                        </button>
-                        <div>
-                            <h1 class="text-[#03594D] text-3xl font-black leading-tight tracking-tight flex items-center gap-2">
-                                <span class="material-symbols-outlined">confirmation_number</span>
-                                Ticket #<span th:text="${ticket.id}"></span></h1>
-                            <p class="text-sm text-gray-500 mt-1">Chi tiết và xử lý ticket</p>
-                        </div>
+        <div class="bg-white border-b border-[#E3E5D2] px-8 py-6 shadow-sm sticky top-0 z-10">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <button onclick="window.history.back()"
+                            class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-lg transition-all">
+                        <span class="material-symbols-outlined text-gray-600">arrow_back</span>
+                    </button>
+                    <div>
+                        <h1 class="text-[#03594D] text-3xl font-black leading-tight tracking-tight flex items-center gap-2">
+                            <span class="material-symbols-outlined">confirmation_number</span>
+                            Ticket #<span th:text="${ticket.id}">1234</span>
+                        </h1>
+                        <p class="text-sm text-gray-500 mt-1">Chi tiết và xử lý ticket</p>
                     </div>
-
                 </div>
             </div>
         </div>
@@ -157,140 +155,152 @@
                 <div class="lg:col-span-2 space-y-6">
 
                     <!-- Status Card -->
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                        <div class="flex items-center gap-2 mb-4">
-                            <span class="material-symbols-outlined text-blue-600">info</span>
-                            <h2 class="font-bold text-gray-800">Thông tin ticket</h2>
+                    <div class="bg-white rounded-2xl shadow-sm border border-[#E3E5D2] p-6 transition-all hover:shadow-md">
+                        <div class="flex items-center gap-2 mb-5">
+                            <span class="material-symbols-outlined text-[#03594D] text-xl">info</span>
+                            <h2 class="font-black text-[#03594D] text-lg">Thông tin ticket</h2>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-2 gap-6">
                             <div>
-                                <label class="text-sm text-gray-600" >Trạng thái</label>
-                                <div class="mt-1">
+                                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Trạng thái</label>
+                                <div>
                                     <div th:switch="${ticket.status.name()}">
-                                        <span th:case="'OPEN'" class="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">📝 Mở</span>
-                                        <span th:case="'IN_PROGRESS'" class="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">⚙️ Đang xử lý</span>
-                                        <span th:case="'RESOLVED'" class="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">✅ Đã xử lý</span>
-                                        <span th:case="'CLOSED'" class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">🔒 Đã đóng</span>
+                                        <span th:case="'OPEN'" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-100 text-blue-700 border border-blue-200">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                                            Mở
+                                        </span>
+                                        <span th:case="'IN_PROGRESS'" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-orange-100 text-orange-700 border border-orange-200">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
+                                            Đang xử lý
+                                        </span>
+                                        <span th:case="'RESOLVED'" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                            Đã xử lý
+                                        </span>
+                                        <span th:case="'CLOSED'" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-700 border border-gray-200">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-gray-500"></span>
+                                            Đã đóng
+                                        </span>
                                     </div>
-
-
                                 </div>
                             </div>
                             <div>
-                                <label class="text-sm text-gray-600">Độ ưu tiên</label>
-                                <div class="mt-1">
-                                <span  th:switch="${ticket.priority.name()}">
-                                    <span th:case="'HIGH'" class="px-3 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-400">🟠 Cao</span>
-                                    <span th:case="'URGENT'" class="px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-400">🔴 Khẩn cấp</span>
-                                    <span th:case="'MEDIUM'" class="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-400">🟡 Trung bình</span>
-                                    <span th:case="'LOW'" class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-400">🔵 Thấp</span>
-                                </span>
+                                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Độ ưu tiên</label>
+                                <div>
+                                    <span th:switch="${ticket.priority.name()}">
+                                        <span th:case="'HIGH'" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-orange-100 text-orange-700 border border-orange-200">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
+                                            Cao
+                                        </span>
+                                        <span th:case="'URGENT'" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-100 text-red-700 border border-red-200">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                                            Khẩn cấp
+                                        </span>
+                                        <span th:case="'MEDIUM'" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-yellow-100 text-yellow-700 border border-yellow-200">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-yellow-500"></span>
+                                            Trung bình
+                                        </span>
+                                        <span th:case="'LOW'" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-100 text-blue-700 border border-blue-200">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                                            Thấp
+                                        </span>
+                                    </span>
                                 </div>
                             </div>
                             <div>
-                                <label class="text-sm text-gray-600">Danh mục</label>
-                                <p class="mt-1 font-semibold text-gray-800" th:text="${ticket.category}">Dịch vụ</p>
+                                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Danh mục</label>
+                                <p class="font-bold text-[#03594D] text-sm" th:text="${ticket.category}">Dịch vụ</p>
                             </div>
                             <div>
-                                <label class="text-sm text-gray-600">Người xử lý</label>
-                                <p class="mt-1 font-semibold text-gray-800" th:text="${ticket.assignedTo != null ? ticket.assignedTo.fullName : 'Chưa phân công'}">Trần Thị B</p>
+                                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Người xử lý</label>
+                                <p class="font-bold text-[#03594D] text-sm" th:text="${ticket.assignedTo != null ? ticket.assignedTo.fullName : 'Chưa phân công'}">Trần Thị B</p>
                             </div>
                         </div>
                     </div>
 
                     <!-- Content Card -->
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                        <div class="flex items-center gap-2 mb-4">
-                            <span class="material-symbols-outlined text-orange-600">description</span>
-                            <h2 class="font-bold text-gray-800">Nội dung ticket</h2>
+                    <div class="bg-white rounded-2xl shadow-sm border border-[#E3E5D2] p-6 transition-all hover:shadow-md">
+                        <div class="flex items-center gap-2 mb-5">
+                            <span class="material-symbols-outlined text-[#03594D] text-xl">description</span>
+                            <h2 class="font-black text-[#03594D] text-lg">Nội dung ticket</h2>
                         </div>
 
                         <div class="space-y-4">
                             <div>
-                                <label class="text-sm font-semibold text-gray-600">Tiêu đề</label>
-                                <p class="mt-1 text-gray-900" th:text="${ticket.subject}"></p>
+                                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Tiêu đề</label>
+                                <p class="text-[#03594D] font-bold text-base" th:text="${ticket.subject}">Tiêu đề ticket</p>
                             </div>
 
                             <div>
-                                <label class="text-sm font-semibold text-gray-600">Mô tả chi tiết</label>
-                                <div class="mt-1 bg-gray-50 p-4 rounded-lg border border-gray-200 text-gray-700 leading-relaxed"  th:text="${ticket.description}">
-
+                                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Mô tả chi tiết</label>
+                                <div class="bg-[#F8F9FA] p-4 rounded-xl border border-gray-100 text-gray-700 text-sm leading-relaxed" th:text="${ticket.description}">
+                                    Mô tả chi tiết về ticket
                                 </div>
                             </div>
 
-                            <div class="flex justify-between text-sm text-gray-500 pt-4 border-t">
-                                <span>Tạo lúc: <strong th:text="${#temporals.format(ticket.createdAt, 'dd/MM/yyyy HH:mm')}"></strong></span>
-                                <span>Bởi: <strong th:text="${ticket.createdBy.fullName}"></strong></span>
+                            <div class="flex justify-between text-xs text-gray-500 pt-4 border-t border-gray-100">
+                                <span class="font-semibold">Tạo lúc: <span class="text-[#03594D] font-bold" th:text="${#temporals.format(ticket.createdAt, 'dd/MM/yyyy HH:mm')}">21/12/2024 09:15</span></span>
+                                <span class="font-semibold">Bởi: <span class="text-[#03594D] font-bold" th:text="${ticket.createdBy.fullName}">Nguyễn Văn A</span></span>
                             </div>
                         </div>
                     </div>
 
                     <!-- Timeline -->
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                        <div class="flex items-center gap-2 mb-4">
-                            <span class="material-symbols-outlined text-purple-600">history</span>
-                            <h2 class="font-bold text-gray-800">Lịch sử xử lý</h2>
+                    <div class="bg-white rounded-2xl shadow-sm border border-[#E3E5D2] p-6 transition-all hover:shadow-md">
+                        <div class="flex items-center gap-2 mb-5">
+                            <span class="material-symbols-outlined text-[#03594D] text-xl">history</span>
+                            <h2 class="font-black text-[#03594D] text-lg">Lịch sử xử lý</h2>
                         </div>
 
                         <div class="space-y-4">
                             <div class="flex gap-3">
                                 <div class="flex flex-col items-center">
-                                    <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                                    <div class="w-2.5 h-2.5 rounded-full bg-blue-500"></div>
                                     <div class="w-0.5 flex-1 bg-gray-200 mt-1"></div>
                                 </div>
                                 <div class="flex-1 pb-4">
-                                    <p class="text-xs text-gray-500 mb-1" th:text="${#temporals.format(ticket.createdAt, 'HH:mm')}">09:15</p>
-                                    <p class="text-sm text-gray-700">Ticket được tạo bởi <span th:text="${ticket.createdBy.fullName}"></span></p>
+                                    <p class="text-xs text-gray-400 font-mono mb-1" th:text="${#temporals.format(ticket.createdAt, 'HH:mm')}">09:15</p>
+                                    <p class="text-sm text-gray-700 font-semibold">Ticket được tạo bởi <span class="text-[#03594D]" th:text="${ticket.createdBy.fullName}">Nguyễn Văn A</span></p>
                                 </div>
                             </div>
 
-                            <div class="flex gap-3">
-                                <div class="flex flex-col items-center">
-                                    <div class="w-2 h-2 rounded-full bg-green-500"></div>
-                                    <div class="w-0.5 flex-1 bg-gray-200 mt-1"></div>
-                                </div>
-                                <div class="flex-1 pb-4">
-                                    <p class="text-xs text-gray-500 mb-1" th:text="${#temporals.format(ticket.createdAt, 'HH:mm')}">09:18</p>
-                                    <p class="text-sm text-gray-700">Assigned cho <span th:text="${ticket.assignedTo.fullName}"></span></p>
-                                </div>
-                            </div>
+<!--                            <div class="flex gap-3">-->
+<!--                                <div class="flex flex-col items-center">-->
+<!--                                    <div class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>-->
+<!--                                    <div class="w-0.5 flex-1 bg-gray-200 mt-1"></div>-->
+<!--                                </div>-->
+<!--                                <div class="flex-1 pb-4">-->
+<!--                                    <p class="text-xs text-gray-400 font-mono mb-1" th:text="${#temporals.format(ticket.createdAt, 'HH:mm')}">09:18</p>-->
+<!--                                    <p class="text-sm text-gray-700 font-semibold">Assigned cho <span class="text-[#03594D]" th:text="${ticket.assignedTo.fullName}">Trần Thị B</span></p>-->
+<!--                                </div>-->
+<!--                            </div>-->
+
 
                             <div class="flex gap-3">
                                 <div class="flex flex-col items-center">
-                                    <div class="w-2 h-2 rounded-full bg-gray-400"></div>
-                                    <div class="w-0.5 flex-1 bg-gray-200 mt-1"></div>
-                                </div>
-                                <div class="flex-1 pb-4">
-                                    <p class="text-xs text-gray-500 mb-1">09:30</p>
-                                    <p class="text-sm text-gray-700">Trần Thị B: Đã kiểm tra hệ thống đơn hàng</p>
-                                </div>
-                            </div>
-
-                            <div class="flex gap-3">
-                                <div class="flex flex-col items-center">
-                                    <div class="w-2 h-2 rounded-full bg-purple-500"></div>
+                                    <div class="w-2.5 h-2.5 rounded-full bg-purple-500"></div>
                                 </div>
                                 <div class="flex-1">
-                                    <p class="text-xs text-gray-500 mb-1">10:30</p>
-                                    <p class="text-sm text-gray-700">Chờ phản hồi từ bộ phận vận hành</p>
+                                    <p class="text-xs text-gray-400 font-mono mb-1" th:text="${#temporals.format(ticket.createdAt, 'HH:mm')}">10:30</p>
+                                    <p class="text-sm text-gray-700 font-semibold">Assigned cho <span class="text-[#03594D]" th:text="${ticket.assignedTo.fullName}">Trần Thị B</span></p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Note Section -->
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                        <div class="flex items-center gap-2 mb-4">
-                            <span class="material-symbols-outlined text-indigo-600">edit_note</span>
-                            <h2 class="font-bold text-gray-800">Ghi chú xử lý</h2>
+                    <div class="bg-white rounded-2xl shadow-sm border border-[#E3E5D2] p-6 transition-all hover:shadow-md">
+                        <div class="flex items-center gap-2 mb-5">
+                            <span class="material-symbols-outlined text-[#03594D] text-xl">edit_note</span>
+                            <h2 class="font-black text-[#03594D] text-lg">Ghi chú xử lý</h2>
                         </div>
 
-                        <textarea th:text="${ticket.note}" rows="4"  id="noteInput"
+                        <textarea th:text="${ticket.note}" rows="4" id="noteInput"
                                   placeholder="Nhập ghi chú nội bộ về quá trình xử lý..."
-                                  class="w-full p-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all"></textarea>
+                                  class="w-full p-4 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#03594D] focus:border-transparent resize-none transition-all bg-[#F8F9FA]"></textarea>
 
-                        <button id="saveNoteBtn" class="mt-3 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold text-sm transition-all hover:shadow-lg flex items-center gap-2">
+                        <button th:if="${ticket.assignedTo.userId == staff.userId || ticket.createdBy.userId == staff.userId}" id="saveNoteBtn" class="mt-3 px-5 py-2.5 bg-[#03594D] hover:bg-[#024a40] text-white rounded-lg font-bold text-sm transition-all hover:shadow-lg hover:-translate-y-0.5 flex items-center gap-2">
                             <span class="material-symbols-outlined text-base">send</span>
                             Lưu ghi chú
                         </button>
@@ -301,66 +311,63 @@
                 <div class="space-y-6">
 
                     <!-- Customer Info -->
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                        <div class="flex items-center gap-2 mb-4">
-                            <span class="material-symbols-outlined text-blue-600">person</span>
-                            <h2 class="font-bold text-gray-800">Khách hàng</h2>
+                    <div class="bg-white rounded-2xl shadow-sm border border-[#E3E5D2] p-6 transition-all hover:shadow-md">
+                        <div class="flex items-center gap-2 mb-5">
+                            <span class="material-symbols-outlined text-[#03594D] text-xl">person</span>
+                            <h2 class="font-black text-[#03594D] text-lg">Khách hàng</h2>
                         </div>
 
-                        <div class="space-y-3 text-sm">
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Tên:</span>
-                                <span class="font-semibold text-gray-900" th:text="${ticket.customer.fullName}"></span>
+                        <div class="space-y-4 text-sm">
+                            <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                <span class="text-gray-500 font-semibold">Tên:</span>
+                                <span class="font-bold text-[#03594D]" th:text="${ticket.customer.fullName}">Nguyễn Văn A</span>
                             </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">SĐT:</span>
-                                <span class="font-semibold text-blue-600" th:text="${ticket.customer.phone}"></span>
+                            <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                <span class="text-gray-500 font-semibold">SĐT:</span>
+                                <span class="font-bold text-blue-600" th:text="${ticket.customer.phone}">0901234567</span>
                             </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Email:</span>
-                                <span class="font-semibold text-blue-600 text-xs" th:text="${ticket.customer.email}"></span>
+                            <div class="flex justify-between items-center py-2">
+                                <span class="text-gray-500 font-semibold">Email:</span>
+                                <span class="font-bold text-blue-600 text-xs" th:text="${ticket.customer.email}">customer@email.com</span>
                             </div>
                         </div>
 
-                        <button th:onclick="'openChatPanel(' + ${mySession.id} + ')'" class="w-full mt-4 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition font-semibold text-sm flex items-center justify-center gap-2">
+                        <button th:onclick="'openChatPanel(' + ${mySession.id} + ')'" class="w-full mt-5 px-4 py-3 bg-[#D8E268] hover:bg-[#c9d358] text-[#03594D] rounded-lg transition-all font-bold text-sm shadow-sm hover:shadow-md hover:-translate-y-0.5 flex items-center justify-center gap-2">
                             <span class="material-symbols-outlined text-base">chat</span>
                             Mở Chat
                         </button>
-
                     </div>
 
                     <!-- Quick Actions -->
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                        <div class="flex items-center gap-2 mb-4">
-                            <span class="material-symbols-outlined text-green-600">bolt</span>
-                            <h2 class="font-bold text-gray-800">Thao tác</h2>
+                    <div   th:if="${ticket.assignedTo.userId == staff.userId || ticket.createdBy.userId == staff.userId}" class="bg-white rounded-2xl shadow-sm border border-[#E3E5D2] p-6 transition-all hover:shadow-md">
+                        <div class="flex items-center gap-2 mb-5">
+                            <span class="material-symbols-outlined text-[#03594D] text-xl">bolt</span>
+                            <h2 class="font-black text-[#03594D] text-lg">Thao tác</h2>
                         </div>
 
-                        <div class="space-y-2">
-
-                            <button onclick="updateStatus('IN_PROGRESS')"  th:if="${ticket.status.name() == 'OPEN'}" class="w-full px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-2">
+                        <div class="space-y-3">
+                            <button onclick="updateStatus('IN_PROGRESS')" th:if="${ticket.status.name() == 'OPEN'}"
+                                    class="w-full px-4 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-bold text-sm transition-all hover:shadow-lg hover:-translate-y-0.5 flex items-center justify-center gap-2">
                                 <span class="material-symbols-outlined text-base">settings</span>
                                 Đang xử lý
                             </button>
-                            <button onclick="updateStatus('RESOLVED')"  th:if="${ticket.status.name() == 'IN_PROGRESS' || ticket.status.name() == 'OPEN'}" class="w-full px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-2">
+                            <button onclick="updateStatus('RESOLVED')" th:if="${ticket.status.name() == 'IN_PROGRESS' || ticket.status.name() == 'OPEN'}"
+                                    class="w-full px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-sm transition-all hover:shadow-lg hover:-translate-y-0.5 flex items-center justify-center gap-2">
                                 <span class="material-symbols-outlined text-base">check_circle</span>
                                 Đánh dấu hoàn thành
                             </button>
-                            <button onclick="updateStatus('CLOSED')" th:if="${ticket.status.name() == 'RESOLVED'}" class="w-full px-4 py-2.5 bg-gray-800 hover:bg-gray-900 text-white rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-2">
+                            <button onclick="updateStatus('CLOSED')" th:if="${ticket.status.name() == 'RESOLVED'}"
+                                    class="w-full px-4 py-3 bg-gray-800 hover:bg-gray-900 text-white rounded-lg font-bold text-sm transition-all hover:shadow-lg hover:-translate-y-0.5 flex items-center justify-center gap-2">
                                 <span class="material-symbols-outlined text-base">lock</span>
                                 Đóng ticket
                             </button>
-
-                            <button onclick="updateStatus('IN_PROGRESS')" th:if="${ticket.status.name() == 'CLOSED'}" class="w-full px-4 py-2.5 bg-gray-800 hover:bg-gray-900 text-white rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-2">
-                                <span class="material-symbols-outlined text-base">unlock</span>
+                            <button onclick="updateStatus('IN_PROGRESS')" th:if="${ticket.status.name() == 'CLOSED'}"
+                                    class="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-sm transition-all hover:shadow-lg hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                                <span class="material-symbols-outlined text-base">lock_open</span>
                                 Mở lại ticket
                             </button>
-
                         </div>
                     </div>
-
-                    <!-- Related Info -->
-
                 </div>
             </div>
         </div>
@@ -371,7 +378,6 @@
 
     <div id="chatPanel" class="chat-overlay">
         <div class="h-full flex flex-col">
-
             <!-- Chat Header -->
             <div class="bg-gradient-to-r from-[#03594D] to-[#026B5E] text-white p-4 flex items-center justify-between shadow-lg">
                 <div class="flex items-center gap-3">
@@ -379,7 +385,7 @@
                         N
                     </div>
                     <div>
-                        <div class="font-bold">Nguyễn Văn A</div>
+                        <div class="font-bold" th:text="${ticket.customer.fullName}"></div>
                         <div class="text-xs opacity-90 flex items-center gap-1">
                             <span class="w-1.5 h-1.5 bg-green-400 rounded-full"></span>
                             Đang online
@@ -394,7 +400,6 @@
 
             <!-- Chat Messages -->
             <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50 chat-messages">
-
                 <!-- Customer Message -->
                 <div class="flex gap-2">
                     <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-sm font-bold text-blue-600 flex-shrink-0">
@@ -454,13 +459,10 @@
                         Ticket #1234 đã được tạo từ cuộc trò chuyện này
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
-
 </div>
-
 
 
 <script  th:inline="javascript">

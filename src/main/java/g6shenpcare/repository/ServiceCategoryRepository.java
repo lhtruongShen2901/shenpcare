@@ -31,4 +31,7 @@ public interface ServiceCategoryRepository extends JpaRepository<ServiceCategory
             + "(LOWER(c.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR "
             + "LOWER(c.description) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     List<ServiceCategory> searchClinic(@Param("type") String type, @Param("keyword") String keyword);
+
+
+    List<ServiceCategory> findByActiveTrueOrderByNameAsc();
 }

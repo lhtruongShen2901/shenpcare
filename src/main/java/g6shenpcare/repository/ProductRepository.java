@@ -1,6 +1,7 @@
 package g6shenpcare.repository;
 
 import g6shenpcare.entity.Product;
+import g6shenpcare.models.entity.ProductCategory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -19,5 +20,5 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     List<Product> searchMedicines(@Param("keyword") String keyword);
     
     // Lọc theo loại (Vaccine, Medicine...)
-    List<Product> findByCategoryAndIsActiveTrue(String category);
+    List<Product> findByCategoryAndIsActiveTrue(ProductCategory category);
 }

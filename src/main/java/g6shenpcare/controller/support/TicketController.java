@@ -1,7 +1,6 @@
-package g6shenpcare.controller.staff;
+package g6shenpcare.controller.support;
 
 import g6shenpcare.entity.UserAccount;
-import g6shenpcare.models.dto.ChatSessionSummaryDTO;
 import g6shenpcare.models.entity.ChatSession;
 import g6shenpcare.models.entity.Ticket;
 import g6shenpcare.models.enums.EPriority;

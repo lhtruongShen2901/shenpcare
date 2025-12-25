@@ -14,7 +14,7 @@ public class NotificationService {
     public void notifyTicketAssignment(Ticket ticket) {
         if (ticket.getAssignedTo() != null) {
             messagingTemplate.convertAndSend(
-                    STR."/topic/user/\{ticket.getAssignedTo().getUserId()}/tickets",
+                    "/topic/user/" + ticket.getAssignedTo().getUserId() + "/tickets",
                     ticket
             );
         }
@@ -22,8 +22,9 @@ public class NotificationService {
 
     public void notifyNewMessage(Long sessionId, Long userId) {
         messagingTemplate.convertAndSend(
-                STR."/topic/user/\{userId}/notifications",
-                STR."New message in session \{sessionId}"
+                "/topic/user/" + userId + "/notifications",
+                "New message in session " + sessionId
+
         );
     }
 }

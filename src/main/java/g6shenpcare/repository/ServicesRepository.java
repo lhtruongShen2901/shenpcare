@@ -1,6 +1,7 @@
 package g6shenpcare.repository;
 
 import g6shenpcare.entity.Services;
+import g6shenpcare.models.dto.BookingServiceDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -63,4 +64,20 @@ public interface ServicesRepository extends JpaRepository<Services, Integer> {
     @Modifying
     @Query("UPDATE Services s SET s.active = false WHERE s.serviceCategoryId = :catId")
     void disableServicesByCategory(@Param("catId") Integer catId);
+
+
+    List<Services> findByActiveTrueOrderBySortOrder();
+
+
+    @Query("""
+        SELECT new g6shenpcare.models.dto.BookingServiceDTO(
+            s.serviceId,
+            s.name,
+            s.fixedPrice
+        )
+        FROM Services s
+        WHERE s.active = true
+        ORDER BY s.name
+    """)
+    List<BookingServiceDTO> findAllActiveForBooking();
 }

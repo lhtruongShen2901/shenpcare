@@ -1,16 +1,19 @@
 package g6shenpcare.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "Users")
 @Getter
 @Setter
-@Table(name = "Users")
-public class UserAccount {
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class    UserAccount {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,6 +23,7 @@ public class UserAccount {
     @Column(name = "Username", nullable = false, length = 50, unique = true)
     private String username;
 
+    @JsonIgnore
     @Column(name = "PasswordHash", nullable = false, length = 255)
     private String passwordHash;
 
@@ -45,5 +49,13 @@ public class UserAccount {
 
     @Column(name = "UpdatedAt")
     private LocalDateTime updatedAt;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private CustomerProfile customerProfile;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private StaffProfile staffProfile;
 
 }

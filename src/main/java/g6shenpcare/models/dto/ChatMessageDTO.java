@@ -10,3 +10,4 @@ public class ChatMessageDTO {
     private Integer senderId;
     private String messageText;
 }
+

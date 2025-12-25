@@ -33,4 +33,18 @@ public interface ServicePricingMatrixRepository extends JpaRepository<ServicePri
 
     // Bỏ từ khóa public (không cần thiết trong Interface)
     List<ServicePricingMatrix> findByServiceId(Integer serviceId);
+
+
+    List<ServicePricingMatrix> findByServiceIdOrderByMinWeightAsc(Integer serviceId);
+
+    @Query("SELECT spm FROM ServicePricingMatrix spm WHERE spm.serviceId = :serviceId " +
+            "AND (spm.petSpecies = :species OR spm.petSpecies IS NULL) " +
+            "AND (spm.coatLength = :coatLength OR spm.coatLength IS NULL) " +
+            "AND spm.minWeight <= :weight AND spm.maxWeight >= :weight")
+    List<ServicePricingMatrix> findApplicablePricing(
+            @Param("serviceId") Integer serviceId,
+            @Param("species") String species,
+            @Param("coatLength") String coatLength,
+            @Param("weight") Float weight
+    );
 }

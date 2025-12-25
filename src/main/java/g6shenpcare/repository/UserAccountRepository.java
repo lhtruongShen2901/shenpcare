@@ -53,4 +53,9 @@ public interface UserAccountRepository extends JpaRepository<UserAccount, Intege
     List<UserAccount> findByRole(String role);
 
     List<UserAccount> findByRoleIn(List<String> roles);
+
+
+    @Query("SELECT DISTINCT u.role FROM UserAccount u WHERE u.active = true")
+    List<String> findDistinctActiveRoles();
+
 }

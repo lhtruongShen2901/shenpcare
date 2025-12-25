@@ -1,12 +1,17 @@
 package g6shenpcare.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
+
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "Inventory")
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Inventory {
     @Id
     @Column(name = "ProductId")

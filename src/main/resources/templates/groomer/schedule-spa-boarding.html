@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch Spa & Boarding - ShenPCare</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+</head>
+<body class="bg-[#F8F9FA]">
+<div class="min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-[#E3E5D2] fixed w-full z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-[#03594D] text-3xl font-black leading-tight tracking-tight">Lịch Spa & Boarding</h1>
+                    <p class="text-sm text-gray-500 mt-1">Quản lý lịch làm việc của bạn</p>
+                </div>
+                <div class="flex flex-col items-center space-y-1 justify-center">
+                    <h2 class="text-xl font-black text-[#03594D] mb-1">🐾 ShenPCare</h2>
+                    <div class="p-3 bg-black text-white rounded-full h-10 text-center w-10 flex justify-center items-center font-bold" th:text="${staffName.charAt(0)}"></div>
+                    <div class="text-sm font-bold text-gray-600" th:text="${staffName}"></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Statistics Cards -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div class="grid grid-cols-1 mt-32 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white rounded-2xl shadow-sm border border-[#E3E5D2] p-6 hover:-translate-y-1 transition-all">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 font-bold uppercase tracking-wide">Tổng lịch</p>
+                        <p class="text-3xl font-black text-[#03594D] mt-2" th:text="${totalBookings}">24</p>
+                    </div>
+                    <div class="bg-[#D8E268] rounded-xl p-3">
+                        <span class="material-symbols-outlined text-[#03594D] text-2xl">calendar_month</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-[#E3E5D2] p-6 hover:-translate-y-1 transition-all">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 font-bold uppercase tracking-wide">Chờ xử lý</p>
+                        <p class="text-3xl font-black text-yellow-600 mt-2" th:text="${pendingBookings}">8</p>
+                    </div>
+                    <div class="bg-yellow-100 rounded-xl p-3 border border-yellow-200">
+                        <span class="material-symbols-outlined text-yellow-600 text-2xl">schedule</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-[#E3E5D2] p-6 hover:-translate-y-1 transition-all">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 font-bold uppercase tracking-wide">Đang thực hiện</p>
+                        <p class="text-3xl font-black text-purple-600 mt-2" th:text="${inProgressBookings}">10</p>
+                    </div>
+                    <div class="bg-purple-100 rounded-xl p-3 border border-purple-200">
+                        <span class="material-symbols-outlined text-purple-600 text-2xl">autorenew</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-[#E3E5D2] p-6 hover:-translate-y-1 transition-all">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 font-bold uppercase tracking-wide">Hoàn thành</p>
+                        <p class="text-3xl font-black text-emerald-600 mt-2" th:text="${completedBookings}">6</p>
+                    </div>
+                    <div class="bg-emerald-100 rounded-xl p-3 border border-emerald-200">
+                        <span class="material-symbols-outlined text-emerald-600 text-2xl">check_circle</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters & Controls -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div class="bg-white rounded-2xl shadow-sm border border-[#E3E5D2] p-6">
+            <form th:action="@{/groomer/schedule}" method="get" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <!-- Date Navigation -->
+                    <div class="flex items-center space-x-2">
+                        <a th:href="@{/groomer/schedule(date=${selectedDate.minusDays(view == 'week' ? 7 : 1)}, view=${view}, serviceType=${serviceType}, search=${search})}"
+                           class="w-10 h-10 flex items-center justify-center bg-gray-100 hover:bg-[#D8E268] rounded-lg transition-all">
+                            <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+                        </a>
+                        <input type="date" name="date"
+                               th:value="${#temporals.format(selectedDate, 'yyyy-MM-dd')}"
+                               class="flex-1 px-3 py-2 border border-[#E3E5D2] rounded-lg focus:ring-2 focus:ring-[#03594D] focus:border-[#03594D] text-sm font-semibold">
+                        <a th:href="@{/groomer/schedule(date=${selectedDate.plusDays(view == 'week' ? 7 : 1)}, view=${view}, serviceType=${serviceType}, search=${search})}"
+                           class="w-10 h-10 flex items-center justify-center bg-gray-100 hover:bg-[#D8E268] rounded-lg transition-all">
+                            <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+                        </a>
+                    </div>
+
+                    <!-- View Toggle -->
+                    <div class="flex bg-gray-100 rounded-lg p-1">
+                        <button type="submit" name="view" value="day"
+                                th:classappend="${view == 'day' ? 'bg-white shadow-md' : ''}"
+                                class="flex-1 px-4 py-2 rounded-md text-sm font-bold transition-all">
+                            Ngày
+                        </button>
+                        <button type="submit" name="view" value="week"
+                                th:classappend="${view == 'week' ? 'bg-white shadow-md' : ''}"
+                                class="flex-1 px-4 py-2 rounded-md text-sm font-bold transition-all">
+                            Tuần
+                        </button>
+                    </div>
+
+                    <!-- Service Type Filter -->
+                    <select name="serviceType"
+                            class="px-4 py-2 border border-[#E3E5D2] rounded-lg focus:ring-2 focus:ring-[#03594D] focus:border-[#03594D] text-sm font-semibold"
+                            onchange="this.form.submit()">
+                        <option value="">Tất cả dịch vụ</option>
+                        <option value="spa" th:selected="${serviceType == 'spa'}">Spa/Grooming</option>
+                        <option value="boarding" th:selected="${serviceType == 'boarding'}">Boarding (Trông giữ)</option>
+                    </select>
+
+                    <!-- Search -->
+                    <div class="relative">
+                        <input type="text" name="search"
+                               th:value="${search}"
+                               placeholder="Tìm khách hàng, thú cưng..."
+                               class="w-full pl-10 pr-4 py-2 border border-[#E3E5D2] rounded-lg focus:ring-2 focus:ring-[#03594D] focus:border-[#03594D] text-sm">
+                        <span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-[18px]">search</span>
+                    </div>
+                </div>
+
+                <input type="hidden" name="view" th:value="${view}">
+            </form>
+        </div>
+    </div>
+
+    <!-- Schedule List -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+        <div class="bg-white rounded-2xl shadow-sm border border-[#E3E5D2] overflow-hidden">
+            <!-- Empty State -->
+            <div th:if="${schedules.empty}" class="text-center py-16">
+                <span class="material-symbols-outlined text-gray-300 text-6xl mb-4">event_busy</span>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">Không có lịch</h3>
+                <p class="text-gray-500">Bạn chưa có lịch nào trong khoảng thời gian này</p>
+            </div>
+
+            <!-- Schedule Items -->
+            <div th:unless="${schedules.empty}" class="divide-y divide-gray-100">
+                <div th:each="schedule : ${schedules}" class="p-6 hover:bg-gray-50 transition-all group">
+                    <div class="flex items-start justify-between">
+                        <div class="flex items-start space-x-6 flex-1">
+                            <!-- Time & Icon -->
+                            <div class="text-center min-w-[90px] bg-[#F8F9FA] rounded-xl p-4 border border-[#E3E5D2]">
+                                <div class="text-3xl mb-2" th:text="${schedule.serviceTypeIcon}">🐾</div>
+                                <div class="text-base font-black text-[#03594D]"
+                                     th:text="${#temporals.format(schedule.startTime, 'HH:mm')}">09:00</div>
+                                <div class="text-xs text-gray-400 font-bold my-1">—</div>
+                                <div class="text-base font-black text-[#03594D]"
+                                     th:text="${#temporals.format(schedule.endTime, 'HH:mm')}">11:00</div>
+                            </div>
+
+                            <!-- Details -->
+                            <div class="flex-1">
+                                <div class="flex items-center gap-3 mb-3">
+                                    <h3 class="text-lg font-black text-[#03594D]" th:text="${schedule.serviceName}">
+                                        Spa Trọn Gói
+                                    </h3>
+                                    <span class="px-3 py-1 text-xs font-bold rounded-full"
+                                          th:classappend="${schedule.statusBadgeClass}"
+                                          th:text="${schedule.statusText}">
+                                        Đã xác nhận
+                                    </span>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-6 text-sm mb-3">
+                                    <div class="space-y-2">
+                                        <p class="text-gray-600 font-semibold flex items-center gap-2">
+                                            <span class="material-symbols-outlined text-[16px]">person</span>
+                                            <span th:text="${schedule.customerName}">Nguyễn Văn A</span>
+                                        </p>
+                                        <p class="text-gray-600 font-semibold flex items-center gap-2">
+                                            <span class="material-symbols-outlined text-[16px]">phone</span>
+                                            <span th:text="${schedule.customerPhone}">0901234567</span>
+                                        </p>
+                                    </div>
+                                    <div class="space-y-2">
+                                        <p class="text-gray-600 font-semibold flex items-center gap-2">
+                                            <span class="material-symbols-outlined text-[16px]">pets</span>
+                                            <span th:text="${schedule.petName}">Lucky</span>
+                                            <span class="text-gray-400 text-xs" th:text="'(' + ${schedule.petBreed} + ')'"></span>
+                                        </p>
+                                        <p class="text-gray-600 font-semibold flex items-center gap-2">
+                                            <span class="material-symbols-outlined text-[16px]">scale</span>
+                                            <span th:text="${schedule.petWeightKg + ' kg'}">5.5 kg</span>
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div th:if="${schedule.notes}" class="mt-3 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                                    <span class="material-symbols-outlined text-[16px] mr-2 align-middle">note</span>
+                                    <span th:text="${schedule.notes}"></span>
+                                </div>
+
+                                <div th:if="${schedule.lastProgressNotes}" class="mt-3 text-sm text-blue-700 bg-blue-50 p-3 rounded-lg border border-blue-200">
+                                    <span class="material-symbols-outlined text-[16px] mr-2 align-middle">info</span>
+                                    <span th:text="${schedule.lastProgressNotes}" class="font-semibold"></span>
+                                    <span class="text-gray-500 text-xs ml-2">
+                                        (<span th:text="${#temporals.format(schedule.lastProgressTime, 'HH:mm dd/MM')}"></span>)
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="ml-6 flex flex-col space-y-2">
+                            <button onclick="openStatusModal(this)"
+                                    th:attr="data-booking-id=${schedule.bookingId},
+                                            data-pet-name=${schedule.petName},
+                                            data-service=${schedule.serviceName},
+                                            data-current-status=${schedule.status}"
+                                    class="flex items-center gap-2 px-4 py-2 bg-[#D8E268] text-[#03594D] rounded-lg font-bold shadow-md hover:-translate-y-0.5 transition-all text-sm whitespace-nowrap">
+                                <span class="material-symbols-outlined text-[18px]">edit</span>
+                                Cập nhật
+                            </button>
+                            <a th:href="@{/groomer/{id}/pet-info(id=${schedule.bookingId})}"
+                               class="flex items-center gap-2 px-4 py-2 bg-white border border-[#E3E5D2] text-[#03594D] rounded-lg font-bold hover:bg-gray-50 transition-all text-sm whitespace-nowrap">
+                                <span class="material-symbols-outlined text-[18px]">visibility</span>
+                                Chi tiết
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Status Update Modal -->
+<div id="statusModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 border border-[#E3E5D2]">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-black text-[#03594D]">Cập nhật trạng thái</h3>
+                <button onclick="closeStatusModal()" class="text-gray-400 hover:text-gray-600">
+                    <span class="material-symbols-outlined text-[24px]">close</span>
+                </button>
+            </div>
+
+            <form id="statusForm" onsubmit="updateStatus(event)">
+                <input type="hidden" id="bookingId">
+
+                <div class="mb-4">
+                    <label class="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">Thú cưng</label>
+                    <p id="petInfo" class="text-[#03594D] font-semibold text-lg"></p>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">Trạng thái</label>
+                    <select id="status" required
+                            class="w-full px-4 py-3 border border-[#E3E5D2] rounded-lg focus:ring-2 focus:ring-[#03594D] focus:border-[#03594D] font-semibold">
+                        <option value="CONFIRMED">Đã xác nhận</option>
+                        <option value="IN_PROGRESS">Đang thực hiện</option>
+                        <option value="COMPLETED">Hoàn thành</option>
+                        <option value="IN_PROGRESS">Chờ xác nhận</option>
+                        <option value="CANCELLED">Đã hủy</option>
+                    </select>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">Ghi chú</label>
+                    <textarea id="notes" rows="3"
+                              class="w-full px-4 py-3 border border-[#E3E5D2] rounded-lg focus:ring-2 focus:ring-[#03594D] focus:border-[#03594D]"
+                              placeholder="Thêm ghi chú về tiến độ..."></textarea>
+                </div>
+
+                <div class="flex space-x-3">
+                    <button type="button" onclick="closeStatusModal()"
+                            class="flex-1 px-4 py-3 border border-[#E3E5D2] rounded-lg hover:bg-gray-50 transition-all font-bold">
+                        Hủy
+                    </button>
+                    <button type="submit"
+                            class="flex-1 px-4 py-3 bg-[#D8E268] text-[#03594D] rounded-lg font-bold shadow-md hover:-translate-y-0.5 transition-all">
+                        Cập nhật
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openStatusModal(btn) {
+        const modal = document.getElementById('statusModal');
+        const bookingId = btn.getAttribute('data-booking-id');
+        const petName = btn.getAttribute('data-pet-name');
+        const service = btn.getAttribute('data-service');
+        const currentStatus = btn.getAttribute('data-current-status');
+
+        document.getElementById('bookingId').value = bookingId;
+        document.getElementById('petInfo').textContent = `${petName} - ${service}`;
+        document.getElementById('status').value = currentStatus;
+        document.getElementById('notes').value = '';
+
+        modal.classList.remove('hidden');
+    }
+
+    function closeStatusModal() {
+        document.getElementById('statusModal').classList.add('hidden');
+    }
+
+    async function updateStatus(event) {
+        event.preventDefault();
+
+        const bookingId = document.getElementById('bookingId').value;
+        const status = document.getElementById('status').value;
+        const notes = document.getElementById('notes').value;
+
+        try {
+            const response = await fetch(`/groomer/schedule/${bookingId}/status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `status=${encodeURIComponent(status)}&notes=${encodeURIComponent(notes)}`
+            });
+
+            if (response.ok) {
+                alert('Cập nhật thành công!');
+                window.location.reload();
+            } else {
+                alert('Có lỗi xảy ra. Vui lòng thử lại!');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Có lỗi xảy ra. Vui lòng thử lại!');
+        }
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('statusModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeStatusModal();
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,11 +1,18 @@
 package g6shenpcare.entity;
-//lien quan service
+
 import jakarta.persistence.*;
+import lombok.*;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "ServicePricingMatrix")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ServicePricingMatrix {
 
     @Id
@@ -34,28 +41,5 @@ public class ServicePricingMatrix {
     @Column(name = "CreatedAt")
     private LocalDateTime createdAt;
 
-    // GETTERS & SETTERS
-    public Integer getPricingId() { return pricingId; }
-    public void setPricingId(Integer pricingId) { this.pricingId = pricingId; }
 
-    public Integer getServiceId() { return serviceId; }
-    public void setServiceId(Integer serviceId) { this.serviceId = serviceId; }
-
-    public String getPetSpecies() { return petSpecies; }
-    public void setPetSpecies(String petSpecies) { this.petSpecies = petSpecies; }
-
-    public String getCoatLength() { return coatLength; }
-    public void setCoatLength(String coatLength) { this.coatLength = coatLength; }
-
-    public Float getMinWeight() { return minWeight; }
-    public void setMinWeight(Float minWeight) { this.minWeight = minWeight; }
-
-    public Float getMaxWeight() { return maxWeight; }
-    public void setMaxWeight(Float maxWeight) { this.maxWeight = maxWeight; }
-
-    public BigDecimal getPrice() { return price; }
-    public void setPrice(BigDecimal price) { this.price = price; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

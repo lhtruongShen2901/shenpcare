@@ -87,16 +87,45 @@
             return savedTicket;
         }
 
+        private void sendTicketUpdatedRealtime(Ticket ticket) {
+            UserAccount creator = ticket.getCreatedBy();
+            UserAccount assignee = ticket.getAssignedTo();
+
+            // gửi cho creator
+            messagingTemplate.convertAndSendToUser(
+                    creator.getUsername(),
+                    "/queue/tickets/updated",
+                    ticket
+            );
+
+            // gửi cho assignee (nếu khác creator)
+            if (assignee != null && !assignee.getUserId().equals(creator.getUserId())) {
+                messagingTemplate.convertAndSendToUser(
+                        assignee.getUsername(),
+                        "/queue/tickets/updated",
+                        ticket
+                );
+            }
+        }
+
 
 
         public Ticket getTicketById(Long ticketId) {
             return ticketRepository.findById(ticketId)
-                    .orElseThrow(() -> new RuntimeException(STR."Ticket not found with id: \{ticketId}"));
+                    .orElseThrow(() -> new RuntimeException("Ticket not found with id: " + ticketId
+                    ));
         }
 
+        @Transactional
         public Ticket updateNote(Ticket ticket) {
-            return ticketRepository.save(ticket);
+            ticket.setUpdatedAt(LocalDateTime.now());
+            Ticket saved = ticketRepository.save(ticket);
+
+            sendTicketUpdatedRealtime(saved);
+
+            return saved;
         }
+
 
 
         public List<Ticket> getAllTickets() {
@@ -115,8 +144,14 @@
                 ticket.setResolvedAt(LocalDateTime.now());
             }
 
-            return ticketRepository.save(ticket);
+            Ticket saved = ticketRepository.save(ticket);
+
+            // 🔥 realtime update
+            sendTicketUpdatedRealtime(saved);
+
+            return saved;
         }
+
 
 
         @Transactional
@@ -173,7 +208,7 @@
                     );
                 }
             }
-
+            sendTicketUpdatedRealtime(updatedTicket);
             return updatedTicket;
         }
 
@@ -195,7 +230,7 @@
         public List<Ticket> getTicketsAssignedToUser(Integer userId) {
             UserAccount user = userRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("User not found"));
-            return ticketRepository.findByAssignedTo(user);
+            return ticketRepository.findOpenTicketsAssignedTo(user.getUserId());
         }
 
 
